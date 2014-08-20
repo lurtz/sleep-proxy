@@ -1,0 +1,15 @@
+function(make_test name)
+        add_executable(${name} ${name}.cpp)
+        target_link_libraries(${name} ${CPPUNIT_LIBRARIES} ${ARGV1})
+        add_test(${name} ${name})
+endfunction(make_test)
+
+make_test(container_tests)
+make_test(int_utils_test libemulateHost)
+make_test(split_test libemulateHost)
+make_test(to_string_test libemulateHost)
+make_test(ip_utils_test libemulateHost)
+make_test(scope_guard_test libemulateHost)
+make_test(args_test libemulateHost)
+make_test(spawn_process_test libemulateHost)
+

@@ -1,0 +1,13 @@
+Keeps the illusion, that a host is powered on and available while it is powered
+off or in standby. A small device, e.g. an OpenWrt router, using this programm
+can wake this host using WOL upon an incoming connection.
+
+To compile you need cmake and pcap installed. Your compiler should understand
+C++11.
+
+Build instructions:
+  mkdir build
+  cd build
+  cmake ..
+  make
+

@@ -1,0 +1,41 @@
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=sleep-proxy
+PKG_VERSION:=0.0.1
+PKG_RELEASE:=1
+
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
+# TODO get/set source
+PKG_SOURCE:=sleep-proxy-$(PKG_VERSION).tar.gz
+#PKG_SOURCE_URL:=@SF/bridge
+PKG_SOURCE_URL:=/home/lutz/workspace/sleep-proxy
+#PKG_MD5SUM:=9b7dc52656f5cbec846a7ba3299f73bd
+#PKG_CAT:=zcat
+
+include $(INCLUDE_DIR)/package.mk
+include $(INCLUDE_DIR)/cmake.mk
+
+define Package/sleep-proxy
+  SECTION:=base
+  CATEGORY:=Network
+  DEFAULT:=m
+  TITLE:=Sleep Proxy
+  URL:=https://bitbucket.org/cg2/sleep-proxy
+  DEPENDS:=+libstdcpp +libpcap +libpthread +ip
+endef
+
+define Package/sleep-proxy/description
+ Sleep Proxy
+ Wakes a sleeping host via WOL if some client tries to connect to it.
+ Servers can go into standby and save power without client side support
+ with custom WOL scripts.
+endef
+
+define Package/sleep-proxy/install
+	$(INSTALL_DIR) $(1)/usr/sbin
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/watchHost $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/emulateHost $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/waker $(1)/usr/sbin/
+endef
+
+$(eval $(call BuildPackage,sleep-proxy))
