@@ -2,15 +2,13 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=sleep-proxy
 PKG_VERSION:=0.0.1
-PKG_RELEASE:=1
+PKG_SOURCE_PROTO:=git
+PKG_SOURCE_URL:=git@bitbucket.org:cg2/sleep-proxy-git.git
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
+PKG_SOURCE_VERSION:=HEAD
+PKG_SOURCE_SUBDIR:=$(PKG_NAME)
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
-# TODO get/set source
-PKG_SOURCE:=sleep-proxy-$(PKG_VERSION).tar.gz
-#PKG_SOURCE_URL:=@SF/bridge
-PKG_SOURCE_URL:=/home/lutz/workspace/sleep-proxy
-#PKG_MD5SUM:=9b7dc52656f5cbec846a7ba3299f73bd
-#PKG_CAT:=zcat
 
 include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
