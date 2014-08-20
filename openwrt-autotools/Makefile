@@ -12,7 +12,7 @@ PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/cmake.mk
+
 
 define Package/sleep-proxy
   SECTION:=base
@@ -30,11 +30,16 @@ define Package/sleep-proxy/description
  with custom WOL scripts.
 endef
 
+define Build/Prepare
+	$(call Build/Prepare/Default,)
+	cp -r $(PKG_BUILD_DIR)/legacy-build-system/* $(PKG_BUILD_DIR)
+endef
+
 define Package/sleep-proxy/install
 	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/watchHost $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/emulateHost $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/waker $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/watchHost $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/emulateHost $(1)/usr/sbin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/waker $(1)/usr/sbin/
 endef
 
 $(eval $(call BuildPackage,sleep-proxy))
