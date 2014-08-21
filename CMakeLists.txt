@@ -7,7 +7,7 @@ add_definitions(-std=c++11)
 INCLUDE(CompilerFlags)
 
 # Compiler setup
-set(CMAKE_BUILD_TYPE Debug)
+#set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VALID_FLAGS}")
 
 # testing
