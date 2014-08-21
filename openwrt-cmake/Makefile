@@ -15,12 +15,12 @@ include $(INCLUDE_DIR)/package.mk
 include $(INCLUDE_DIR)/cmake.mk
 
 define Package/sleep-proxy
-  SECTION:=base
+  SECTION:=net
   CATEGORY:=Network
   DEFAULT:=m
   TITLE:=Sleep Proxy
   URL:=https://bitbucket.org/cg2/sleep-proxy
-  DEPENDS:=+libstdcpp +libpcap +libpthread +ip
+  DEPENDS:=+libstdcpp +libpthread +libpcap +ip +iptables +ip6tables
 endef
 
 define Package/sleep-proxy/description
@@ -31,10 +31,12 @@ define Package/sleep-proxy/description
 endef
 
 define Package/sleep-proxy/install
-	$(INSTALL_DIR) $(1)/usr/sbin
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/watchHost $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/emulateHost $(1)/usr/sbin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/waker $(1)/usr/sbin/
+	$(INSTALL_DIR) $(1)/usr/bin
+	$(INSTALL_DIR) $(1)/usr/lib
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/watchHost $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/emulateHost $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/waker $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/liblibemulateHost.so $(1)/usr/lib/
 endef
 
 $(eval $(call BuildPackage,sleep-proxy))
