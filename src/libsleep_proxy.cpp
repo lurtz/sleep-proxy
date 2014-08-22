@@ -1,21 +1,15 @@
 #include <string>
 #include <stdexcept>
 #include <iostream>
-#include <memory>
 #include <vector>
 #include <tuple>
-#include <cassert>
 #include <map>
 #include <mutex>
 #include "split.h"
 #include "pcap_wrapper.h"
-#include "ethernet.h"
-#include "ip.h"
-#include "tp.h"
 #include "scope_guard.h"
 #include "ip_utils.h"
 #include "args.h"
-#include "to_string.h"
 #include "container_utils.h"
 #include "libsleep_proxy.h"
 #include "spawn_process.h"
@@ -75,10 +69,10 @@ std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const
         std::cout << "listen" << std::endl;
         Catch_incoming_connection catcher(pc.get_datalink());
         pc.loop(1, std::ref(catcher));
-        std::cout << catcher.headers << std::endl;
 	if (std::get<1>(catcher.headers) == nullptr) {
 		throw std::runtime_error("got nothing while catching with pcap");
 	}
+        std::cout << catcher.headers << std::endl;
         return std::make_tuple(catcher.data, std::get<1>(catcher.headers)->source(), std::get<1>(catcher.headers)->destination());
 }
 
