@@ -188,6 +188,7 @@ std::ostream& operator<<(std::ostream& out, const Args& args) {
                 << ", ports = " << args.ports
                 << ", mac = " << args.mac
                 << ", hostname = " << args.hostname
+                << ", print_tries = " << args.ping_tries
                 << ")";
         return out;
 }
