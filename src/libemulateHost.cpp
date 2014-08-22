@@ -20,6 +20,7 @@
 #include "libemulateHost.h"
 #include "spawn_process.h"
 #include "wol.h"
+#include "packet_parser.h"
 
 /*
  * Pretends to be a host, which has gone into standby and is startable via wake
@@ -34,110 +35,6 @@
 /** used to break the loop using a signal handler */
 std::mutex pcaps_mutex;
 std::vector<Pcap_wrapper *> pcaps;
-
-/**
- * Writes time formatted into the stream
- * */
-std::ostream& operator<<(std::ostream& out, struct timeval time) {
-        out << time.tv_sec << "." << time.tv_usec << " s";
-        return out;
-}
-
-/**
- * Writes hdr formatted into the stream
- */
-std::ostream& operator<<(std::ostream& out, const pcap_pkthdr& hdr) {
-        out << "[" << hdr.ts << "]: length:" << hdr.len << ", supposed length: " << hdr.caplen;
-        return out;
-}
-
-/**
- * Ethernet, IP and TCP/UDP header in one tuple
- * */
-typedef std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>, std::unique_ptr<tp>> basic_headers;
-
-/**
- * Extracts the Ethernet, IP and TCP/UDP headers from packet
- * */
-basic_headers get_headers(const int type, const std::vector<u_char>& packet) {
-        std::vector<u_char>::const_iterator data = std::begin(packet);
-        std::vector<u_char>::const_iterator end = std::end(packet);
-
-        // link layer header
-        std::unique_ptr<Link_layer> ll = parse_link_layer(type, data, end);
-        if (ll == nullptr) {
-                std::cerr << "unsupported link layer protocol: " << type << std::endl;
-                return std::make_tuple(std::unique_ptr<Link_layer>(nullptr), std::unique_ptr<ip>(nullptr), std::unique_ptr<tp>(nullptr));
-        }
-        data += static_cast<std::vector<u_char>::const_iterator::difference_type>(ll->header_length());
-
-        // IP header
-        std::unique_ptr<ip> ipp = parse_ip(ll->payload_protocol(), data, end);
-        if (ipp == nullptr) {
-                std::cerr << "unsupported link layer payload: " << static_cast<unsigned int>(ll->payload_protocol()) << std::endl;
-                return std::make_tuple(std::move(ll), std::unique_ptr<ip>(nullptr), std::unique_ptr<tp>(nullptr));
-        }
-        data += static_cast<std::vector<u_char>::const_iterator::difference_type>(ipp->header_length());
-
-        // TCP/UDP header
-        std::unique_ptr<tp> tpp = parse_tp(ipp->payload_protocol(), data, end);
-        if (tpp == nullptr) {
-                std::cerr << "unsupported ip payload: " << static_cast<unsigned int>(ipp->payload_protocol()) << std::endl;
-        }
-
-        return std::make_tuple(std::move(ll), std::move(ipp), std::move(tpp));
-}
-
-/**
- * Prints the headers to std::cout
- * */
-void print_packet(const basic_headers& headers) {
-        if (std::get<1>(headers) == nullptr || std::get<2>(headers) == nullptr) {
-                std::cerr << "some headers could not be parsed" << std::endl;
-                return;
-        }
-        const Link_layer& ll = *std::get<0>(headers);
-        const ip& ip = *std::get<1>(headers);
-        const tp& tp = *std::get<2>(headers);
-        std::cout << ll << std::endl << ip << std::endl << tp << std::endl;
-}
-
-/**
- * If used as pcap callback prints some info about the received data
- * */
-struct Got_packet {
-        const int link_layer_type;
-        void operator()(const struct pcap_pkthdr *header, const u_char *packet) {
-                if (header == nullptr || packet == nullptr) {
-                        std::cerr << "header or packet are nullptr" << std::endl;
-                        return;
-                }
-                std::cout << *header << std::endl;
-                basic_headers headers = get_headers(link_layer_type, std::vector<u_char>(packet, packet + header->len));
-                print_packet(headers);
-        }
-};
-
-/**
- * Saves the lower 3 layers and all the data which has been intercepted
- * using pcap.
- */
-struct Catch_incoming_connection {
-        const int link_layer_type;
-        basic_headers headers;
-        std::vector<uint8_t> data;
-
-        Catch_incoming_connection(const int link_layer_typee) : link_layer_type(link_layer_typee) {}
-
-        void operator()(const pcap_pkthdr * header, const u_char * packet) {
-                if (header == nullptr || packet == nullptr) {
-                        std::cerr << "header or packet are nullptr" << std::endl;
-                        return;
-                }
-                data = std::vector<uint8_t>(packet, packet + header->len);
-                headers = get_headers(link_layer_type, data);
-        }
-};
 
 /**
  * Adds from args the IPs to the machine and setups the firewall
@@ -231,15 +128,6 @@ void emulate_host(const Args& args) {
         wol_ethernet(args.interface, args.mac);
         // wait until server responds and release ICMP rules
         ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
-}
-
-void test_pcap() {
-        Pcap_wrapper pc("lo");
-        pc.set_filter("tcp and port 12345");
-        std::cout << "höre" << std::endl;
-        Got_packet gp{pc.get_datalink()};
-        pc.loop(1, gp);
-        std::cout << "fertig" << std::endl;
 }
 
 void signal_handler(int) {
