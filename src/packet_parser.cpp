@@ -9,9 +9,9 @@ void print_if_not_nullptr(std::ostream& out, T&& ptr) {
 
 std::ostream& operator<<(std::ostream& out, const basic_headers& headers) {
         print_if_not_nullptr(out, std::get<0>(headers));
-        out << std::endl;
+        out << '\n';
         print_if_not_nullptr(out, std::get<1>(headers));
-        out << std::endl;
+        out << '\n';
         print_if_not_nullptr(out, std::get<2>(headers));
         return out;
 }
