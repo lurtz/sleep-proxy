@@ -1,24 +1,21 @@
 #include "packet_parser.h"
 
-/**
- * Writes time formatted into the stream
- * */
-std::ostream& operator<<(std::ostream& out, struct timeval time) {
-        out << time.tv_sec << "." << time.tv_usec << " s";
+template<typename T>
+void print_if_not_nullptr(std::ostream& out, T&& ptr) {
+        if (ptr != nullptr) {
+                out << *ptr;
+        }
+}
+
+std::ostream& operator<<(std::ostream& out, const basic_headers& headers) {
+        print_if_not_nullptr(out, std::get<0>(headers));
+        out << std::endl;
+        print_if_not_nullptr(out, std::get<1>(headers));
+        out << std::endl;
+        print_if_not_nullptr(out, std::get<2>(headers));
         return out;
 }
 
-/**
- * Writes hdr formatted into the stream
- */
-std::ostream& operator<<(std::ostream& out, const pcap_pkthdr& hdr) {
-        out << "[" << hdr.ts << "]: length:" << hdr.len << ", supposed length: " << hdr.caplen;
-        return out;
-}
-
-/**
- * Extracts the Ethernet, IP and TCP/UDP headers from packet
- * */
 basic_headers get_headers(const int type, const std::vector<u_char>& packet) {
         std::vector<u_char>::const_iterator data = std::begin(packet);
         std::vector<u_char>::const_iterator end = std::end(packet);
@@ -46,30 +43,6 @@ basic_headers get_headers(const int type, const std::vector<u_char>& packet) {
         }
 
         return std::make_tuple(std::move(ll), std::move(ipp), std::move(tpp));
-}
-
-/**
- * Prints the headers to std::cout
- * */
-void print_packet(const basic_headers& headers) {
-        if (std::get<1>(headers) == nullptr || std::get<2>(headers) == nullptr) {
-                std::cerr << "some headers could not be parsed" << std::endl;
-                return;
-        }
-        const Link_layer& ll = *std::get<0>(headers);
-        const ip& ip = *std::get<1>(headers);
-        const tp& tp = *std::get<2>(headers);
-        std::cout << ll << std::endl << ip << std::endl << tp << std::endl;
-}
-
-void Got_packet::operator()(const struct pcap_pkthdr *header, const u_char *packet) {
-        if (header == nullptr || packet == nullptr) {
-                std::cerr << "header or packet are nullptr" << std::endl;
-                return;
-        }
-        std::cout << *header << std::endl;
-        basic_headers headers = get_headers(link_layer_type, std::vector<u_char>(packet, packet + header->len));
-        print_packet(headers);
 }
 
 Catch_incoming_connection::Catch_incoming_connection(const int link_layer_typee) : link_layer_type(link_layer_typee) {}

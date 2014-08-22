@@ -14,22 +14,14 @@
 typedef std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>, std::unique_ptr<tp>> basic_headers;
 
 /**
+ * Prints the headers to std::cout
+ * */
+std::ostream& operator<<(std::ostream& out, const basic_headers& headers);
+
+/**
  * Extracts the Ethernet, IP and TCP/UDP headers from packet
  * */
 basic_headers get_headers(const int type, const std::vector<u_char>& packet);
-
-/**
- * Prints the headers to std::cout
- * */
-void print_packet(const basic_headers& headers);
-
-/**
- * If used as pcap callback prints some info about the received data
- * */
-struct Got_packet {
-        const int link_layer_type;
-        void operator()(const struct pcap_pkthdr *header, const u_char *packet);
-};
 
 /**
  * Saves the lower 3 layers and all the data which has been intercepted
@@ -44,6 +36,4 @@ struct Catch_incoming_connection {
 
         void operator()(const pcap_pkthdr * header, const u_char * packet);
 };
-
-void test_pcap();
 

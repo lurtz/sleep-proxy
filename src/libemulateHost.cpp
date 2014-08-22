@@ -74,8 +74,8 @@ std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const
         pc.set_filter(bpf);
         std::cout << "listen" << std::endl;
         Catch_incoming_connection catcher(pc.get_datalink());
-        pc.loop(1, [&](const pcap_pkthdr * header, const u_char * packet) { catcher(header, packet);});
-        print_packet(catcher.headers);
+        pc.loop(1, std::ref(catcher));
+        std::cout << catcher.headers << std::endl;
 	if (std::get<1>(catcher.headers) == nullptr) {
 		throw std::runtime_error("got nothing while catching with pcap");
 	}
