@@ -34,11 +34,20 @@ class Args_test : public CppUnit::TestFixture {
                 compare(get_args());
         }
 
-        Args get_args() const {
-                std::vector<std::string> params{"args_test", "-i", interface, "-a", addresses, "-p", ports, "-m", mac, "-n", hostname, "-t", ping_tries};
+        std::vector<Args> get_args(std::vector<std::string>& params) const {
                 // reset getopt() to the start
                 optind = 1;
-                return read_commandline(static_cast<int>(params.size()), const_cast<char * const *>(get_c_string_array(params).data())).at(0);
+                return read_commandline(static_cast<int>(params.size()), const_cast<char * const *>(get_c_string_array(params).data()));
+        }
+
+        Args get_args() const {
+                std::vector<std::string> params{"args_test", "-i", interface, "-a", addresses, "-p", ports, "-m", mac, "-n", hostname, "-t", ping_tries};
+                return get_args(params).at(0);
+        }
+
+        std::vector<Args> get_args(const std::string& filename) const {
+                std::vector<std::string> params{"args_test", "-c", filename};
+                return get_args(params);
         }
 
         std::vector<uint16_t> parse_ports() const {
@@ -124,7 +133,7 @@ class Args_test : public CppUnit::TestFixture {
         }
 
         void test_read_file() {
-                auto args = read_file("../../config/watchhosts");
+                auto args = get_args("../../config/watchhosts");
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(2), args.size());
                 interface = "lo";
                 addresses = "10.0.0.1/16,fe80::123/64";
@@ -134,8 +143,8 @@ class Args_test : public CppUnit::TestFixture {
                 ping_tries = "5";
                 compare(args.at(0));
 
-                interface = "eth0";
-                addresses = "10.1.2.3/16,fe80::DEAD:BEEF/64";
+                interface = "lo";
+                addresses = "10.1.2.3/16,fe80::de:ad/64";
                 ports = "22";
                 mac = "FF:EE:DD:CC:BB:AA";
                 hostname = "test2";

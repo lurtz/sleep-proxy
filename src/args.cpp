@@ -55,6 +55,58 @@ void print_help() {
         std::cout << "                        how often it shall be tried to ping the target\n";
 }
 
+Args read_args(std::ifstream& file) {
+        std::string interface = def_iface;
+        std::vector<std::string> address;
+        std::vector<std::string> ports;
+        std::string mac = def_mac;
+        std::string hostname = def_hostname;
+        std::string ping_tries = def_ping_tries;
+        std::string line;
+        while (std::getline(file, line) && line.substr(0,4) != "host") {
+                if (line.size() == 0) {
+                        continue;
+                }
+                const auto token = split(line, ' ');
+                if (token.size() != 2) {
+                        std::cout << "skipping line \"" + line + "\"\n";
+                        std::cout << "needs to be a pair of name and value separated by space" << std::endl;
+                        continue;
+                }
+                if (token.at(0) == "interface") {
+                        interface = token.at(1);
+                } else if (token.at(0) == "address") {
+                        address.push_back(token.at(1));
+                } else if (token.at(0) == "port") {
+                        ports.push_back(token.at(1));
+                } else if (token.at(0) == "mac") {
+                        mac = token.at(1);
+                } else if (token.at(0) == "name") {
+                        hostname = token.at(1);
+                } else if (token.at(0) == "ping_tries") {
+                        ping_tries = token.at(1);
+                } else {
+                        std::cout << "unknown name \"" + token.at(0) + "\": skipping" << std::endl;
+                }
+        }
+        if (address.empty())
+                address.push_back(def_address);
+        if (ports.empty())
+                ports.push_back(def_ports);
+        return Args(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), std::move(ping_tries));
+}
+
+std::vector<Args> read_file(const std::string& filename) {
+        std::ifstream file(filename);
+        std::vector<Args> ret_val;
+        std::string line;
+        while (std::getline(file, line) && line.substr(0,4) != "host");
+        while (file) {
+                ret_val.emplace_back(read_args(file));
+        }
+        return ret_val;
+}
+
 std::vector<Args> read_commandline(const int argc, char * const argv[]) {
         static const option long_options[] = {
                 {"help",       no_argument,       nullptr, 'h'},
@@ -114,58 +166,6 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
         }
         std::vector<Args> ret_val;
         ret_val.emplace_back(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), ping_tries);
-        return ret_val;
-}
-
-Args read_args(std::ifstream& file) {
-        std::string interface = def_iface;
-        std::vector<std::string> address;
-        std::vector<std::string> ports;
-        std::string mac = def_mac;
-        std::string hostname = def_hostname;
-        std::string ping_tries = def_ping_tries;
-        std::string line;
-        while (std::getline(file, line) && line.substr(0,4) != "host") {
-                if (line.size() == 0) {
-                        continue;
-                }
-                const auto token = split(line, ' ');
-                if (token.size() != 2) {
-                        std::cout << "skipping line \"" + line + "\"\n";
-                        std::cout << "needs to be a pair of name and value separated by space" << std::endl;
-                        continue;
-                }
-                if (token.at(0) == "interface") {
-                        interface = token.at(1);
-                } else if (token.at(0) == "address") {
-                        address.push_back(token.at(1));
-                } else if (token.at(0) == "port") {
-                        ports.push_back(token.at(1));
-                } else if (token.at(0) == "mac") {
-                        mac = token.at(1);
-                } else if (token.at(0) == "name") {
-                        hostname = token.at(1);
-                } else if (token.at(0) == "ping_tries") {
-                        ping_tries = token.at(1);
-                } else {
-                        std::cout << "unknown name \"" + token.at(0) + "\": skipping" << std::endl;
-                }
-        }
-        if (address.empty())
-                address.push_back(def_address);
-        if (ports.empty())
-                ports.push_back(def_ports);
-        return Args(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), std::move(ping_tries));
-}
-
-std::vector<Args> read_file(const std::string& filename) {
-        std::ifstream file(filename);
-        std::vector<Args> ret_val;
-        std::string line;
-        while (std::getline(file, line) && line.substr(0,4) != "host");
-        while (file) {
-                ret_val.emplace_back(read_args(file));
-        }
         return ret_val;
 }
 

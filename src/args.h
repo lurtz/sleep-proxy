@@ -28,8 +28,6 @@ struct Args {
 
 std::vector<Args> read_commandline(const int argc, char * const argv[]);
 
-std::vector<Args> read_file(const std::string& filename);
-
 /**
  * write args into out
  */
