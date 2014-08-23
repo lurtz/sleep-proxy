@@ -21,6 +21,19 @@ std::string Linux_cooked_capture::get_info() const {
         return "Linux cooked capture";
 }
 
+
+size_t VLAN_Header::header_length() const {
+        return 4;
+}
+
+uint16_t VLAN_Header::payload_protocol() const {
+        return payload_type;
+}
+
+std::string VLAN_Header::get_info() const {
+        return "VLAN Header";
+}
+
 size_t sniff_ethernet::header_length() const {
         return 14;
 }

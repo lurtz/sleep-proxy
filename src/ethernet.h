@@ -49,6 +49,27 @@ struct Linux_cooked_capture : public Link_layer {
         virtual std::string get_info() const;
 };
 
+struct VLAN_Header : public Link_layer {
+        private:
+        uint16_t priority_canonical_id;
+        uint16_t payload_type;
+        public:
+        template<typename iterator>
+        VLAN_Header(iterator data, iterator end) : Link_layer(data, end) {
+                if (static_cast<size_t>(end - data) < header_length()) {
+                        throw std::length_error("not enough data to construct a vlan header");
+                }
+                data += 2;
+                payload_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+        }
+
+        virtual size_t header_length() const;
+
+        virtual uint16_t payload_protocol() const;
+
+        virtual std::string get_info() const;
+};
+
 /** Ethernet header with destination address, source address and payload type */
 struct sniff_ethernet : public Link_layer {
         /** Ethernet addresses are 6 bytes */
@@ -104,11 +125,14 @@ struct sniff_ethernet : public Link_layer {
 /** writes destination and source from eth into out */
 std::ostream& operator<<(std::ostream& out, const sniff_ethernet& eth);
 
+const unsigned int VLAN_HEADER = 0x8100;
+
 template<typename iterator>
 std::unique_ptr<Link_layer> parse_link_layer(const int type, iterator data, iterator end) {
         switch (type) {
                 case DLT_LINUX_SLL: return std::unique_ptr<Link_layer>(new Linux_cooked_capture(data, end));
                 case DLT_EN10MB: return std::unique_ptr<Link_layer>(new sniff_ethernet(data, end));
+                case VLAN_HEADER: return std::unique_ptr<Link_layer>(new VLAN_Header(data, end));
                 default: return std::unique_ptr<Link_layer>(nullptr);
         }
 }
