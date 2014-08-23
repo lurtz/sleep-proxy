@@ -59,6 +59,7 @@ struct VLAN_Header : public Link_layer {
                 if (static_cast<size_t>(end - data) < header_length()) {
                         throw std::length_error("not enough data to construct a vlan header");
                 }
+                priority_canonical_id = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
                 data += 2;
                 payload_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
         }
