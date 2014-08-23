@@ -9,6 +9,7 @@
 
 /** Abstract base class for any IP version */
 struct ip {
+        enum Version {ipv4 = 0x800, ipv6 = 0x86DD};
         /**
          * Constructs nothing. Checks if data < end and the data consists
          * of bytes
@@ -159,14 +160,14 @@ template<typename iterator>
 std::unique_ptr<ip> parse_ip(uint16_t type, iterator data, iterator end) {
         uint8_t version = *data >> 4;
         // check wether type and the version the ip headers matches
-        if ((type == 0x800 && version != 4) || (type == 0x86DD && version != 6)) {
+        if ((type == ip::Version::ipv4 && version != 4) || (type == ip::Version::ipv6 && version != 6)) {
                 std::cerr << "ethernet type and ip version do not match";
                 return std::unique_ptr<ip>(nullptr);
         }
         // construct the IPv4/IPv6 header
         switch (type) {
-                case 0x800: return std::unique_ptr<ip>(new sniff_ipv4(data, end));
-                case 0x86DD: return std::unique_ptr<ip>(new sniff_ipv6(data, end));
+                case ip::Version::ipv4: return std::unique_ptr<ip>(new sniff_ipv4(data, end));
+                case ip::Version::ipv6: return std::unique_ptr<ip>(new sniff_ipv6(data, end));
                 // do not know the IP version which is given
                 default: return std::unique_ptr<ip>(nullptr);
         }
