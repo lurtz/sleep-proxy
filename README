@@ -5,9 +5,11 @@ can wake this host using WOL upon an incoming connection.
 To compile you need cmake and pcap installed. Your compiler should understand
 C++11.
 
-Build instructions:
+To build install pcap with its development files and run:
   mkdir build
   cd build
   cmake ..
   make
 
+At runtime the commands ping, ping6, ip, iptables and ip6tables should be
+available.
