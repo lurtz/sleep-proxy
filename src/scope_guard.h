@@ -98,6 +98,12 @@ struct Reject_tp {
         std::string operator()(const Action action) const;
 };
 
+struct Reject_outgoing_tcp {
+        const std::string ip;
+
+        std::string operator()(const Action action) const;
+};
+
 /** Adds a firewall rule to block ICMP messages directed to ip */
 struct Block_icmp {
         const std::string ip;
