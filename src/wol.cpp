@@ -1,12 +1,18 @@
 #include "wol.h"
 #include <unistd.h>
-#include <cassert>
 #include <algorithm>
 #include <iostream>
 #include <arpa/inet.h>
 #include "int_utils.h"
 #include "socket.h"
 #include "container_utils.h"
+
+// TODO do much better assert with file and line info
+void assert(const bool expr) {
+        if (!expr) {
+                throw std::runtime_error("assert failed");
+        }
+}
 
 /**
  * converts two hex characters into a byte value
