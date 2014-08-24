@@ -12,7 +12,7 @@
 Scope_guard::Scope_guard() : freed{true}, aquire_release{} {
 }
 
-Scope_guard::Scope_guard(std::function<std::string(const Action)> aquire_release_arg) : freed{false}, aquire_release(aquire_release_arg) {
+Scope_guard::Scope_guard(std::function<std::string(const Action)>&& aquire_release_arg) : freed{false}, aquire_release(std::move(aquire_release_arg)) {
         take_action(Action::add);
 }
 
@@ -132,3 +132,24 @@ std::string Block_icmp::operator()(const Action action) const {
         return iptcmd + " -w -" + saction + " OUTPUT -d " + get_pure_ip(ip) + " -p " + icmpv + " --" + icmpv + "-type destination-unreachable -j DROP";
 }
 
+void daw_thread_main(const std::string ip, std::atomic_bool& loop) {
+        // TODO
+}
+
+Duplicate_address_watcher::Duplicate_address_watcher(const std::string ipp) : ip(std::move(ipp)), loop(std::make_shared<std::atomic_bool>(false)) {
+}
+
+std::string Duplicate_address_watcher::operator()(const Action action) {
+        if (Action::add == action) {
+                *loop = true;
+                watcher = std::make_shared<std::thread>(daw_thread_main, ip, std::ref(*loop));
+        }
+        if (Action::del == action) {
+                *loop = false;
+                if (watcher->joinable()) {
+                        watcher->join();
+                }
+                watcher = nullptr;
+        }
+        return "";
+}

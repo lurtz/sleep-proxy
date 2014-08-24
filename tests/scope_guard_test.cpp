@@ -10,6 +10,7 @@ class Scope_guard_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_open_port );
         CPPUNIT_TEST( test_reject_tp );
         CPPUNIT_TEST( test_block_icmp );
+        CPPUNIT_TEST( test_duplicate_address_watcher );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -141,6 +142,12 @@ class Scope_guard_test : public CppUnit::TestFixture {
                 Block_icmp bi3{"ratzfatz"};
                 CPPUNIT_ASSERT_THROW(bi3(Action::add), std::runtime_error);
                 CPPUNIT_ASSERT_THROW(bi3(Action::del), std::runtime_error);
+        }
+
+        void test_duplicate_address_watcher() {
+                Duplicate_address_watcher daw{"10.0.0.1/16"};
+                Duplicate_address_watcher daw2 = std::move(daw);
+                Scope_guard sg{Duplicate_address_watcher{"fd1::1/64"}};
         }
 };
 
