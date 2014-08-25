@@ -5,6 +5,8 @@
 #include <mutex>
 #include <thread>
 #include <atomic>
+#include <map>
+#include "pcap_wrapper.h"
 
 std::string get_path(const std::string command);
 
@@ -144,11 +146,13 @@ Ptr_guard<Cont, T> ptr_guard(Cont& cont, std::mutex& cont_mutex, T& ref) {
 }
 
 struct Duplicate_address_watcher {
+        const std::string iface;
         const std::string ip;
+        Pcap_wrapper& pcap;
         std::shared_ptr<std::thread> watcher;
         std::shared_ptr<std::atomic_bool> loop;
 
-        Duplicate_address_watcher(const std::string ipp);
+        Duplicate_address_watcher(const std::string, const std::string, Pcap_wrapper&);
 
         std::string operator()(const Action action);
 };

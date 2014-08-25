@@ -132,17 +132,26 @@ std::string Block_icmp::operator()(const Action action) const {
         return iptcmd + " -w -" + saction + " OUTPUT -d " + get_pure_ip(ip) + " -p " + icmpv + " --" + icmpv + "-type destination-unreachable -j DROP";
 }
 
-void daw_thread_main(const std::string ip, std::atomic_bool& loop) {
-        // TODO
+void daw_thread_main(const std::string iface, const std::string ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
+        std::string cmd = get_path("arping") + " -D -c 5 -I " + iface + " " + get_pure_ip(ip);
+        auto cmd_split = split(cmd, ' ');
+        while (loop) {
+                pid_t pid = spawn(cmd_split);
+                uint8_t status = wait_until_pid_exits(pid);
+                if (status == 1) {
+                        loop = false;
+                        pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);
+                }
+        }
 }
 
-Duplicate_address_watcher::Duplicate_address_watcher(const std::string ipp) : ip(std::move(ipp)), loop(std::make_shared<std::atomic_bool>(false)) {
+Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee, const std::string ipp, Pcap_wrapper& pc) : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc), loop(std::make_shared<std::atomic_bool>(false)) {
 }
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
         if (Action::add == action) {
                 *loop = true;
-                watcher = std::make_shared<std::thread>(daw_thread_main, ip, std::ref(*loop));
+                watcher = std::make_shared<std::thread>(daw_thread_main, iface, ip, std::ref(*loop), std::ref(pcap));
         }
         if (Action::del == action) {
                 *loop = false;
@@ -153,3 +162,4 @@ std::string Duplicate_address_watcher::operator()(const Action action) {
         }
         return "";
 }
+
