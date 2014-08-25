@@ -1,8 +1,6 @@
 #include "args.h"
-#include <algorithm>
 #include <stdexcept>
 #include <getopt.h>
-#include <iterator>
 #include <fstream>
 #include "ip_utils.h"
 #include "split.h"
@@ -167,19 +165,6 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
         std::vector<Args> ret_val;
         ret_val.emplace_back(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), ping_tries);
         return ret_val;
-}
-
-/**
- * Writes the items of a vector seperated by ", " into out
- */
-template<typename T>
-std::ostream& operator<<(std::ostream& out, std::vector<T> v) {
-        std::ostream_iterator<T> iter(out, ", ");
-        if (std::begin(v) != std::end(v)) {
-                std::copy(std::begin(v), std::end(v)-1, iter);
-                out << static_cast<T>(*(std::end(v)-1));
-        }
-        return out;
 }
 
 std::ostream& operator<<(std::ostream& out, const Args& args) {
