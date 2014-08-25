@@ -133,7 +133,8 @@ std::string Block_icmp::operator()(const Action action) const {
 }
 
 void daw_thread_main(const std::string iface, const std::string ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
-        std::string cmd = get_path("arping") + " -D -c 5 -I " + iface + " " + get_pure_ip(ip);
+        std::string cmd = get_path("arping") + " -q -D -c 1 -I " + iface + " " + get_pure_ip(ip);
+        std::cout << "starting: " << cmd << std::endl;
         auto cmd_split = split(cmd, ' ');
         while (loop) {
                 pid_t pid = spawn(cmd_split);
