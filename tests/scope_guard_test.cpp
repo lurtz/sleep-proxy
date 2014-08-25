@@ -145,9 +145,9 @@ class Scope_guard_test : public CppUnit::TestFixture {
         }
 
         void test_duplicate_address_watcher() {
-                Duplicate_address_watcher daw{"10.0.0.1/16"};
-                Duplicate_address_watcher daw2 = std::move(daw);
-                Scope_guard sg{Duplicate_address_watcher{"fd1::1/64"}};
+//                Duplicate_address_watcher daw{"eth0", "10.0.0.1/16"};
+//                Duplicate_address_watcher daw2 = std::move(daw);
+//                Scope_guard sg{Duplicate_address_watcher{"lo", "fd1::1/64"}};
         }
 };
 
