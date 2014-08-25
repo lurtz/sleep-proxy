@@ -54,10 +54,7 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
                 // no one open opened the ports, block RST packets from being
                 //sent to the client
                 guards.emplace_back(Block_rst{ip});
-                guards.emplace_back(Reject_outgoing_tcp{ip});
                 guards.emplace_back(Temp_ip{args.interface, ip});
-                // block any outgoing packets from args.interface
-                guards.emplace_back(Reject_outgoing_tcp{ip});
         }
         return guards;
 }
@@ -141,6 +138,11 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
  * SYN packet and wakes the sleeping host via WOL
  */
 void emulate_host(const Args& args) {
+        std::vector<Scope_guard> block_tcp;
+        for (const auto& ip : args.address) {
+                // block any outgoing packets from ip
+                block_tcp.emplace_back(Reject_outgoing_tcp{ip});
+        }
         // setup firewall rules and add IPs to the interface
         std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
         // wait until upon an incoming connection
