@@ -70,10 +70,15 @@ void callback_wrapper(u_char * args, const struct pcap_pkthdr * header, const u_
 }
 
 void Pcap_wrapper::loop(const int count, std::function<void(const struct pcap_pkthdr *, const u_char *)> cb) {
+        loop_end_reason = Pcap_wrapper::Loop_end_reason::packets_captured;
         pcap_loop(pc.get(), count, callback_wrapper, reinterpret_cast<u_char *>(&cb));
 }
 
-void Pcap_wrapper::break_loop() {
-	pcap_breakloop(pc.get());
+void Pcap_wrapper::break_loop(const Loop_end_reason& ler) {
+        loop_end_reason = ler;
+        pcap_breakloop(pc.get());
 }
 
+Pcap_wrapper::Loop_end_reason Pcap_wrapper::get_loop_end_reason() const {
+        return loop_end_reason;
+}

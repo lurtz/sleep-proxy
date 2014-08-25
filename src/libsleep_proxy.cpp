@@ -130,7 +130,7 @@ void emulate_host(const Args& args) {
 void signal_handler(int) {
         std::lock_guard<std::mutex> lock(pcaps_mutex);
         for (auto& pc : pcaps) {
-                pc->break_loop();
+                pc->break_loop(Pcap_wrapper::Loop_end_reason::signal);
         }
 }
 
