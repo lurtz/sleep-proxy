@@ -83,7 +83,7 @@ struct Block_rst {
 };
 
 /** Adds a firewall rule to open port for ip */
-struct Open_port {
+struct Drop_port {
         const std::string ip;
         const uint16_t port;
 

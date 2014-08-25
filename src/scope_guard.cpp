@@ -84,12 +84,12 @@ std::string Block_rst::operator()(const Action action) const {
         return get_iptables_cmd(ip) + " -w -" + saction + " OUTPUT -s " + get_pure_ip(ip) + " -p tcp --tcp-flags ALL RST,ACK -j DROP";
 }
 
-std::string Open_port::operator()(const Action action) const {
+std::string Drop_port::operator()(const Action action) const {
         const static std::map<Action, std::string> which_action{{Action::add, "I"}, {Action::del, "D"}};
         std::string saction{which_action.at(action)};
         std::string iptcmd = get_iptables_cmd(ip);
         std::string pip = get_pure_ip(ip);
-        return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p tcp --syn --dport " + to_string(port) + " -j ACCEPT";
+        return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p tcp --syn --dport " + to_string(port) + " -j DROP";
 }
 
 std::string Reject_tp::operator()(const Action action) const {

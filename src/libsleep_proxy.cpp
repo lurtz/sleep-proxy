@@ -42,14 +42,13 @@ const char * Duplicate_address_exception::what() const noexcept {
 std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
         std::vector<Scope_guard> guards;
         for (auto& ip : args.address) {
-                // setup firewall first, otherwise a buffer of an IP might
-                // get filled
+                // setup firewall first, some services might respond
                 // reject any incoming connection, except the ones to the
                 // ports specified
                 guards.emplace_back(Reject_tp{ip, Reject_tp::TP::TCP});
                 guards.emplace_back(Reject_tp{ip, Reject_tp::TP::UDP});
                 for (auto& port : args.ports) {
-                        guards.emplace_back(Open_port{ip, port});
+                        guards.emplace_back(Drop_port{ip, port});
                 }
                 // no one open opened the ports, block RST packets from being
                 //sent to the client
