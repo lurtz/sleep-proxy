@@ -149,6 +149,9 @@ Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee, c
 }
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
+        // TODO this does not work for ipv6
+        if (getAF(ip) == AF_INET6)
+                return "";
         if (Action::add == action) {
                 *loop = true;
                 watcher = std::make_shared<std::thread>(daw_thread_main, iface, ip, std::ref(*loop), std::ref(pcap));
