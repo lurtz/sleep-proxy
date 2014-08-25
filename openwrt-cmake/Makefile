@@ -20,7 +20,7 @@ define Package/sleep-proxy
   DEFAULT:=m
   TITLE:=Sleep Proxy
   URL:=https://bitbucket.org/cg2/sleep-proxy
-  DEPENDS:=+libstdcpp +libpthread +libpcap +ip +iptables +ip6tables +iputils-arping
+  DEPENDS:=+libstdcpp +libpthread +libpcap +ip +iptables +ip6tables
 endef
 
 define Package/sleep-proxy/description
