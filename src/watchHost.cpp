@@ -69,6 +69,10 @@ void thread_main(const Args args) {
                         std::cout << "caught exception what(): " << e.what() << std::endl;
                         loop = false;
                 }
+                catch (...) {
+                        std::cout << "Something went terribly wrong at: " << args << std::endl;
+                        loop = false;
+                }
         }
 }
 
