@@ -6,7 +6,7 @@
 
 /** Provide a nice interface to pcap and close the handle upon an exception */
 struct Pcap_wrapper {
-        enum class Loop_end_reason {unset, packets_captured, signal, duplicate_address};
+        enum class Loop_end_reason {unset, packets_captured, signal, duplicate_address, error};
         private:
         /** error buffer */
         std::array<char, PCAP_ERRBUF_SIZE> errbuf{{0}};
@@ -27,10 +27,8 @@ struct Pcap_wrapper {
         void set_filter(const std::string& filter);
 
         /** sniff count packets calling cb each time */
-        void loop(const int count, std::function<void(const struct pcap_pkthdr *, const u_char *)> cb);
+        Pcap_wrapper::Loop_end_reason loop(const int count, std::function<void(const struct pcap_pkthdr *, const u_char *)> cb);
 
         void break_loop(const Loop_end_reason&);
-
-        Pcap_wrapper::Loop_end_reason get_loop_end_reason() const;
 };
 

@@ -84,16 +84,26 @@ std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const
 
         std::cout << "listen" << std::endl;
         Catch_incoming_connection catcher(pc.get_datalink());
-        pc.loop(1, std::ref(catcher));
+        Pcap_wrapper::Loop_end_reason ler = pc.loop(1, std::ref(catcher));
 
         // check if address duplication got something
-        if (pc.get_loop_end_reason() == Pcap_wrapper::Loop_end_reason::duplicate_address) {
-                throw Duplicate_address_exception(to_string(args.address));
+        switch (ler) {
+                case Pcap_wrapper::Loop_end_reason::duplicate_address:
+                        throw Duplicate_address_exception(to_string(args.address));
+                        break;
+                case Pcap_wrapper::Loop_end_reason::signal:
+                        throw std::runtime_error("received signal while capturing with pcap");
+                        break;
+                case Pcap_wrapper::Loop_end_reason::unset:
+                        std::cerr << "no reason given why pcap has been stopped" << std::endl;
+                        break;
+                default:
+                        break;
         }
 
-	if (std::get<1>(catcher.headers) == nullptr) {
-		throw std::runtime_error("got nothing while catching with pcap");
-	}
+        if (std::get<1>(catcher.headers) == nullptr) {
+                throw std::runtime_error("got nothing while catching with pcap");
+        }
         std::cout << catcher.headers << std::endl;
         return std::make_tuple(catcher.data, std::get<1>(catcher.headers)->source(), std::get<1>(catcher.headers)->destination());
 }
