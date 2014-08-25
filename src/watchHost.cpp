@@ -56,14 +56,18 @@ void thread_main(const Args args) {
                         std::cout << "ping" << std::endl;
                         std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 }
-                if (loop) {
-                        try {
-                                emulate_host(args);
-                        }
-                        catch (const std::exception& e) {
-                                std::cout << "caught excpetion what(): " << e.what() << std::endl;
-                                loop = false;
-                        }
+                if (!loop) {
+                        return;
+                }
+                try {
+                        emulate_host(args);
+                }
+                catch (const Duplicate_address_exception& e) {
+                        std::cout << e.what() << std::endl;
+                }
+                catch (const std::exception& e) {
+                        std::cout << "caught exception what(): " << e.what() << std::endl;
+                        loop = false;
                 }
         }
 }
