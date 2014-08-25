@@ -30,6 +30,12 @@
 std::mutex pcaps_mutex;
 std::vector<Pcap_wrapper *> pcaps;
 
+Duplicate_address_exception::Duplicate_address_exception(const std::string& mess) : message("one of these ips is owned by another machine: " + mess) {}
+
+const char * Duplicate_address_exception::what() const noexcept {
+        return message.c_str();
+}
+
 /**
  * Adds from args the IPs to the machine and setups the firewall
  */
@@ -48,7 +54,6 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
                 // no one open opened the ports, block RST packets from being
                 //sent to the client
                 guards.emplace_back(Block_rst{ip});
-                guards.emplace_back(Duplicate_address_watcher{ip});
                 guards.emplace_back(Temp_ip{args.interface, ip});
                 // block any outgoing packets from args.interface
                 guards.emplace_back(Reject_outgoing_tcp{ip});
@@ -63,15 +68,29 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
  */
 std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const Args& args) {
         Pcap_wrapper pc("any");
-        Scope_guard pc_guard{ptr_guard(pcaps, pcaps_mutex, pc)};
+
+        // guards to handle signals and address duplication
+        std::vector<Scope_guard> guards;
+        guards.emplace_back(ptr_guard(pcaps, pcaps_mutex, pc));
+        for (const auto& ip : args.address) {
+                guards.emplace_back(Duplicate_address_watcher{args.interface, ip, pc});
+        }
+
         std::string bpf = "tcp";
         bpf += " and dst host (" + join(args.address, get_pure_ip, " or ") + ")";
         bpf += " and dst port (" + join(args.ports, [](uint16_t in){return in;}, " or ") + ")";
         std::cout << "Listening with filter: " + bpf << std::endl;
         pc.set_filter(bpf);
+
         std::cout << "listen" << std::endl;
         Catch_incoming_connection catcher(pc.get_datalink());
         pc.loop(1, std::ref(catcher));
+
+        // check if address duplication got something
+        if (pc.get_loop_end_reason() == Pcap_wrapper::Loop_end_reason::duplicate_address) {
+                throw Duplicate_address_exception(to_string(args.address));
+        }
+
 	if (std::get<1>(catcher.headers) == nullptr) {
 		throw std::runtime_error("got nothing while catching with pcap");
 	}
