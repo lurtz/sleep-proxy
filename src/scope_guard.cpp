@@ -108,7 +108,7 @@ std::string Reject_outgoing_tcp::operator()(const Action action) const {
         const std::string saction{which_action.at(action)};
         const std::string iptcmd = get_iptables_cmd(ip);
         const std::string pip = get_pure_ip(ip);
-        return iptcmd + " -w -" + saction + " OUTPUT -s " + pip + " -p tcp -j REJECT";
+        return iptcmd + " -w -" + saction + " OUTPUT -s " + pip + " -p tcp -j DROP";
 }
 
 /**
