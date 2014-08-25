@@ -78,7 +78,7 @@ pid_t fork_exec_pipes(const std::vector<const char *>& command) {
                         std::get<0>(pipes).close();
                         if (count) {
                             // something bad happend in the child process
-                            throw std::runtime_error(std::string("execv() failed:") + strerror(err));
+                            throw std::runtime_error(std::string("execv() failed: ") + strerror(err));
                         }
                      }
         }
