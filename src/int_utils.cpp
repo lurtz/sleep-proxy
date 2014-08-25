@@ -1,5 +1,5 @@
 #include "int_utils.h"
-#include <errno.h>
+#include <cerrno>
 #include <cstdlib>
 #include "to_string.h"
 

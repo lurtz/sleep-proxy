@@ -3,7 +3,7 @@
 #include <map>
 #include <arpa/inet.h>
 #include <sys/stat.h>
-#include <errno.h>
+#include <cerrno>
 #include "to_string.h"
 #include "ip_utils.h"
 #include "split.h"

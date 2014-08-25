@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <cstring>
 #include <cstdlib>
-#include <errno.h>
+#include <cerrno>
 #include <tuple>
 
 uint8_t wait_until_pid_exits(const pid_t& pid) {

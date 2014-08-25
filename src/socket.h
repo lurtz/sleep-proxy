@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <sys/socket.h>
-#include <errno.h>
+#include <cerrno>
 #include <cstring>
 #include <stdexcept>
 
