@@ -75,13 +75,6 @@ struct Temp_ip {
         std::string operator()(const Action action) const;
 };
 
-/** Adds a firewall rule to block RST packets from the given ip */
-struct Block_rst {
-        const std::string ip;
-
-        std::string operator()(const Action action) const;
-};
-
 /** Adds a firewall rule to open port for ip */
 struct Drop_port {
         const std::string ip;
@@ -98,12 +91,6 @@ struct Reject_tp {
         };
         const std::string ip;
         const TP tcp_udp;
-
-        std::string operator()(const Action action) const;
-};
-
-struct Reject_outgoing_tcp {
-        const std::string ip;
 
         std::string operator()(const Action action) const;
 };

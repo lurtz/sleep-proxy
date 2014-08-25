@@ -6,8 +6,7 @@ class Scope_guard_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Scope_guard_test );
         CPPUNIT_TEST( test_scope_guard );
         CPPUNIT_TEST( test_temp_ip );
-        CPPUNIT_TEST( test_block_rst );
-        CPPUNIT_TEST( test_open_port );
+        CPPUNIT_TEST( test_drop_port );
         CPPUNIT_TEST( test_reject_tp );
         CPPUNIT_TEST( test_block_icmp );
         CPPUNIT_TEST( test_duplicate_address_watcher );
@@ -78,36 +77,20 @@ class Scope_guard_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr del " + ip + " dev " + iface), ti2(Action::del));
         }
 
-        void test_block_rst() {
-                std::string ip{"10.0.0.1/16"};
-                Block_rst br{ip};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I OUTPUT -s 10.0.0.1 -p tcp --tcp-flags ALL RST,ACK -j DROP"), br(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D OUTPUT -s 10.0.0.1 -p tcp --tcp-flags ALL RST,ACK -j DROP"), br(Action::del));
-
-                ip = "fe80::dead:beef%eth0";
-                Block_rst br2{ip};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I OUTPUT -s fe80::dead:beef -p tcp --tcp-flags ALL RST,ACK -j DROP"), br2(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D OUTPUT -s fe80::dead:beef -p tcp --tcp-flags ALL RST,ACK -j DROP"), br2(Action::del));
-
-                Block_rst br3{"bullshit"};
-                CPPUNIT_ASSERT_THROW(br3(Action::add), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(br3(Action::del), std::runtime_error);
-        }
-
-        void test_open_port() {
+        void test_drop_port() {
                 std::string ip{"10.0.0.1/16"};
                 uint16_t port{1234};
-                Open_port op{ip, port};
-                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -I INPUT -d 10.0.0.1 -p tcp --syn --dport " + std::to_string(port) + " -j ACCEPT", op(Action::add));
-                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -D INPUT -d 10.0.0.1 -p tcp --syn --dport " + std::to_string(port) + " -j ACCEPT", op(Action::del));
+                Drop_port op{ip, port};
+                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -I INPUT -d 10.0.0.1 -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op(Action::add));
+                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -D INPUT -d 10.0.0.1 -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op(Action::del));
 
                 ip = "fe80::affe";
                 port = 666;
-                Open_port op2{ip, port};
-                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -I INPUT -d fe80::affe -p tcp --syn --dport " + std::to_string(port) + " -j ACCEPT", op2(Action::add));
-                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -D INPUT -d fe80::affe -p tcp --syn --dport " + std::to_string(port) + " -j ACCEPT", op2(Action::del));
+                Drop_port op2{ip, port};
+                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -I INPUT -d fe80::affe -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op2(Action::add));
+                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -D INPUT -d fe80::affe -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op2(Action::del));
 
-                Open_port op3{"blabla", 1234};
+                Drop_port op3{"blabla", 1234};
                 CPPUNIT_ASSERT_THROW(op3(Action::add), std::runtime_error);
                 CPPUNIT_ASSERT_THROW(op3(Action::del), std::runtime_error);
         }

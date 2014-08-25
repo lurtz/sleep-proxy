@@ -78,12 +78,6 @@ std::string get_iptables_cmd(const std::string& ip) {
         return get_path(which_iptcmd.at(getAF(ip)));
 }
 
-std::string Block_rst::operator()(const Action action) const {
-        const static std::map<Action, std::string> which_action{{Action::add, "I"}, {Action::del, "D"}};
-        std::string saction{which_action.at(action)};
-        return get_iptables_cmd(ip) + " -w -" + saction + " OUTPUT -s " + get_pure_ip(ip) + " -p tcp --tcp-flags ALL RST,ACK -j DROP";
-}
-
 std::string Drop_port::operator()(const Action action) const {
         const static std::map<Action, std::string> which_action{{Action::add, "I"}, {Action::del, "D"}};
         std::string saction{which_action.at(action)};
@@ -100,15 +94,6 @@ std::string Reject_tp::operator()(const Action action) const {
         std::string iptcmd = get_iptables_cmd(ip);
         std::string pip = get_pure_ip(ip);
         return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p " + stp + " -j REJECT";
-}
-
-
-std::string Reject_outgoing_tcp::operator()(const Action action) const {
-        const static std::map<Action, std::string> which_action{{Action::add, "I"}, {Action::del, "D"}};
-        const std::string saction{which_action.at(action)};
-        const std::string iptcmd = get_iptables_cmd(ip);
-        const std::string pip = get_pure_ip(ip);
-        return iptcmd + " -w -" + saction + " OUTPUT -s " + pip + " -p tcp -j DROP";
 }
 
 /**

@@ -50,13 +50,7 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
                 for (auto& port : args.ports) {
                         guards.emplace_back(Drop_port{ip, port});
                 }
-                // no one open opened the ports, block RST packets from being
-                //sent to the client
-                guards.emplace_back(Block_rst{ip});
-                guards.emplace_back(Reject_outgoing_tcp{ip});
                 guards.emplace_back(Temp_ip{args.interface, ip});
-                // block any outgoing tcp packets from args.interface
-                guards.emplace_back(Reject_outgoing_tcp{ip});
         }
         return guards;
 }
