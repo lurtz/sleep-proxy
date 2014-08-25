@@ -33,7 +33,15 @@ struct Got_packet {
         }
 };
 
+void print_help() {
+        std::cout << "usage: iface bpf_filter" << std::endl;
+}
+
 int main(int argc, char * argv[]) {
+        if (argc != 3) {
+                print_help();
+                return 1;
+        }
         Pcap_wrapper pcap(argv[1]);
         pcap.set_filter(argv[2]);
         pcap.loop(0, Got_packet{pcap.get_datalink()});
