@@ -126,6 +126,7 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
                         return true;
                 }
         }
+        std::cerr << "failed to bring up ip " << ip << " after " << tries << " ping attempts" << std::endl;
         return false;
 }
 
@@ -133,7 +134,7 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
  * Puts everything together. Sets up firewall and IPs. Waits for an incoming
  * SYN packet and wakes the sleeping host via WOL
  */
-void emulate_host(const Args& args) {
+bool emulate_host(const Args& args) {
         // setup firewall rules and add IPs to the interface
         std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
         // wait until upon an incoming connection
@@ -147,7 +148,7 @@ void emulate_host(const Args& args) {
         // wake the sleeping server
         wol_ethernet(args.interface, args.mac);
         // wait until server responds and release ICMP rules
-        ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
+        return ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
 }
 
 void signal_handler(int) {
