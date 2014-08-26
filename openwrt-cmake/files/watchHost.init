@@ -1,9 +1,11 @@
 #!/bin/sh /etc/rc.common
 
 USE_PROCD=1
+START=99
 
 start_service() {
   procd_open_instance
   procd_set_param command /usr/bin/watchHost -c /etc/watchHost.conf
+  procd_set_param data /etc/watchHost.conf
   procd_close_instance
 }

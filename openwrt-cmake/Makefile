@@ -39,7 +39,7 @@ define Package/sleep-proxy/install
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/waker $(1)/usr/bin/
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/libsleep-proxy.so $(1)/usr/lib/
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/config/watchHost.conf $(1)/etc/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/config/watchHost $(1)/etc/init.d
+	$(INSTALL_BIN) $(PKG_BUILD_DIR)/openwrt-cmake/files/watchHost.init $(1)/etc/init.d/watchHost
 endef
 
 $(eval $(call BuildPackage,sleep-proxy))
