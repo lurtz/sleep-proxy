@@ -50,8 +50,8 @@ void watch_host_signal_handler(int signal) {
 }
 
 void thread_main(const Args args) {
-        while (loop) {
-                std::cout << "thread_main" << std::endl;
+        bool wake_success = true;
+        while (loop && wake_success) {
                 while (ping_ips(args.interface, args.address) && loop) {
                         std::cout << "ping" << std::endl;
                         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -60,7 +60,7 @@ void thread_main(const Args args) {
                         return;
                 }
                 try {
-                        emulate_host(args);
+                        wake_success = emulate_host(args);
                 }
                 catch (const Duplicate_address_exception& e) {
                         std::cout << e.what() << std::endl;
