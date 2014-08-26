@@ -133,7 +133,7 @@ class Args_test : public CppUnit::TestFixture {
         }
 
         void test_read_file() {
-                auto args = get_args("../../config/watchhosts");
+                auto args = get_args("../../tests/watchhosts");
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(2), args.size());
                 interface = "lo";
                 addresses = "10.0.0.1/16,fe80::123/64";
@@ -150,6 +150,9 @@ class Args_test : public CppUnit::TestFixture {
                 hostname = "test2";
                 ping_tries = "1";
                 compare(args.at(1));
+
+                auto args2 = get_args("../../tests/watchhosts-empty");
+                CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), args2.size());
         }
 };
 
