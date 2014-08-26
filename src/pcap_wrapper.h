@@ -12,7 +12,12 @@ struct Pcap_wrapper {
         std::array<char, PCAP_ERRBUF_SIZE> errbuf{{0}};
         /** pointer to the opened pcap_t struct with its close function */
         std::unique_ptr<pcap_t, std::function<void(pcap_t*)>> pc;
+
+        protected:
         Loop_end_reason loop_end_reason = Loop_end_reason::unset;
+
+        /** this is only present to run tests as non-root, do not use */
+        Pcap_wrapper();
 
         public:
         /** open a pcap instance on iface */

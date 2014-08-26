@@ -16,6 +16,8 @@ struct BPF {
         }
 };
 
+Pcap_wrapper::Pcap_wrapper() : pc(nullptr) {}
+
 Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen, const bool promisc, const int timeout) : pc(pcap_create(iface.c_str(), errbuf.data()), pcap_close) {
         if (pc == nullptr) {
                 throw std::runtime_error(errbuf.data());
@@ -88,6 +90,7 @@ Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count, std::function<
 
 void Pcap_wrapper::break_loop(const Loop_end_reason& ler) {
         loop_end_reason = ler;
-        pcap_breakloop(pc.get());
+        if (pc != nullptr)
+                pcap_breakloop(pc.get());
 }
 
