@@ -3,13 +3,17 @@
 #include <iostream>
 
 int main(int argc, char * argv[]) {
-        Args args(read_commandline(argc, argv).at(0));
-        std::cout << args << std::endl;
+        std::vector<Args> argss(read_commandline(argc, argv));
+        if (argss.empty()) {
+                std::cerr << "no configuration given" << std::endl;
+                return 1;
+        }
+        std::cout << argss.at(0) << std::endl;
         signal(SIGINT, signal_handler);
         signal(SIGTERM, signal_handler);
         // if possible exceptions aren't catched the scope guards won't work
         try {
-                emulate_host(args);
+                emulate_host(argss.at(0));
         }
         catch (std::exception& e) {
                 std::cout << "what: " << e.what() << std::endl;

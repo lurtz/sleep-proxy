@@ -84,5 +84,9 @@ int main(int argc, char * argv[]) {
                 threads.emplace_back(thread_main, std::move(args));
         }
         std::for_each(std::begin(threads), std::end(threads), [](std::thread& t) {if (t.joinable()) t.join();});
+        if (threads.empty()) {
+                std::cerr << "no configuration given" << std::endl;
+                return 1;
+        }
         return 0;
 }
