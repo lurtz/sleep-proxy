@@ -52,6 +52,7 @@ void watch_host_signal_handler(int signal) {
 void thread_main(const Args args) {
         bool wake_success = true;
         while (loop && wake_success) {
+                std::cout << "thread_main " << args.hostname << std::endl;
                 while (ping_ips(args.interface, args.address) && loop) {
                         std::cout << "ping" << std::endl;
                         std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -74,6 +75,7 @@ void thread_main(const Args args) {
                         loop = false;
                 }
         }
+        std::cout << "finished watching " << args.hostname << std::endl;
 }
 
 int main(int argc, char * argv[]) {
