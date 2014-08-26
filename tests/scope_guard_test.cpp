@@ -127,10 +127,29 @@ class Scope_guard_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_THROW(bi3(Action::del), std::runtime_error);
         }
 
+        struct Pcap_dummy : public Pcap_wrapper {
+                Pcap_dummy() {}
+                Pcap_wrapper::Loop_end_reason get_end_reason() const {
+                        return loop_end_reason;
+                }
+        };
+
         void test_duplicate_address_watcher() {
-//                Duplicate_address_watcher daw{"eth0", "10.0.0.1/16"};
-//                Duplicate_address_watcher daw2 = std::move(daw);
-//                Scope_guard sg{Duplicate_address_watcher{"lo", "fd1::1/64"}};
+                Pcap_dummy pcap;
+                Duplicate_address_watcher daw{"eth0", "10.0.0.1/16", pcap};
+                CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::add));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                CPPUNIT_ASSERT(Pcap_dummy().get_end_reason() == pcap.get_end_reason());
+                CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::del));
+                CPPUNIT_ASSERT(Pcap_dummy().get_end_reason() == pcap.get_end_reason());
+                Duplicate_address_watcher daw2{"wlan0", "192.168.1.1/24", pcap};
+                Duplicate_address_watcher daw3{"eth0", "192.168.1.1/24", pcap};
+                CPPUNIT_ASSERT_EQUAL(std::string(""), daw2(Action::add));
+                CPPUNIT_ASSERT_EQUAL(std::string(""), daw3(Action::add));
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                CPPUNIT_ASSERT_EQUAL(std::string(""), daw2(Action::del));
+                CPPUNIT_ASSERT_EQUAL(std::string(""), daw3(Action::del));
+                CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address == pcap.get_end_reason());
         }
 };
 
