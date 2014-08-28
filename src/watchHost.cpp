@@ -6,9 +6,6 @@
 #include <csignal>
 #include <thread>
 
-/** set to false if SIGTERM or SIGINT is received */
-std::atomic_bool loop{true};
-
 /** with std::async this code is not able to build on openwrt. this is a 
  * replacement */
 struct Pseudo_future {
@@ -44,20 +41,15 @@ bool ping_ips(const std::string& iface, const Container& ips) {
         return std::any_of(std::begin(futures), std::end(futures), [](Pseudo_future& f){ return f.get(); });
 }
 
-void watch_host_signal_handler(int signal) {
-        loop = false;
-        signal_handler(signal);
-}
-
 void thread_main(const Args args) {
         bool wake_success = true;
-        while (loop && wake_success) {
+        while (!is_signaled() && wake_success) {
                 std::cout << "thread_main " << args.hostname << std::endl;
-                while (ping_ips(args.interface, args.address) && loop) {
+                while (ping_ips(args.interface, args.address) && !is_signaled()) {
                         std::cout << "ping" << std::endl;
                         std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 }
-                if (!loop) {
+                if (is_signaled()) {
                         return;
                 }
                 try {
@@ -68,19 +60,19 @@ void thread_main(const Args args) {
                 }
                 catch (const std::exception& e) {
                         std::cout << "caught exception what(): " << e.what() << std::endl;
-                        loop = false;
+                        raise(SIGTERM);
                 }
                 catch (...) {
                         std::cout << "Something went terribly wrong at: " << args << std::endl;
-                        loop = false;
+                        raise(SIGTERM);
                 }
         }
         std::cout << "finished watching " << args.hostname << std::endl;
 }
 
 int main(int argc, char * argv[]) {
-        signal(SIGTERM, watch_host_signal_handler);
-        signal(SIGINT, watch_host_signal_handler);
+        signal(SIGTERM, signal_handler);
+        signal(SIGINT, signal_handler);
         std::vector<std::thread> threads;
         for (auto& args : read_commandline(argc, argv)) {
                 threads.emplace_back(thread_main, std::move(args));
