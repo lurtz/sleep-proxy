@@ -29,7 +29,12 @@
 /** used to break the loop using a signal handler */
 std::mutex pcaps_mutex;
 std::vector<Pcap_wrapper *> pcaps;
+
 std::atomic_bool signaled{false};
+
+bool is_signaled() {
+        return signaled;
+}
 
 Duplicate_address_exception::Duplicate_address_exception(const std::string& mess) : message("one of these ips is owned by another machine: " + mess) {}
 

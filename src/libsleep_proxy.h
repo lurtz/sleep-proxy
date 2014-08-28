@@ -4,6 +4,8 @@
 #include <exception>
 #include "args.h"
 
+bool is_signaled();
+
 class Duplicate_address_exception : public std::exception {
         std::string message;
         public:
