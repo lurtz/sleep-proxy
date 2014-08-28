@@ -71,8 +71,7 @@ void thread_main(const Args args) {
 }
 
 int main(int argc, char * argv[]) {
-        signal(SIGTERM, signal_handler);
-        signal(SIGINT, signal_handler);
+        setup_signals();
         std::vector<std::thread> threads;
         for (auto& args : read_commandline(argc, argv)) {
                 threads.emplace_back(thread_main, std::move(args));

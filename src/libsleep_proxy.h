@@ -4,6 +4,8 @@
 #include <exception>
 #include "args.h"
 
+void setup_signals();
+
 bool is_signaled();
 
 class Duplicate_address_exception : public std::exception {
@@ -15,4 +17,3 @@ class Duplicate_address_exception : public std::exception {
 
 bool ping_and_wait(const std::string& iface, const std::string& ip, const unsigned int tries);
 bool emulate_host(const Args& args);
-void signal_handler(int);

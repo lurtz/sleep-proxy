@@ -5,6 +5,8 @@
 #include <tuple>
 #include <map>
 #include <mutex>
+#include <csignal>
+#include <cstring>
 #include "split.h"
 #include "pcap_wrapper.h"
 #include "scope_guard.h"
@@ -31,6 +33,27 @@ std::mutex pcaps_mutex;
 std::vector<Pcap_wrapper *> pcaps;
 
 std::atomic_bool signaled{false};
+
+void signal_handler(int) {
+        signaled = true;
+        std::lock_guard<std::mutex> lock(pcaps_mutex);
+        for (auto& pc : pcaps) {
+                pc->break_loop(Pcap_wrapper::Loop_end_reason::signal);
+        }
+}
+
+void set_signal(const int signum, const struct sigaction& sa) {
+        if (sigaction(signum, &sa, nullptr) != 0) {
+                throw std::runtime_error(std::string("sigaction() failed: ") + strerror(errno));
+        }
+}
+
+void setup_signals() {
+        struct sigaction sa;
+        sa.sa_handler = signal_handler;
+        set_signal(SIGTERM, sa);
+        set_signal(SIGINT, sa);
+}
 
 bool is_signaled() {
         return signaled;
@@ -125,7 +148,7 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
         std::string ipcmd = get_ping_cmd(ip);
         std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip)};
         std::cout << cmd << std::endl;
-        for (unsigned int i = 0; i < tries && !signaled; i++) {
+        for (unsigned int i = 0; i < tries && !is_signaled(); i++) {
                 pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
                 uint8_t ret_val = wait_until_pid_exits(pid);
                 if (ret_val == 0) {
@@ -155,13 +178,5 @@ bool emulate_host(const Args& args) {
         wol_ethernet(args.interface, args.mac);
         // wait until server responds and release ICMP rules
         return ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
-}
-
-void signal_handler(int) {
-        signaled = true;
-        std::lock_guard<std::mutex> lock(pcaps_mutex);
-        for (auto& pc : pcaps) {
-                pc->break_loop(Pcap_wrapper::Loop_end_reason::signal);
-        }
 }
 

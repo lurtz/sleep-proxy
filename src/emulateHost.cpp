@@ -1,5 +1,4 @@
 #include "libsleep_proxy.h"
-#include <csignal>
 #include <iostream>
 
 int main(int argc, char * argv[]) {
@@ -9,8 +8,7 @@ int main(int argc, char * argv[]) {
                 return 1;
         }
         std::cout << argss.at(0) << std::endl;
-        signal(SIGINT, signal_handler);
-        signal(SIGTERM, signal_handler);
+        setup_signals();
         // if possible exceptions aren't catched the scope guards won't work
         try {
                 emulate_host(argss.at(0));
