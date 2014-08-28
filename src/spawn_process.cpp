@@ -61,7 +61,15 @@ std::tuple<Pipe, Pipe> get_self_pipes() {
         return std::make_tuple(std::move(p0), std::move(p1));
 }
 
-pid_t fork_exec_pipes(const std::vector<const char *>& command) {
+void freopen_with_exception(const std::string& path, const std::string& mode, FILE * stream) {
+        if (path.empty())
+                return;
+        if (freopen(path.c_str(), mode.c_str(), stream) == nullptr) {
+                throw std::runtime_error(std::string("freopen(" + path + ", " + mode + ", ...) failed: ") + strerror(errno));
+        }
+}
+
+pid_t fork_exec_pipes(const std::vector<const char *>& command, const std::string& in, const std::string& out) {
         std::tuple<Pipe, Pipe> pipes = get_self_pipes();
 
         pid_t child = fork();
@@ -69,11 +77,15 @@ pid_t fork_exec_pipes(const std::vector<const char *>& command) {
                 case -1:
                         throw std::runtime_error(std::string("fork() failed with error: ") + strerror(errno));
                 case 0:
+                        // child
+                        freopen_with_exception(in, "a", stdin);
+                        freopen_with_exception(out, "a", stdout);
                         std::get<0>(pipes).close();
                         execv(command.at(0), const_cast<char **>(command.data()));
                         write(std::get<1>(pipes).fd, &errno, sizeof(int));
                         _exit(0);
                 default: {
+                        // parent
                         std::get<1>(pipes).close();
                         ssize_t count;
                         int err;
