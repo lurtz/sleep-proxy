@@ -11,11 +11,14 @@
 uint8_t wait_until_pid_exits(const pid_t& pid) {
         int status;
         do {
-                pid_t wpid = waitpid(pid, &status, WUNTRACED | WCONTINUED);
+                pid_t wpid = waitpid(pid, &status, 0);
                 if (wpid == -1) {
                         throw std::runtime_error(std::string("waitpid() failed: ") + strerror(errno));
                 }
         } while (!WIFEXITED(status) && !WIFSIGNALED(status));
+        if (WIFSIGNALED(status)) {
+                raise(WTERMSIG(status));
+        }
         return WEXITSTATUS(status);
 }
 
