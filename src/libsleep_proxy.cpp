@@ -29,6 +29,7 @@
 /** used to break the loop using a signal handler */
 std::mutex pcaps_mutex;
 std::vector<Pcap_wrapper *> pcaps;
+std::atomic_bool signaled{false};
 
 Duplicate_address_exception::Duplicate_address_exception(const std::string& mess) : message("one of these ips is owned by another machine: " + mess) {}
 
@@ -119,8 +120,8 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
         std::string ipcmd = get_ping_cmd(ip);
         std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip)};
         std::cout << cmd << std::endl;
-        for (unsigned int i = 0; i < tries; i++) {
-                pid_t pid = spawn(split(cmd, ' '));
+        for (unsigned int i = 0; i < tries && !signaled; i++) {
+                pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
                 uint8_t ret_val = wait_until_pid_exits(pid);
                 if (ret_val == 0) {
                         return true;
@@ -152,6 +153,7 @@ bool emulate_host(const Args& args) {
 }
 
 void signal_handler(int) {
+        signaled = true;
         std::lock_guard<std::mutex> lock(pcaps_mutex);
         for (auto& pc : pcaps) {
                 pc->break_loop(Pcap_wrapper::Loop_end_reason::signal);
