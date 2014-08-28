@@ -35,7 +35,7 @@ void Scope_guard::take_action(const Action a) const {
         std::string cmd = aquire_release(a);
         if (cmd.size() > 0 ) {
                 std::cout << cmd << std::endl;
-                pid_t pid = spawn(split(cmd, ' '));
+                pid_t pid = spawn(split(cmd, ' '), "/dev/null");
                 uint8_t status = wait_until_pid_exits(pid);
                 if (status != 0) {
                         throw std::runtime_error("command failed: " + cmd);
@@ -122,7 +122,7 @@ void daw_thread_main(const std::string iface, const std::string ip, std::atomic_
         std::cout << "starting: " << cmd << std::endl;
         auto cmd_split = split(cmd, ' ');
         while (loop) {
-                pid_t pid = spawn(cmd_split);
+                pid_t pid = spawn(cmd_split, "/dev/null");
                 uint8_t status = wait_until_pid_exits(pid);
                 if (status == 1) {
                         loop = false;
