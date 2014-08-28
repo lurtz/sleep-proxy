@@ -28,6 +28,11 @@ class Spawn_process_test : public CppUnit::TestFixture {
                 pid = spawn(cmd4);
                 status = wait_until_pid_exits(pid);
                 CPPUNIT_ASSERT(0 != status);
+
+                std::vector<std::string> cmd5{"/bin/ping6", "-c3", "localhost"};
+                pid = spawn(cmd5);
+                status = wait_until_pid_exits(pid);
+                CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
         }
 
         void test_with_exceptions() {
