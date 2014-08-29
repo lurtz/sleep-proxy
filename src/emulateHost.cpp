@@ -12,7 +12,15 @@ int main(int argc, char * argv[]) {
         }
         log_string(LOG_INFO, argss.at(0));
         setup_signals();
-        emulate_host(argss.at(0));
+        try {
+                emulate_host(argss.at(0));
+        }
+        catch (std::exception& e) {
+                log(LOG_ERR, "what: %s", e.what());
+        }
+        catch (...) {
+                log_string(LOG_ERR, "Something went terribly wrong");
+        }
         return 0;
 }
 
