@@ -1,6 +1,5 @@
 #include <string>
 #include <stdexcept>
-#include <iostream>
 #include <vector>
 #include <tuple>
 #include <map>
@@ -17,6 +16,7 @@
 #include "spawn_process.h"
 #include "wol.h"
 #include "packet_parser.h"
+#include "log.h"
 
 /*
  * Pretends to be a host, which has gone into standby and is startable via wake
@@ -102,10 +102,9 @@ std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const
         std::string bpf = "tcp";
         bpf += " and dst host (" + join(args.address, get_pure_ip, " or ") + ")";
         bpf += " and dst port (" + join(args.ports, [](uint16_t in){return in;}, " or ") + ")";
-        std::cout << "Listening with filter: " + bpf << std::endl;
+        log_string(LOG_INFO, "Listening with filter: " + bpf);
         pc.set_filter(bpf);
 
-        std::cout << "listen" << std::endl;
         Catch_incoming_connection catcher(pc.get_datalink());
         Pcap_wrapper::Loop_end_reason ler = pc.loop(1, std::ref(catcher));
 
@@ -118,7 +117,7 @@ std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const
                         throw std::runtime_error("received signal while capturing with pcap");
                         break;
                 case Pcap_wrapper::Loop_end_reason::unset:
-                        std::cerr << "no reason given why pcap has been stopped" << std::endl;
+                        log_string(LOG_ERR, "no reason given why pcap has been stopped");
                         break;
                 default:
                         break;
@@ -127,7 +126,7 @@ std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const
         if (std::get<1>(catcher.headers) == nullptr) {
                 throw std::runtime_error("got nothing while catching with pcap");
         }
-        std::cout << catcher.headers << std::endl;
+        log_string(LOG_INFO, catcher.headers);
         return std::make_tuple(catcher.data, std::get<1>(catcher.headers)->source(), std::get<1>(catcher.headers)->destination());
 }
 
@@ -147,7 +146,7 @@ std::string get_bindable_ip(const std::string& iface, const std::string& ip) {
 bool ping_and_wait(const std::string& iface, const std::string& ip, const unsigned int tries) {
         std::string ipcmd = get_ping_cmd(ip);
         std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip)};
-        std::cout << cmd << std::endl;
+        log_string(LOG_INFO, cmd);
         for (unsigned int i = 0; i < tries && !is_signaled(); i++) {
                 pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
                 uint8_t ret_val = wait_until_pid_exits(pid);
@@ -155,7 +154,7 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
                         return true;
                 }
         }
-        std::cerr << "failed to bring up ip " << ip << " after " << tries << " ping attempts" << std::endl;
+        log(LOG_ERR, "failed to bring up ip %s after %d ping attempts", ip.c_str(), tries);
         return false;
 }
 
@@ -168,7 +167,7 @@ bool emulate_host(const Args& args) {
         std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
         // wait until upon an incoming connection
         auto data_source_destination = wait_and_listen(args);
-        std::cout << "got something" << std::endl;
+        log_string(LOG_INFO, "got something");
         // block icmp messages to the source IP, e.g. not tell him that his
         // destination IP is gone for a short while
         Scope_guard block_icmp(Block_icmp{std::get<1>(data_source_destination)});
