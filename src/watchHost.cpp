@@ -1,5 +1,6 @@
 #include "args.h"
 #include "libsleep_proxy.h"
+#include "log.h"
 #include <future>
 #include <type_traits>
 #include <algorithm>
@@ -44,9 +45,9 @@ bool ping_ips(const std::string& iface, const Container& ips) {
 void thread_main(const Args args) {
         bool wake_success = true;
         while (!is_signaled() && wake_success) {
-                std::cout << "thread_main " << args.hostname << std::endl;
+                log_string(LOG_INFO, "thread_main " + args.hostname);
                 while (ping_ips(args.interface, args.address) && !is_signaled()) {
-                        std::cout << "ping" << std::endl;
+                        log_string(LOG_INFO, "ping");
                         std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 }
                 if (is_signaled()) {
@@ -56,30 +57,34 @@ void thread_main(const Args args) {
                         wake_success = emulate_host(args);
                 }
                 catch (const Duplicate_address_exception& e) {
-                        std::cout << e.what() << std::endl;
+                        log_string(LOG_NOTICE,  e.what());
                 }
                 catch (const std::exception& e) {
-                        std::cout << "caught exception what(): " << e.what() << std::endl;
+                        log(LOG_ERR, "caught exception what(): %s", e.what());
                         raise(SIGTERM);
                 }
                 catch (...) {
-                        std::cout << "Something went terribly wrong at: " << args << std::endl;
+                        log_string(LOG_ERR, "Something went terribly wrong at: " + to_string(args));
                         raise(SIGTERM);
                 }
         }
-        std::cout << "finished watching " << args.hostname << std::endl;
+        log_string(LOG_INFO, "finished watching " + args.hostname);
 }
 
 int main(int argc, char * argv[]) {
         setup_signals();
+        auto argss = read_commandline(argc, argv);
+        if (argss.empty()) {
+                log_string(LOG_ERR, "no configuration given");
+                return 1;
+        }
+        if (argss.at(0).syslog) {
+                setup_log(argv[0], 0, LOG_DAEMON);
+        }
         std::vector<std::thread> threads;
-        for (auto& args : read_commandline(argc, argv)) {
+        for (auto& args : argss) {
                 threads.emplace_back(thread_main, std::move(args));
         }
         std::for_each(std::begin(threads), std::end(threads), [](std::thread& t) {if (t.joinable()) t.join();});
-        if (threads.empty()) {
-                std::cerr << "no configuration given" << std::endl;
-                return 1;
-        }
         return 0;
 }
