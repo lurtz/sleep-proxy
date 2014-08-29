@@ -6,15 +6,16 @@
 #include "split.h"
 #include "int_utils.h"
 
-Args::Args() : ping_tries(0) {}
+Args::Args() : ping_tries(0), syslog(0) {}
 
-Args::Args(const std::string interface_, const std::vector<std::string> addresss_, const std::vector<std::string> ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_) :
+Args::Args(const std::string interface_, const std::vector<std::string> addresss_, const std::vector<std::string> ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_, const bool syslog_) :
         interface(validate_iface(std::move(interface_))),
         address(parse_items(std::move(addresss_), sanitize_ip)),
         ports(parse_items(std::move(ports_), str_to_integral<uint16_t>)),
         mac(validate_mac(std::move(mac_))),
         hostname(test_characters(hostname_, iface_chars + "-", std::string("invalid token in hostname: ") + hostname_)),
-        ping_tries(str_to_integral<unsigned int>(ping_tries_))
+        ping_tries(str_to_integral<unsigned int>(ping_tries_)),
+        syslog(syslog_)
 {
         if (address.size() == 0) {
                 throw std::runtime_error("no ip address given");
@@ -24,7 +25,7 @@ Args::Args(const std::string interface_, const std::vector<std::string> addresss
         }
 }
 
-Args::Args(const std::string interface_, const std::string address_, const std::string ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_) : Args(std::move(interface_), split(std::move(address_), ','), split(std::move(ports_), ','), std::move(mac_), std::move(hostname_), std::move(ping_tries_)) {}
+Args::Args(const std::string interface_, const std::string address_, const std::string ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_, const bool syslog_) : Args(std::move(interface_), split(std::move(address_), ','), split(std::move(ports_), ','), std::move(mac_), std::move(hostname_), std::move(ping_tries_), syslog_) {}
 
 const std::string def_iface = "lo";
 const std::string def_address = "10.0.0.1/16,fe80::123/64";
@@ -32,6 +33,7 @@ const std::string def_ports = "12345,23456";
 const std::string def_mac = "01:12:34:45:67:89";
 const std::string def_hostname = "";
 const std::string def_ping_tries = "5";
+const bool def_syslog = false;
 
 void print_help() {
         std::cout << "usage: emulateHost [-h] [-i INTERFACE] [-a ADDRESS] [-p PORTS]\n";
@@ -51,6 +53,8 @@ void print_help() {
         std::cout << "                        mac of the host to wake\n";
         std::cout << "  -t PING_TRIES, --ping_tries PING_TRIES\n";
         std::cout << "                        how often it shall be tried to ping the target\n";
+        std::cout << "  -s, --syslog\n";
+        std::cout << "                        print messages to syslog\n";
 }
 
 Args read_args(std::ifstream& file) {
@@ -60,6 +64,7 @@ Args read_args(std::ifstream& file) {
         std::string mac = def_mac;
         std::string hostname = def_hostname;
         std::string ping_tries = def_ping_tries;
+        bool syslog = def_syslog;
         std::string line;
         while (std::getline(file, line) && line.substr(0,4) != "host") {
                 if (line.size() == 0) {
@@ -83,6 +88,8 @@ Args read_args(std::ifstream& file) {
                         hostname = token.at(1);
                 } else if (token.at(0) == "ping_tries") {
                         ping_tries = token.at(1);
+                } else if (token.at(0) == "syslog") {
+                        syslog = true;
                 } else {
                         std::cout << "unknown name \"" + token.at(0) + "\": skipping" << std::endl;
                 }
@@ -91,7 +98,7 @@ Args read_args(std::ifstream& file) {
                 address.push_back(def_address);
         if (ports.empty())
                 ports.push_back(def_ports);
-        return Args(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), std::move(ping_tries));
+        return Args(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), std::move(ping_tries), syslog);
 }
 
 std::vector<Args> read_file(const std::string& filename) {
@@ -115,6 +122,7 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
                 {"macaddress", required_argument, nullptr, 'm'},
                 {"hostname",   required_argument, nullptr, 'n'},
                 {"ping_tries", required_argument, nullptr, 't'},
+                {"syslog",     no_argument,       nullptr, 's'},
                 {0,            0,                 nullptr, 0}
         };
         int option_index = 0;
@@ -125,8 +133,9 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
         std::string mac = def_mac;
         std::string hostname = def_hostname;
         std::string ping_tries = def_ping_tries;
+        bool syslog = def_syslog;
         // read cmd line arguments and checks them
-        while ((c = getopt_long(argc, argv, "hc:i:a:p:m:n:t:", long_options, &option_index)) != -1) {
+        while ((c = getopt_long(argc, argv, "hc:i:a:p:m:n:t:s", long_options, &option_index)) != -1) {
                 switch(c) {
                         case 'h':
                                 print_help();
@@ -155,6 +164,8 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
                         case 't':
                                 ping_tries = optarg;
                                 break;
+                        case 's':
+                                syslog = true;
                         case '?':
                                 break;
                         default:
@@ -163,7 +174,7 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
                 }
         }
         std::vector<Args> ret_val;
-        ret_val.emplace_back(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), ping_tries);
+        ret_val.emplace_back(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), ping_tries, syslog);
         return ret_val;
 }
 
@@ -174,6 +185,7 @@ std::ostream& operator<<(std::ostream& out, const Args& args) {
                 << ", mac = " << args.mac
                 << ", hostname = " << args.hostname
                 << ", print_tries = " << args.ping_tries
+                << ", syslog = " << args.syslog
                 << ")";
         return out;
 }
