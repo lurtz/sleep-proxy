@@ -9,14 +9,15 @@ class Log_test : public CppUnit::TestFixture {
 
         public:
         void setUp() {
-                setup_log("Log_test", LOG_CONS, LOG_USER);
+                setup_log("Log_test", LOG_CONS | LOG_PERROR, LOG_USER);
         }
         void tearDown() {}
         void test_log_string() {
-                log(LOG_DEBUG, "test_log_string()");
-                log(LOG_NOTICE, "test_log_string()");
-                log(LOG_ERR, "test_log_string()");
-                log(LOG_ALERT, "test_log_string()");
+                log_string(LOG_DEBUG, "test_log_string()");
+                log_string(LOG_NOTICE, "test_log_string()");
+                log_string(LOG_ERR, "test_log_string()");
+                log_string(LOG_ALERT, "test_log_string()");
+                log_string(LOG_EMERG, "test_log_string()");
         }
         void test_log_fmt() {
                 syslog(LOG_DEBUG, "bla %d, %f", 42, 3.14);
