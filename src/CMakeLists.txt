@@ -1,5 +1,5 @@
 find_package (Threads)
-add_library(sleep-proxy SHARED pcap_wrapper.cpp ethernet.cpp ip.cpp tp.cpp scope_guard.cpp ip_utils.cpp split.cpp socket.cpp args.cpp to_string.cpp libsleep_proxy.cpp spawn_process.cpp int_utils.cpp wol.cpp packet_parser.cpp)
+add_library(sleep-proxy SHARED pcap_wrapper.cpp ethernet.cpp ip.cpp tp.cpp scope_guard.cpp ip_utils.cpp split.cpp socket.cpp args.cpp to_string.cpp libsleep_proxy.cpp spawn_process.cpp int_utils.cpp wol.cpp packet_parser.cpp log.cpp)
 target_link_libraries(sleep-proxy ${PCAP_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(emulateHost emulateHost.cpp)

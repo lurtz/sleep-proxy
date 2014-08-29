@@ -12,4 +12,5 @@ make_test(ip_utils_test sleep-proxy)
 make_test(scope_guard_test sleep-proxy)
 make_test(args_test sleep-proxy)
 make_test(spawn_process_test sleep-proxy)
+make_test(log_test sleep-proxy)
 
