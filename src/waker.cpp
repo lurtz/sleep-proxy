@@ -1,10 +1,10 @@
 #include <string>
-#include <iostream>
 #include "wol.h"
 #include "ip_utils.h"
+#include "log.h"
 
 void print_help() {
-        std::cout << "usage: [-i iface] mac" << std::endl;
+        log_string(LOG_NOTICE, "usage: [-i iface] mac");
 }
 
 void check_arguments(const int argc, const int count) {
@@ -29,7 +29,7 @@ int main(int argc, char * argv[]) {
         } else {
                 std::string iface = validate_iface(argv[2]);
                 if (iface.size() > 13) {
-                        std::cout << "maximum of 13 characters allowed for ethernet name" << std::endl;
+                        log_string(LOG_NOTICE, "maximum of 13 characters allowed for ethernet name");
                         return 1;
                 }
 
@@ -37,3 +37,4 @@ int main(int argc, char * argv[]) {
         }
         return 0;
 }
+

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <iostream>
+#include <ostream>
 #include <netinet/in.h>
 #include <memory>
 #include <vector>

@@ -2,10 +2,10 @@
 
 #include <string>
 #include <arpa/inet.h>
-#include <iostream>
 #include <memory>
 #include <vector>
 #include <stdexcept>
+#include "log.h"
 
 /** Abstract base class for any IP version */
 struct ip {
@@ -161,7 +161,7 @@ std::unique_ptr<ip> parse_ip(uint16_t type, iterator data, iterator end) {
         uint8_t version = *data >> 4;
         // check wether type and the version the ip headers matches
         if ((type == ip::Version::ipv4 && version != 4) || (type == ip::Version::ipv6 && version != 6)) {
-                std::cerr << "ethernet type and ip version do not match";
+                log_string(LOG_ERR, "ethernet type and ip version do not match");
                 return std::unique_ptr<ip>(nullptr);
         }
         // construct the IPv4/IPv6 header

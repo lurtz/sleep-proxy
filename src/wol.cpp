@@ -1,11 +1,11 @@
 #include "wol.h"
 #include <unistd.h>
 #include <algorithm>
-#include <iostream>
 #include <arpa/inet.h>
 #include "int_utils.h"
 #include "socket.h"
 #include "container_utils.h"
+#include "log.h"
 
 // TODO do much better assert with file and line info
 void assert(const bool expr) {
@@ -62,7 +62,7 @@ std::vector<uint8_t> create_wol_udp_payload(const std::string& mac) {
  * Send a WOL UDP packet to the given mac
  */
 void wol_udp(const std::string& mac) {
-        std::cout << "waking " << mac << std::endl;
+        log_string(LOG_INFO, "waking (udp) " + mac);
         const std::vector<uint8_t> binary_data = create_wol_udp_payload(mac);
         // Broadcast it to the LAN.
         Socket sock(AF_INET, SOCK_DGRAM);
@@ -83,7 +83,7 @@ std::vector<uint8_t> create_ethernet_header(const std::string& dmac) {
 }
 
 void wol_ethernet(const std::string& iface, const std::string& mac) {
-        std::cout << "waking " << mac << std::endl;
+        log_string(LOG_INFO, "waking (ethernet) " + mac);
         const std::vector<uint8_t> binary_data = create_ethernet_header(mac) + create_wol_udp_payload(mac);
 
         // Broadcast it to the LAN.

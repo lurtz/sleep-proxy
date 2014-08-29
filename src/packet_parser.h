@@ -14,7 +14,7 @@
 typedef std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>, std::unique_ptr<tp>> basic_headers;
 
 /**
- * Prints the headers to std::cout
+ * Prints the headers to stdout
  * */
 std::ostream& operator<<(std::ostream& out, const basic_headers& headers);
 

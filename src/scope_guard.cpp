@@ -1,9 +1,9 @@
 #include "scope_guard.h"
-#include <iostream>
 #include <map>
 #include <arpa/inet.h>
 #include <sys/stat.h>
 #include <cerrno>
+#include "log.h"
 #include "to_string.h"
 #include "ip_utils.h"
 #include "split.h"
@@ -34,7 +34,7 @@ void Scope_guard::free() {
 void Scope_guard::take_action(const Action a) const {
         std::string cmd = aquire_release(a);
         if (cmd.size() > 0 ) {
-                std::cout << cmd << std::endl;
+                log_string(LOG_INFO, cmd);
                 pid_t pid = spawn(split(cmd, ' '), "/dev/null");
                 uint8_t status = wait_until_pid_exits(pid);
                 if (status != 0) {
@@ -119,7 +119,7 @@ std::string Block_icmp::operator()(const Action action) const {
 
 void daw_thread_main(const std::string iface, const std::string ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
         std::string cmd = get_path("arping") + " -q -D -c 1 -I " + iface + " " + get_pure_ip(ip);
-        std::cout << "starting: " << cmd << std::endl;
+        log_string(LOG_INFO, "starting: " + cmd);
         auto cmd_split = split(cmd, ' ');
         while (loop) {
                 pid_t pid = spawn(cmd_split, "/dev/null");

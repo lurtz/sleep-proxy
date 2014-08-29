@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
+#include <ostream>
 
 /**
  * Parses and checks the input of the command line arguments

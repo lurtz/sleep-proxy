@@ -1,6 +1,6 @@
 #include "pcap_wrapper.h"
-#include <iostream>
 #include <stdexcept>
+#include "log.h"
 #include "to_string.h"
 
 /** provides a bpf_programm instance in an exception safe way */
@@ -34,7 +34,7 @@ Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen, const boo
         if (pcap_activate(pc.get()) == -1) {
                 throw std::runtime_error("interface: " + iface + " can't activate selected interface: " + iface);
         }
-	std::cout << "datalink " << get_verbose_datalink() << std::endl;
+        log_string(LOG_INFO, "datalink " + get_verbose_datalink());
 }
 
 int Pcap_wrapper::get_datalink() const {

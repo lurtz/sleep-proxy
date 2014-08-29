@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <getopt.h>
 #include <fstream>
+#include "log.h"
 #include "ip_utils.h"
 #include "split.h"
 #include "int_utils.h"
@@ -36,25 +37,25 @@ const std::string def_ping_tries = "5";
 const bool def_syslog = false;
 
 void print_help() {
-        std::cout << "usage: emulateHost [-h] [-i INTERFACE] [-a ADDRESS] [-p PORTS]\n";
-        std::cout << "                   [-m MACADDRESS]\n\n";
-        std::cout << "emulates a host, which went standby and wakes it upon an incoming connection\n\n";
-        std::cout << "optional arguments:\n";
-        std::cout << "  -h, --help            show this help message and exit\n";
-        std::cout << "  -i INTERFACE, --interface INTERFACE\n";
-        std::cout << "                        interface to listen\n";
-        std::cout << "  -c CONFIG, --config CONFIG\n";
-        std::cout << "                        read config file";
-        std::cout << "  -a ADDRESS, --address ADDRESS\n";
-        std::cout << "                        ips on which shall be listened to in cidr notation\n";
-        std::cout << "  -p PORTS, --ports PORTS\n";
-        std::cout << "                        comma seperated list of ports to listen on\n";
-        std::cout << "  -m MACADDRESS, --macaddress MACADDRESS\n";
-        std::cout << "                        mac of the host to wake\n";
-        std::cout << "  -t PING_TRIES, --ping_tries PING_TRIES\n";
-        std::cout << "                        how often it shall be tried to ping the target\n";
-        std::cout << "  -s, --syslog\n";
-        std::cout << "                        print messages to syslog\n";
+        log_string(LOG_INFO, "usage: emulateHost [-h] [-i INTERFACE] [-a ADDRESS] [-p PORTS]");
+        log_string(LOG_INFO, "                   [-m MACADDRESS]");
+        log_string(LOG_INFO, "emulates a host, which went standby and wakes it upon an incoming connection");
+        log_string(LOG_INFO, "optional arguments:");
+        log_string(LOG_INFO, "  -h, --help            show this help message and exit");
+        log_string(LOG_INFO, "  -i INTERFACE, --interface INTERFACE");
+        log_string(LOG_INFO, "                        interface to listen");
+        log_string(LOG_INFO, "  -c CONFIG, --config CONFIG");
+        log_string(LOG_INFO, "                        read config file");
+        log_string(LOG_INFO, "  -a ADDRESS, --address ADDRESS");
+        log_string(LOG_INFO, "                        ips on which shall be listened to in cidr notation");
+        log_string(LOG_INFO, "  -p PORTS, --ports PORTS");
+        log_string(LOG_INFO, "                        comma seperated list of ports to listen on");
+        log_string(LOG_INFO, "  -m MACADDRESS, --macaddress MACADDRESS");
+        log_string(LOG_INFO, "                        mac of the host to wake");
+        log_string(LOG_INFO, "  -t PING_TRIES, --ping_tries PING_TRIES");
+        log_string(LOG_INFO, "                        how often it shall be tried to ping the target");
+        log_string(LOG_INFO, "  -s, --syslog");
+        log_string(LOG_INFO, "                        print messages to syslog");
 }
 
 Args read_args(std::ifstream& file) {
@@ -72,8 +73,8 @@ Args read_args(std::ifstream& file) {
                 }
                 const auto token = split(line, ' ');
                 if (token.size() != 2) {
-                        std::cout << "skipping line \"" + line + "\"\n";
-                        std::cout << "needs to be a pair of name and value separated by space" << std::endl;
+                        log_string(LOG_INFO, "skipping line \"" + line + "\"");
+                        log_string(LOG_INFO, "needs to be a pair of name and value separated by space");
                         continue;
                 }
                 if (token.at(0) == "interface") {
@@ -91,7 +92,7 @@ Args read_args(std::ifstream& file) {
                 } else if (token.at(0) == "syslog") {
                         syslog = true;
                 } else {
-                        std::cout << "unknown name \"" + token.at(0) + "\": skipping" << std::endl;
+                        log_string(LOG_INFO, "unknown name \"" + token.at(0) + "\": skipping");
                 }
         }
         if (address.empty())
@@ -169,7 +170,7 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
                         case '?':
                                 break;
                         default:
-                                std::cerr << "got weird option: " << static_cast<char>(c) << std::endl;
+                                log(LOG_ERR, "got weird option: %c", c);
                                 break;
                 }
         }
