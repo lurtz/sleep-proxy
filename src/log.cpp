@@ -19,8 +19,9 @@ void setup_log(const std::string& ident, int option, int facility) {
         logger = std::unique_ptr<Syslog>(new Syslog(ident, option, facility));
 }
 
-void log_string(const int priority, const std::string& message) {
-        log(priority, "%s", message.c_str());
+template<>
+void log_string<std::string>(const int priority, std::string&& t) {
+        log(priority, "%s", t.c_str());
 }
 
 void log(const int priority, const char * format, ...) {
@@ -30,6 +31,7 @@ void log(const int priority, const char * format, ...) {
         va_start(args, format);
         if (logger == nullptr) {
                 std::vprintf(format, args);
+                std::printf("\n");
         } else {
                 vsyslog(priority, format, args);
         }
