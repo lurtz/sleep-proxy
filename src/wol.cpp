@@ -10,58 +10,6 @@
 #include "log.h"
 #include "pcap_wrapper.h"
 
-// TODO do much better assert with file and line info
-void assert(const bool expr) {
-        if (!expr) {
-                throw std::runtime_error("assert failed");
-        }
-}
-
-/**
- * converts two hex characters into a byte value
- */
-uint8_t two_hex_chars_to_byte(const char a, const char b) {
-        const long long int left = fallback::std::stoll(std::string(1, a), 16);
-        const long long int right = fallback::std::stoll(std::string(1, b), 16);
-        assert(left >= 0 && left < 16);
-        assert(right >= 0 && right < 16);
-        return static_cast<uint8_t>(left<<4) | static_cast<uint8_t>(right);
-}
-
-std::vector<uint8_t> to_binary(const std::string& hex) {
-        std::vector<uint8_t> binary;
-        for (auto iter = std::begin(hex); iter < std::end(hex); iter+= 2) {
-                binary.push_back(two_hex_chars_to_byte(*iter, *(iter+1)));
-        }
-        return binary;
-}
-
-char int_to_hex(const int8_t i) {
-        char val;
-        if (0 <= i && i < 10) {
-                val = '0' + i;
-        } else if (10 <= i && i < 16) {
-                val = 'a' + (i - 10);
-        } else {
-                throw std::out_of_range("not to hex convertable: " + to_string(i));
-        }
-        return val;
-}
-
-std::string one_byte_to_two_hex_chars(const uint8_t b) {
-        int8_t lower = static_cast<int8_t>(b & 0xf);
-        int8_t upper = static_cast<int8_t>(b >> 4);
-        return std::string() + int_to_hex(upper) + int_to_hex(lower);
-}
-
-std::string to_hex(const std::vector<uint8_t>& bin) {
-        std::string ret_val;
-        for (const auto& c : bin) {
-                ret_val += one_byte_to_two_hex_chars(c);
-        }
-        return ret_val;
-}
-
 std::string remove_seperator_from_mac(const std::string& mac) {
         if (mac.size() != 12 && mac.size() != 12+5) {
                 throw std::runtime_error("Incorrect MAC address format");

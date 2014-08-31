@@ -48,3 +48,6 @@ T str_to_integral(const std::string& string) {
         return static_cast<T>(value);
 }
 
+std::vector<uint8_t> to_binary(const std::string& hex);
+
+std::string to_hex(const std::vector<uint8_t>& bin);
