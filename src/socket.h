@@ -56,6 +56,6 @@ struct Socket {
 
         void ioctl(const unsigned long, ifreq&) const;
         int get_ifindex(const std::string& iface) const;
-        std::string get_hwaddr(const std::string&) const;
+        std::vector<uint8_t> get_hwaddr(const std::string&) const;
 };
 

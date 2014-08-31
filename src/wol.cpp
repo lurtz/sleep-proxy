@@ -54,10 +54,10 @@ std::string one_byte_to_two_hex_chars(const uint8_t b) {
         return std::string() + int_to_hex(upper) + int_to_hex(lower);
 }
 
-std::string to_hex(const std::string& bin) {
+std::string to_hex(const std::vector<uint8_t>& bin) {
         std::string ret_val;
         for (const auto& c : bin) {
-                ret_val += one_byte_to_two_hex_chars(static_cast<uint8_t>(c));
+                ret_val += one_byte_to_two_hex_chars(c);
         }
         return ret_val;
 }
@@ -114,7 +114,7 @@ std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::
 void wol_ethernet_pcap(const std::string& iface, const std::string& mac) {
         log_string(LOG_INFO, "waking (ethernet) " + mac);
         Socket sock(PF_PACKET, SOCK_RAW, 0);
-        std::string hw_addr = to_hex(sock.get_hwaddr(iface));
+        const std::string hw_addr = to_hex(sock.get_hwaddr(iface));
         const std::vector<uint8_t> binary_data = create_ethernet_header(mac, hw_addr) + create_wol_udp_payload(mac);
 
         Pcap_wrapper pcap(iface);
@@ -132,7 +132,7 @@ void wol_ethernet(const std::string& iface, const std::string& mac) {
         broadcast_ll.sll_family = AF_PACKET;
         broadcast_ll.sll_ifindex = sock.get_ifindex(iface);
         broadcast_ll.sll_halen = ETH_ALEN;
-        std::string hw_addr = sock.get_hwaddr(iface);
+        const std::vector<uint8_t> hw_addr = sock.get_hwaddr(iface);
         std::copy(std::begin(hw_addr), std::end(hw_addr), broadcast_ll.sll_addr);
 
         const std::vector<uint8_t> binary_data = create_ethernet_header(mac, to_hex(hw_addr)) + create_wol_udp_payload(mac);

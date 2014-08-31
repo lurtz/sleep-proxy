@@ -36,8 +36,8 @@ int Socket::get_ifindex(const std::string& iface) const {
         return ifr.ifr_ifindex;
 }
 
-std::string Socket::get_hwaddr(const std::string& iface) const {
+std::vector<uint8_t> Socket::get_hwaddr(const std::string& iface) const {
         struct ifreq ifr = get_ifreq(iface);
         ioctl(SIOCGIFHWADDR, ifr);
-        return std::string(ifr.ifr_hwaddr.sa_data, ifr.ifr_hwaddr.sa_data+ETH_ALEN);
+        return std::vector<uint8_t>(ifr.ifr_hwaddr.sa_data, ifr.ifr_hwaddr.sa_data+ETH_ALEN);
 }
