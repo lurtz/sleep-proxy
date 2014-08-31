@@ -2,10 +2,13 @@
 #include <unistd.h>
 #include <algorithm>
 #include <arpa/inet.h>
+#include <linux/if_ether.h>
+#include <linux/if_packet.h>
 #include "int_utils.h"
 #include "socket.h"
 #include "container_utils.h"
 #include "log.h"
+#include "pcap_wrapper.h"
 
 // TODO do much better assert with file and line info
 void assert(const bool expr) {
@@ -17,12 +20,46 @@ void assert(const bool expr) {
 /**
  * converts two hex characters into a byte value
  */
-uint8_t two_hex_chars_to_byte(char a, char b) {
+uint8_t two_hex_chars_to_byte(const char a, const char b) {
         const long long int left = fallback::std::stoll(std::string(1, a), 16);
         const long long int right = fallback::std::stoll(std::string(1, b), 16);
         assert(left >= 0 && left < 16);
         assert(right >= 0 && right < 16);
         return static_cast<uint8_t>(left<<4) | static_cast<uint8_t>(right);
+}
+
+std::vector<uint8_t> to_binary(const std::string& hex) {
+        std::vector<uint8_t> binary;
+        for (auto iter = std::begin(hex); iter < std::end(hex); iter+= 2) {
+                binary.push_back(two_hex_chars_to_byte(*iter, *(iter+1)));
+        }
+        return binary;
+}
+
+char int_to_hex(const int8_t i) {
+        char val;
+        if (0 <= i && i < 10) {
+                val = '0' + i;
+        } else if (10 <= i && i < 16) {
+                val = 'a' + (i - 10);
+        } else {
+                throw std::out_of_range("not to hex convertable: " + to_string(i));
+        }
+        return val;
+}
+
+std::string one_byte_to_two_hex_chars(const uint8_t b) {
+        int8_t lower = static_cast<int8_t>(b & 0xf);
+        int8_t upper = static_cast<int8_t>(b >> 4);
+        return std::string() + int_to_hex(upper) + int_to_hex(lower);
+}
+
+std::string to_hex(const std::string& bin) {
+        std::string ret_val;
+        for (const auto& c : bin) {
+                ret_val += one_byte_to_two_hex_chars(static_cast<uint8_t>(c));
+        }
+        return ret_val;
 }
 
 std::string remove_seperator_from_mac(const std::string& mac) {
@@ -37,14 +74,6 @@ std::string remove_seperator_from_mac(const std::string& mac) {
         }
         std::copy_if(std::begin(mac), std::end(mac), std::begin(rawmac), [&](char ch) {return ch != sep;});
         return rawmac;
-}
-
-std::vector<uint8_t> to_binary(const std::string& hex) {
-        std::vector<uint8_t> binary;
-        for (auto iter = std::begin(hex); iter < std::end(hex); iter+= 2) {
-                binary.push_back(two_hex_chars_to_byte(*iter, *(iter+1)));
-        }
-        return binary;
 }
 
 /**
@@ -77,21 +106,36 @@ std::vector<T, Alloc> operator+(std::vector<T, Alloc>&& lhs, const std::vector<T
         return lhs;
 }
 
-std::vector<uint8_t> create_ethernet_header(const std::string& dmac) {
-        std::string data = remove_seperator_from_mac(dmac) + "FFFFFFFFFFFF" + "0842";
+std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac) {
+        std::string data = remove_seperator_from_mac(dmac) + remove_seperator_from_mac(smac) + "0842";
         return to_binary(data);
+}
+
+void wol_ethernet_pcap(const std::string& iface, const std::string& mac) {
+        log_string(LOG_INFO, "waking (ethernet) " + mac);
+        Socket sock(PF_PACKET, SOCK_RAW, 0);
+        std::string hw_addr = to_hex(sock.get_hwaddr(iface));
+        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, hw_addr) + create_wol_udp_payload(mac);
+
+        Pcap_wrapper pcap(iface);
+        pcap.inject(binary_data);
 }
 
 void wol_ethernet(const std::string& iface, const std::string& mac) {
         log_string(LOG_INFO, "waking (ethernet) " + mac);
-        const std::vector<uint8_t> binary_data = create_ethernet_header(mac) + create_wol_udp_payload(mac);
 
         // Broadcast it to the LAN.
-        Socket sock(AF_INET, SOCK_PACKET, SOCK_PACKET);
+        Socket sock(PF_PACKET, SOCK_RAW, 0);
         sock.set_sock_opt(SOL_SOCKET, SO_BROADCAST, 1);
-        sockaddr broadcast{PF_UNSPEC, {0}};
-        assert(iface.size() <= sizeof(broadcast.sa_data));
-        std::copy(std::begin(iface), std::end(iface), std::begin(broadcast.sa_data));
-        sock.send_to(binary_data, 0, broadcast);
+
+        sockaddr_ll broadcast_ll{0, 0, 0, 0, 0, 0, {0}};
+        broadcast_ll.sll_family = AF_PACKET;
+        broadcast_ll.sll_ifindex = sock.get_ifindex(iface);
+        broadcast_ll.sll_halen = ETH_ALEN;
+        std::string hw_addr = sock.get_hwaddr(iface);
+        std::copy(std::begin(hw_addr), std::end(hw_addr), broadcast_ll.sll_addr);
+
+        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, to_hex(hw_addr)) + create_wol_udp_payload(mac);
+        sock.send_to(binary_data, 0, broadcast_ll);
 }
 
