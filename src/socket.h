@@ -5,6 +5,7 @@
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>
+#include <linux/if.h>
 
 /** C++ wrapper to socket functions */
 struct Socket {
@@ -52,5 +53,9 @@ struct Socket {
                 }
                 return sent_bytes;
         }
+
+        void ioctl(const unsigned long, ifreq&) const;
+        int get_ifindex(const std::string& iface) const;
+        std::string get_hwaddr(const std::string&) const;
 };
 
