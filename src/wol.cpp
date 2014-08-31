@@ -28,9 +28,9 @@ std::string remove_seperator_from_mac(const std::string& mac) {
  * create the payload for a UDP wol packet to be broadcast in to the network
  */
 std::vector<uint8_t> create_wol_udp_payload(const std::string& mac) {
-        std::string rawmac = remove_seperator_from_mac(mac);
+        const std::string rawmac = remove_seperator_from_mac(mac);
         // pad the synchronization stream
-        std::string data = repeat<std::string>(rawmac, 20, "FFFFFFFFFFFF");
+        const std::string data = repeat<std::string>(rawmac, 20, "FFFFFFFFFFFF");
         // convert chars to binary data
         return to_binary(data);
 }
@@ -55,7 +55,7 @@ std::vector<T, Alloc> operator+(std::vector<T, Alloc>&& lhs, const std::vector<T
 }
 
 std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac) {
-        std::string data = remove_seperator_from_mac(dmac) + remove_seperator_from_mac(smac) + "0842";
+        const std::string data = remove_seperator_from_mac(dmac) + remove_seperator_from_mac(smac) + "0842";
         return to_binary(data);
 }
 
