@@ -94,3 +94,11 @@ void Pcap_wrapper::break_loop(const Loop_end_reason& ler) {
                 pcap_breakloop(pc.get());
 }
 
+int Pcap_wrapper::inject(const std::vector<uint8_t>& data) {
+        int bytes = pcap_inject(pc.get(), data.data(), data.size());
+        if (bytes == -1) {
+                throw std::runtime_error(std::string("pcap_inject() failed: ") + pcap_geterr(pc.get()));
+
+        }
+        return bytes;
+}

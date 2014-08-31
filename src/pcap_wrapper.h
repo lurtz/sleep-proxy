@@ -3,6 +3,7 @@
 #include <pcap/pcap.h>
 #include <string>
 #include <memory>
+#include <vector>
 
 /** Provide a nice interface to pcap and close the handle upon an exception */
 struct Pcap_wrapper {
@@ -35,5 +36,7 @@ struct Pcap_wrapper {
         Pcap_wrapper::Loop_end_reason loop(const int count, std::function<void(const struct pcap_pkthdr *, const u_char *)> cb);
 
         void break_loop(const Loop_end_reason&);
+
+        int inject(const std::vector<uint8_t>&);
 };
 
