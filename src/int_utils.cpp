@@ -77,25 +77,23 @@ std::vector<uint8_t> to_binary(const std::string& hex) {
         return binary;
 }
 
-char int_to_hex(const int8_t i) {
+char int_to_hex(const int8_t i) noexcept {
         char val;
-        if (0 <= i && i < 10) {
+        if (i < 10) {
                 val = '0' + i;
-        } else if (10 <= i && i < 16) {
+        } else  {
                 val = 'a' + (i - 10);
-        } else {
-                throw std::out_of_range("not to hex convertable: " + to_string(i));
         }
         return val;
 }
 
-std::string one_byte_to_two_hex_chars(const uint8_t b) {
+std::string one_byte_to_two_hex_chars(const uint8_t b) noexcept {
         const int8_t lower = static_cast<int8_t>(b & 0xf);
         const int8_t upper = static_cast<int8_t>(b >> 4);
         return std::string() + int_to_hex(upper) + int_to_hex(lower);
 }
 
-std::string to_hex(const std::vector<uint8_t>& bin) {
+std::string to_hex(const std::vector<uint8_t>& bin) noexcept {
         std::string ret_val;
         for (const auto& c : bin) {
                 ret_val += one_byte_to_two_hex_chars(c);

@@ -50,4 +50,5 @@ T str_to_integral(const std::string& string) {
 
 std::vector<uint8_t> to_binary(const std::string& hex);
 
-std::string to_hex(const std::vector<uint8_t>& bin);
+std::string to_hex(const std::vector<uint8_t>& bin) noexcept;
+
