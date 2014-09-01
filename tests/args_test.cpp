@@ -15,6 +15,7 @@ class Args_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_mac );
         CPPUNIT_TEST( test_hostname );
         CPPUNIT_TEST( test_ping_tries );
+        CPPUNIT_TEST( test_syslog );
         CPPUNIT_TEST( test_read_file );
         CPPUNIT_TEST_SUITE_END();
         std::string interface;
@@ -23,30 +24,40 @@ class Args_test : public CppUnit::TestFixture {
         std::string mac;
         std::string hostname;
         std::string ping_tries;
+        bool syslog__;
         public:
         void setUp() {
+                reset();
                 interface = "eth0";
                 addresses = "192.168.1.1/24,fe80::affe:123/64";
                 ports = "1,2,3456";
                 mac = "AF:FE:DE:AD:BE:EF";
                 hostname = "router";
                 ping_tries = "9001";
+                syslog__ = false;
                 compare(get_args());
         }
 
         std::vector<Args> get_args(std::vector<std::string>& params) const {
                 // reset getopt() to the start
-                optind = 1;
+                optind = 0;
                 return read_commandline(static_cast<int>(params.size()), const_cast<char * const *>(get_c_string_array(params).data()));
         }
 
         Args get_args() const {
                 std::vector<std::string> params{"args_test", "-i", interface, "-a", addresses, "-p", ports, "-m", mac, "-n", hostname, "-t", ping_tries};
+                if (syslog__) {
+                        std::cout << "syslog" << std::endl;
+                        params.push_back("--syslog");
+                }
                 return get_args(params).at(0);
         }
 
-        std::vector<Args> get_args(const std::string& filename) const {
+        std::vector<Args> get_args(const std::string& filename, const bool with_syslog = false) const {
                 std::vector<std::string> params{"args_test", "-c", filename};
+                if (with_syslog) {
+                        params.insert(std::begin(params) + 1, "-s");
+                }
                 return get_args(params);
         }
 
@@ -57,7 +68,7 @@ class Args_test : public CppUnit::TestFixture {
                 return ret_val;
         }
 
-        void compare(const Args& args) {
+        void compare(const Args& args) const {
                 CPPUNIT_ASSERT_EQUAL(interface, args.interface);
                 CPPUNIT_ASSERT(split(addresses, ',') == args.address);
                 CPPUNIT_ASSERT(parse_ports() == args.ports);
@@ -66,6 +77,7 @@ class Args_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_EQUAL(upper_mac, args.mac);
                 CPPUNIT_ASSERT_EQUAL(hostname, args.hostname);
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(std::stoul(ping_tries)), args.ping_tries);
+                CPPUNIT_ASSERT_EQUAL(syslog__, args.syslog);
         }
 
         void tearDown() {}
@@ -132,6 +144,12 @@ class Args_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
         }
 
+        void test_syslog() {
+                syslog__ = true;
+                auto args = get_args();
+                compare(args);
+        }
+
         void test_read_file() {
                 auto args = get_args("../../tests/watchhosts");
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(2), args.size());
@@ -153,6 +171,10 @@ class Args_test : public CppUnit::TestFixture {
 
                 auto args2 = get_args("../../tests/watchhosts-empty");
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), args2.size());
+
+                auto args3 = get_args("../../tests/watchhosts", true);
+                CPPUNIT_ASSERT_EQUAL(true, args3.at(0).syslog);
+                CPPUNIT_ASSERT_EQUAL(true, args3.at(1).syslog);
         }
 };
 
