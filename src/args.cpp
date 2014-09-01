@@ -9,6 +9,10 @@
 
 bool to_syslog = false;
 
+void reset() {
+        to_syslog = false;
+}
+
 Args::Args() : ping_tries(0), syslog(to_syslog) {}
 
 Args::Args(const std::string interface_, const std::vector<std::string> addresss_, const std::vector<std::string> ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_) :
@@ -132,6 +136,8 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
         std::string mac = def_mac;
         std::string hostname = def_hostname;
         std::string ping_tries = def_ping_tries;
+        std::vector<Args> ret_val;
+        bool read_file_ = false;
         // read cmd line arguments and checks them
         while ((c = getopt_long(argc, argv, "hc:i:a:p:m:n:t:s", long_options, &option_index)) != -1) {
                 switch(c) {
@@ -143,7 +149,9 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
                                 interface = optarg;
                                 break;
                         case 'c':
-                                return read_file(optarg);
+                                ret_val = read_file(optarg);
+                                read_file_ = true;
+                                break;
                         case 'a':
                                 address = optarg;
                                 break;
@@ -165,14 +173,16 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]) {
                         case 's':
                                 to_syslog = true;
                         case '?':
+                                log_string(LOG_ERR, std::string("got unknown option: ") + static_cast<char>(optopt));
                                 break;
                         default:
                                 log(LOG_ERR, "got weird option: %c", c);
                                 break;
                 }
         }
-        std::vector<Args> ret_val;
-        ret_val.emplace_back(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), ping_tries);
+        if (!read_file_) {
+                ret_val.emplace_back(std::move(interface), std::move(address), std::move(ports), std::move(mac), std::move(hostname), ping_tries);
+        }
         return ret_val;
 }
 
