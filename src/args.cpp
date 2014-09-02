@@ -1,4 +1,5 @@
 #include "args.h"
+#include "args_test_interface.h"
 #include <stdexcept>
 #include <getopt.h>
 #include <fstream>

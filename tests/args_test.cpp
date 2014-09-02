@@ -4,6 +4,7 @@
 #include <unistd.h>
 
 #include "../src/args.h"
+#include "../src/args_test_interface.h"
 #include "../src/to_string.h"
 #include "../src/split.h"
 

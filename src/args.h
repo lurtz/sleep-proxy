@@ -34,4 +34,3 @@ std::vector<Args> read_commandline(const int argc, char * const argv[]);
  */
 std::ostream& operator<<(std::ostream& out, const Args& args);
 
-void reset();
