@@ -10,6 +10,7 @@ class Libsleep_proxy_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_sigint );
         CPPUNIT_TEST( test_ping_and_wait );
         CPPUNIT_TEST( test_duplicate_address_detection_exception );
+        CPPUNIT_TEST( test_get_bindable_ip );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {
@@ -35,19 +36,19 @@ class Libsleep_proxy_test : public CppUnit::TestFixture {
         }
 
         void test_ping_and_wait() {
-                CPPUNIT_ASSERT(ping_and_wait("lo", "127.0.0.1", 5));
+                CPPUNIT_ASSERT(ping_and_wait("lo", "127.0.0.1", 1));
                 CPPUNIT_ASSERT(!ping_and_wait("lo", "127.0.0.1", 0));
-                CPPUNIT_ASSERT(ping_and_wait("eth0", "127.0.0.1", 5));
+                CPPUNIT_ASSERT(ping_and_wait("eth0", "127.0.0.1", 1));
                 CPPUNIT_ASSERT(!ping_and_wait("eth0", "127.0.0.1", 0));
-                CPPUNIT_ASSERT(ping_and_wait("lo", "::1", 5));
+                CPPUNIT_ASSERT(ping_and_wait("lo", "::1", 1));
                 CPPUNIT_ASSERT(!ping_and_wait("lo", "::1", 0));
-                CPPUNIT_ASSERT(ping_and_wait("eth0", "::1", 5));
+                CPPUNIT_ASSERT(ping_and_wait("eth0", "::1", 1));
                 CPPUNIT_ASSERT(!ping_and_wait("eth0", "::1", 0));
 
-                CPPUNIT_ASSERT(!ping_and_wait("lo", "192.168.254.200", 5));
-                CPPUNIT_ASSERT(!ping_and_wait("eth0", "192.168.254.200", 5));
-                CPPUNIT_ASSERT(!ping_and_wait("lo", "::2", 5));
-                CPPUNIT_ASSERT(!ping_and_wait("eth0", "::2", 5));
+                CPPUNIT_ASSERT(!ping_and_wait("lo", "192.168.254.200", 1));
+                CPPUNIT_ASSERT(!ping_and_wait("eth0", "192.168.254.200", 1));
+                CPPUNIT_ASSERT(!ping_and_wait("lo", "::2", 1));
+                CPPUNIT_ASSERT(!ping_and_wait("eth0", "::2", 1));
         }
 
         void test_duplicate_address_detection_exception() {
@@ -63,6 +64,14 @@ class Libsleep_proxy_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT(catched);
         }
 
+        void test_get_bindable_ip() {
+                const std::string ipv4 = "somestuff";
+                const std::string ipv6 = "fe80::123";
+                CPPUNIT_ASSERT_EQUAL(ipv4, get_bindable_ip("lo", ipv4));
+                CPPUNIT_ASSERT_EQUAL(ipv6 + "%lo", get_bindable_ip("lo", ipv6));
+                CPPUNIT_ASSERT_EQUAL(ipv4, get_bindable_ip("bla", ipv4));
+                CPPUNIT_ASSERT_EQUAL(ipv6 + "%bla", get_bindable_ip("bla", ipv6));
+        }
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Libsleep_proxy_test );
