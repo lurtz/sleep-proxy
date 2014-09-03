@@ -59,16 +59,6 @@ std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::
         return to_binary(data);
 }
 
-void wol_ethernet_pcap(const std::string& iface, const std::string& mac) {
-        log_string(LOG_INFO, "waking (ethernet) " + mac);
-        Socket sock(PF_PACKET, SOCK_RAW, 0);
-        const std::string hw_addr = to_hex(sock.get_hwaddr(iface));
-        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, hw_addr) + create_wol_udp_payload(mac);
-
-        Pcap_wrapper pcap(iface);
-        pcap.inject(binary_data);
-}
-
 void wol_ethernet(const std::string& iface, const std::string& mac) {
         log_string(LOG_INFO, "waking (ethernet) " + mac);
 
