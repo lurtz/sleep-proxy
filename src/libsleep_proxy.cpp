@@ -151,7 +151,6 @@ std::string get_bindable_ip(const std::string& iface, const std::string& ip) {
 bool ping_and_wait(const std::string& iface, const std::string& ip, const unsigned int tries) {
         std::string ipcmd = get_ping_cmd(ip);
         std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip)};
-        log_string(LOG_INFO, cmd);
         for (unsigned int i = 0; i < tries && !is_signaled(); i++) {
                 pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
                 uint8_t ret_val = wait_until_pid_exits(pid);
@@ -159,7 +158,7 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
                         return true;
                 }
         }
-        log(LOG_ERR, "failed to bring up ip %s after %d ping attempts", ip.c_str(), tries);
+        log(LOG_ERR, "failed to ping ip %s after %d ping attempts", ip.c_str(), tries);
         return false;
 }
 
@@ -181,6 +180,7 @@ bool emulate_host(const Args& args) {
         // wake the sleeping server
         wol_ethernet(args.interface, args.mac);
         // wait until server responds and release ICMP rules
+        log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination));
         return ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
 }
 

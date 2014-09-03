@@ -7,7 +7,7 @@
 #include <csignal>
 #include <thread>
 
-/** with std::async this code is not able to build on openwrt. this is a 
+/** with std::async this code is not able to build on openwrt. this is a
  * replacement */
 struct Pseudo_future {
         const std::string iface_;
@@ -45,9 +45,8 @@ bool ping_ips(const std::string& iface, const Container& ips) {
 void thread_main(const Args args) {
         bool wake_success = true;
         while (!is_signaled() && wake_success) {
-                log_string(LOG_INFO, "thread_main " + args.hostname);
+                log_string(LOG_INFO, "ping " + args.hostname);
                 while (ping_ips(args.interface, args.address) && !is_signaled()) {
-                        log_string(LOG_INFO, "ping");
                         std::this_thread::sleep_for(std::chrono::milliseconds(500));
                 }
                 if (is_signaled()) {
