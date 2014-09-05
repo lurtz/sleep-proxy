@@ -19,10 +19,10 @@
 #include <algorithm>
 #include <unistd.h>
 
-#include "../src/args.h"
-#include "../src/args_test_interface.h"
-#include "../src/to_string.h"
-#include "../src/split.h"
+#include "args.h"
+#include "args_test_interface.h"
+#include "to_string.h"
+#include "split.h"
 
 class Args_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Args_test );
@@ -168,7 +168,7 @@ class Args_test : public CppUnit::TestFixture {
         }
 
         void test_read_file() {
-                auto args = get_args("../../tests/watchhosts");
+                auto args = get_args("../watchhosts");
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(2), args.size());
                 interface = "lo";
                 addresses = "10.0.0.1/16,fe80::123/64";
@@ -186,10 +186,10 @@ class Args_test : public CppUnit::TestFixture {
                 ping_tries = "1";
                 compare(args.at(1));
 
-                auto args2 = get_args("../../tests/watchhosts-empty");
+                auto args2 = get_args("../watchhosts-empty");
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), args2.size());
 
-                auto args3 = get_args("../../tests/watchhosts", true);
+                auto args3 = get_args("../watchhosts", true);
                 CPPUNIT_ASSERT_EQUAL(true, args3.at(0).syslog);
                 CPPUNIT_ASSERT_EQUAL(true, args3.at(1).syslog);
         }

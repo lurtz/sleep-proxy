@@ -15,7 +15,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "main.h"
-#include "../src/log.h"
+#include "log.h"
 
 class Log_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Log_test );

@@ -17,7 +17,7 @@
 #include "main.h"
 #include <string>
 
-#include "../src/container_utils.h"
+#include "container_utils.h"
 
 class Join_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Join_test );

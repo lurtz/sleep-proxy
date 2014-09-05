@@ -16,8 +16,8 @@
 
 #include "main.h"
 
-#include "../src/libsleep_proxy.h"
-#include "../src/libsleep_proxy_test_interface.h"
+#include "libsleep_proxy.h"
+#include "libsleep_proxy_test_interface.h"
 #include <csignal>
 
 class Libsleep_proxy_test : public CppUnit::TestFixture {

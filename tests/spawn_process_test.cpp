@@ -18,7 +18,7 @@
 #include <string>
 #include <thread>
 
-#include "../src/spawn_process.h"
+#include "spawn_process.h"
 
 class Spawn_process_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Spawn_process_test );

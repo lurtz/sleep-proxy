@@ -17,7 +17,7 @@
 #include "main.h"
 #include <string>
 
-#include "../src/to_string.h"
+#include "to_string.h"
 
 class To_string_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( To_string_test );

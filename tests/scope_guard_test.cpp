@@ -16,7 +16,7 @@
 
 #include "main.h"
 
-#include "../src/scope_guard.h"
+#include "scope_guard.h"
 
 class Scope_guard_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Scope_guard_test );

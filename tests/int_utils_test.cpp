@@ -17,7 +17,7 @@
 #include "main.h"
 #include <string>
 
-#include "../src/int_utils.h"
+#include "int_utils.h"
 
 class Str_to_integral_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Str_to_integral_test );

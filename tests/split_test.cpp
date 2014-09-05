@@ -16,7 +16,7 @@
 
 #include "main.h"
 
-#include "../src/split.h"
+#include "split.h"
 
 class Split_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Split_test );

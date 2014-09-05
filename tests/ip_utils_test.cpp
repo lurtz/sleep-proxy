@@ -18,9 +18,9 @@
 #include <string>
 #include <arpa/inet.h>
 
-#include "../src/ip_utils.h"
-#include "../src/int_utils.h"
-#include "../src/split.h"
+#include "ip_utils.h"
+#include "int_utils.h"
+#include "split.h"
 
 class Ip_utils_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Ip_utils_test );
