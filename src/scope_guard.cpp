@@ -120,7 +120,7 @@ std::string get_icmp_version(const std::string& ip) {
         switch (getAF(ip)) {
                 case AF_INET: return "icmp";
                 case AF_INET6: return "icmpv6";
-		default: throw std::runtime_error("can't determine icmp type for ip:" + ip);
+                default: throw std::runtime_error("can't determine icmp type for ip:" + ip);
         }
         return "";
 }

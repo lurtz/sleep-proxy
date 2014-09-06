@@ -31,7 +31,7 @@ add_executable(sniffer sniffer.cpp)
 target_link_libraries(sniffer sleep-proxy)
 
 INSTALL(TARGETS sleep-proxy emulateHost watchHost waker sniffer
-	ARCHIVE DESTINATION lib
-	LIBRARY DESTINATION lib
-	RUNTIME DESTINATION bin
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
 )

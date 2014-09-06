@@ -168,6 +168,6 @@ std::unique_ptr<tp> parse_tp(uint8_t type, iterator data, iterator end) {
         switch(type) {
                 case 6: return std::unique_ptr<tp>(new sniff_tcp(data, end));
                 case 17: return std::unique_ptr<tp>(new sniff_udp(data, end));
-		default: return std::unique_ptr<tp>(nullptr);
+                default: return std::unique_ptr<tp>(nullptr);
         }
 }

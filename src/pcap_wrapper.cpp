@@ -62,12 +62,12 @@ int Pcap_wrapper::get_datalink() const {
 }
 
 std::string Pcap_wrapper::get_verbose_datalink() const {
-	const int datalink = get_datalink();
-	switch (datalink) {
+        const int datalink = get_datalink();
+        switch (datalink) {
                 case DLT_LINUX_SLL: return "Linux cooked socket";
-		case DLT_EN10MB: return "ethernet";
-		default: return "unknown";
-	}
+                case DLT_EN10MB: return "ethernet";
+                default: return "unknown";
+        }
 }
 
 void Pcap_wrapper::set_filter(const std::string& filter) {

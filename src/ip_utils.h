@@ -45,9 +45,9 @@ int getAF(const std::string& ip);
 template<typename Container, typename Func>
 auto parse_items(Container&& items, Func&& parser) -> std::vector<typename std::result_of<decltype(parser)(const std::string&)>::type> {
         static_assert(std::is_same<typename std::decay<Container>::type::value_type, std::string>::value, "container has to carry std::string");
-	std::vector<typename std::result_of<decltype(parser)(const std::string&)>::type> ret_val(items.size());
-	std::transform(std::begin(items), std::end(items), std::begin(ret_val), std::forward<Func>(parser));
-	return ret_val;
+        std::vector<typename std::result_of<decltype(parser)(const std::string&)>::type> ret_val(items.size());
+        std::transform(std::begin(items), std::end(items), std::begin(ret_val), std::forward<Func>(parser));
+        return ret_val;
 }
 
 /**
