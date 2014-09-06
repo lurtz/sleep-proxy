@@ -22,8 +22,8 @@ endfunction(make_test)
 
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
-file(COPY "${PROJECT_SOURCE_DIR}/tests/watchhosts" DESTINATION "${PROJECT_BINARY_DIR}")
-file(COPY "${PROJECT_SOURCE_DIR}/tests/watchhosts-empty" DESTINATION "${PROJECT_BINARY_DIR}")
+file(COPY "${PROJECT_SOURCE_DIR}/tests/watchhosts" DESTINATION "${PROJECT_BINARY_DIR}/tests")
+file(COPY "${PROJECT_SOURCE_DIR}/tests/watchhosts-empty" DESTINATION "${PROJECT_BINARY_DIR}/tests")
 
 make_test(container_tests)
 make_test(int_utils_test sleep-proxy)
