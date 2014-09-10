@@ -13,6 +13,23 @@ To build install pcap with its development files and run:
   cmake -DCMAKE_BUILD_TYPE=Release ..
   make
 
+BUILDING ON OPENWRT
+Clone the main repository as described here:
+http://wiki.openwrt.org/doc/howto/buildroot.exigence
+
+Make sure all openwrt build dependencies are met an run:
+  mkdir $OPENWRT_ROOT/packages/sleep-proxy
+  cp -r $SLEEP_PROXY_ROOT/openwrt-cmake/* $OPENWRT_ROOT/packages/sleep-proxy
+  cd $OPENWRT_ROOT
+  # configure your target router, make sure Network/sleep-proxy is selected
+  make menuconfig
+  make
+
+You will get your package from bin/*/packages.
+
+There should also be other methods to build this for openwrt, e.g. using a
+SDK.
+
 EXECUTING
 At runtime the commands ping, ping6, ip, iptables and ip6tables should be
 available.
@@ -25,9 +42,12 @@ An example configuration watchHost.conf is available in the directory config,
 with everything commented out. Please read watchHost -h and the comments in
 watchHost.conf.
 
-When running watchHost will add ip addresses and firewall rules to your
+When running watchHost it will add ip addresses and firewall rules to your
 machine in order to fake another machine running. At the moment it cannot
-manipulate DNS or DHCP, so this has to be setup statically.
+manipulate DNS or DHCP, so this has to be setup statically before. Just tell
+your DHCP server to offer the emulated host always the same IP. Your DNS
+server should always respond with the same ip, when asked about the emulated
+host.
 
 watchHost will run in the foreground and terminate upon SIGTERM and SIGINT
 gracefully and clean all ips and firewall rules it created.
@@ -44,6 +64,11 @@ syslog. This mode is intended to be used by init daemons.
 
 BUGS
 IPv4 is well tested, IPv6 is much less tested. Besides that the IPv6
-implementation cannot handle reboots of the machine, which is emulated. The
+implementation cannot handle reboots of the emulated machine. The
 emulated machine will test the network for duplicated addresses and see that
-its desired address is already taken.
+its desired address is already taken and stay in the tentative state.
+
+Another problem is bloat. Sure you can blame for using C++ and exceptions, but
+this huge bloat was not expected. This app consumes with dependencies about
+1MB of disc space, where libstdc++ is most of it. At runtime it takes 8MB,
+which is doable by most recent routers, but much more than expected.
