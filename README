@@ -1,9 +1,13 @@
 INFO
+====
+
 Keeps the illusion, that a host is powered on and available while it is powered
 off or in standby. A small device, e.g. an OpenWrt router, using this programm
 can wake this host using WOL upon an incoming connection.
 
 BUILDING
+========
+
 To compile you need cmake and pcap installed. Your compiler should understand
 C++11.
 
@@ -14,6 +18,8 @@ To build install pcap with its development files and run:
   make
 
 BUILDING ON OPENWRT
+===================
+
 Clone the main repository as described here:
 http://wiki.openwrt.org/doc/howto/buildroot.exigence
 
@@ -31,6 +37,8 @@ There should also be other methods to build this for openwrt, e.g. using a
 SDK.
 
 EXECUTING
+=========
+
 At runtime the commands ping, ping6, ip, iptables and ip6tables should be
 available.
 
@@ -53,6 +61,8 @@ watchHost will run in the foreground and terminate upon SIGTERM and SIGINT
 gracefully and clean all ips and firewall rules it created.
 
 EXAMPLES
+========
+
 The following will fake the ip 192.168.1.123 and fe80::123 with ports 22 and
 80 open. Upon an incoming connection the machine with mac aa:bb:cc:dd:ee:ff
 will be started:
@@ -63,6 +73,8 @@ syslog. This mode is intended to be used by init daemons.
   watchHost -c watchHost.conf --syslog
 
 BUGS
+====
+
 IPv4 is well tested, IPv6 is much less tested. Besides that the IPv6
 implementation cannot handle reboots of the emulated machine. The
 emulated machine will test the network for duplicated addresses and see that
