@@ -30,6 +30,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VALID_FLAGS}")
 FIND_PACKAGE(CPPUNIT)
 if (CPPUNIT_FOUND)
         enable_testing()
+        FIND_PACKAGE(VALGRIND)
         add_subdirectory(tests)
 endif (CPPUNIT_FOUND)
 
