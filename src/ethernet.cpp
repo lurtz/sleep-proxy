@@ -65,11 +65,11 @@ uint16_t sniff_ethernet::payload_protocol() const {
 }
 
 std::string sniff_ethernet::destination() const {
-        return join(ether_dhost, [](int i){return i;}, ":");
+        return join(ether_dhost, one_byte_to_two_hex_chars, ":");
 }
 
 std::string sniff_ethernet::source() const {
-        return join(ether_shost, [](int i){return i;}, ":");
+        return join(ether_shost, one_byte_to_two_hex_chars, ":");
 }
 
 std::string sniff_ethernet::get_info() const {
