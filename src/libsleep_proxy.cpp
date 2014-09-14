@@ -120,14 +120,14 @@ std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const
                 guards.emplace_back(Duplicate_address_watcher{args.interface, ip, pc});
         }
 
-        std::string bpf = "tcp";
+        std::string bpf = "tcp[tcpflags] == tcp-syn";
         bpf += " and dst host (" + join(args.address, get_pure_ip, " or ") + ")";
         bpf += " and dst port (" + join(args.ports, [](uint16_t in){return in;}, " or ") + ")";
         log_string(LOG_INFO, "Listening with filter: " + bpf);
         pc.set_filter(bpf);
 
         Catch_incoming_connection catcher(pc.get_datalink());
-        Pcap_wrapper::Loop_end_reason ler = pc.loop(1, std::ref(catcher));
+        const Pcap_wrapper::Loop_end_reason ler = pc.loop(1, std::ref(catcher));
 
         // check if address duplication got something
         switch (ler) {
