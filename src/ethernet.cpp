@@ -19,6 +19,7 @@
 #include <stdexcept>
 #include <sstream>
 #include "container_utils.h"
+#include "int_utils.h"
 
 std::ostream& operator<<(std::ostream& out, const Link_layer& ll) {
         out << ll.get_info();
@@ -68,5 +69,24 @@ std::string sniff_ethernet::source() const {
 
 std::string sniff_ethernet::get_info() const {
         return "Ethernet: dst = " + destination() + ", src = " + source();
+}
+
+std::string remove_seperator_from_mac(const std::string& mac) {
+        if (mac.size() != 12 && mac.size() != 12+5) {
+                throw std::runtime_error("Incorrect MAC address format");
+        }
+        // check macaddress format and try to compensate
+        std::string rawmac(12, '0');
+        char sep = mac[2];
+        if (mac.size() == 12) {
+                sep = -1;
+        }
+        std::copy_if(std::begin(mac), std::end(mac), std::begin(rawmac), [&](char ch) {return ch != sep;});
+        return rawmac;
+}
+
+std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac, const std::string& type) {
+        const std::string data = remove_seperator_from_mac(dmac) + remove_seperator_from_mac(smac) + type;
+        return to_binary(data);
 }
 

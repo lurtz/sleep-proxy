@@ -15,8 +15,6 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "wol.h"
-#include <unistd.h>
-#include <algorithm>
 #include <arpa/inet.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
@@ -24,21 +22,7 @@
 #include "socket.h"
 #include "container_utils.h"
 #include "log.h"
-#include "pcap_wrapper.h"
-
-std::string remove_seperator_from_mac(const std::string& mac) {
-        if (mac.size() != 12 && mac.size() != 12+5) {
-                throw std::runtime_error("Incorrect MAC address format");
-        }
-        // check macaddress format and try to compensate
-        std::string rawmac(12, '0');
-        char sep = mac[2];
-        if (mac.size() == 12) {
-                sep = -1;
-        }
-        std::copy_if(std::begin(mac), std::end(mac), std::begin(rawmac), [&](char ch) {return ch != sep;});
-        return rawmac;
-}
+#include "ethernet.h"
 
 /**
  * create the payload for a UDP wol packet to be broadcast in to the network
@@ -70,11 +54,6 @@ std::vector<T, Alloc> operator+(std::vector<T, Alloc>&& lhs, const std::vector<T
         return lhs;
 }
 
-std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac) {
-        const std::string data = remove_seperator_from_mac(dmac) + remove_seperator_from_mac(smac) + "0842";
-        return to_binary(data);
-}
-
 void wol_ethernet(const std::string& iface, const std::string& mac) {
         log_string(LOG_INFO, "waking (ethernet) " + mac);
 
@@ -89,7 +68,7 @@ void wol_ethernet(const std::string& iface, const std::string& mac) {
         const std::vector<uint8_t> hw_addr = sock.get_hwaddr(iface);
         std::copy(std::begin(hw_addr), std::end(hw_addr), broadcast_ll.sll_addr);
 
-        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, to_hex(hw_addr)) + create_wol_udp_payload(mac);
+        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, to_hex(hw_addr), "0842") + create_wol_udp_payload(mac);
         sock.send_to(binary_data, 0, broadcast_ll);
 }
 

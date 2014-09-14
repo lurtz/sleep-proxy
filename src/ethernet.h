@@ -153,3 +153,7 @@ std::unique_ptr<Link_layer> parse_link_layer(const int type, iterator data, iter
                 default: return std::unique_ptr<Link_layer>(nullptr);
         }
 }
+
+std::string remove_seperator_from_mac(const std::string& mac);
+
+std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac, const std::string& type);
