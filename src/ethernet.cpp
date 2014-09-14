@@ -26,6 +26,11 @@ std::ostream& operator<<(std::ostream& out, const Link_layer& ll) {
         return out;
 }
 
+std::string Linux_cooked_capture::source() const {
+        std::vector<uint8_t> tmp_source_address(std::begin(source_address), std::begin(source_address) + ll_address_length);
+        return join(tmp_source_address, one_byte_to_two_hex_chars, ":");
+}
+
 size_t Linux_cooked_capture::header_length() const {
         return 16;
 }
@@ -35,7 +40,7 @@ uint16_t Linux_cooked_capture::payload_protocol() const {
 }
 
 std::string Linux_cooked_capture::get_info() const {
-        return "Linux cooked capture";
+        return "Linux cooked capture: src: " + source();
 }
 
 

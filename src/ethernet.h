@@ -46,17 +46,33 @@ std::ostream& operator<<(std::ostream& out, const Link_layer&);
 
 struct Linux_cooked_capture : public Link_layer {
         private:
+        uint16_t packet_type;
+        uint16_t device_type;
+        uint16_t ll_address_length;
+        std::array<uint8_t, 8> source_address;
         uint16_t payload_type;
 
         public:
         template<typename iterator>
-        Linux_cooked_capture(iterator data, iterator end) : Link_layer(data, end) {
+        Linux_cooked_capture(iterator data, iterator end) : Link_layer(data, end), source_address{{0}} {
                 if (static_cast<size_t>(end - data) < header_length()) {
                         throw std::length_error("not enough data to construct an ethernet header");
                 }
-                data += 14;
+                packet_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+                data += 2;
+                device_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+                data += 2;
+                ll_address_length = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+                if (ll_address_length > source_address.size()) {
+                        throw std::length_error("invalid link address size");
+                }
+                data += 2;
+                std::copy(data, data+ll_address_length, std::begin(source_address));
+                data += 8;
                 payload_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
         }
+
+        std::string source() const;
 
         virtual size_t header_length() const;
 
