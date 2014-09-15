@@ -44,7 +44,12 @@ struct Link_layer {
 
 std::ostream& operator<<(std::ostream& out, const Link_layer&);
 
-struct Linux_cooked_capture : public Link_layer {
+struct Source_address {
+        virtual ~Source_address() {}
+        virtual std::string source() const = 0;
+};
+
+struct Linux_cooked_capture : public Link_layer, Source_address {
         private:
         uint16_t packet_type;
         uint16_t device_type;
@@ -72,7 +77,7 @@ struct Linux_cooked_capture : public Link_layer {
                 payload_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
         }
 
-        std::string source() const;
+        virtual std::string source() const;
 
         virtual size_t header_length() const;
 
@@ -104,7 +109,7 @@ struct VLAN_Header : public Link_layer {
 };
 
 /** Ethernet header with destination address, source address and payload type */
-struct sniff_ethernet : public Link_layer {
+struct sniff_ethernet : public Link_layer, Source_address {
         /** Ethernet addresses are 6 bytes */
         static const unsigned int ETHER_ADDR_LEN = 6;
         private:
@@ -150,7 +155,7 @@ struct sniff_ethernet : public Link_layer {
         /**
          * source address
          */
-        std::string source() const;
+        virtual std::string source() const;
 
         virtual std::string get_info() const;
 };
