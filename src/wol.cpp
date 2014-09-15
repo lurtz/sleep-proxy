@@ -48,12 +48,6 @@ void wol_udp(const std::string& mac) {
         sock.send_to(binary_data, 0, broadcast_port9);
 }
 
-template<typename T, typename Alloc>
-std::vector<T, Alloc> operator+(std::vector<T, Alloc>&& lhs, const std::vector<T, Alloc>& rhs) {
-        lhs.insert(std::end(lhs), std::begin(rhs), std::end(rhs));
-        return lhs;
-}
-
 void wol_ethernet(const std::string& iface, const std::string& mac) {
         log_string(LOG_INFO, "waking (ethernet) " + mac);
 

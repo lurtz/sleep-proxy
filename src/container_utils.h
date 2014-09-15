@@ -39,3 +39,9 @@ T repeat(const T& s, const unsigned int count, T&& init = T()) {
         return std::accumulate(std::begin(range), std::end(range), init);
 }
 
+template<typename T, typename Alloc>
+std::vector<T, Alloc> operator+(std::vector<T, Alloc>&& lhs, const std::vector<T, Alloc>& rhs) {
+        lhs.insert(std::end(lhs), std::begin(rhs), std::end(rhs));
+        return lhs;
+}
+
