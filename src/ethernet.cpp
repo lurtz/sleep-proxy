@@ -90,11 +90,11 @@ std::string remove_seperator_from_mac(const std::string& mac) {
         return rawmac;
 }
 
-std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac, const std::string& type) {
-        if (type.size() != 4) {
-                throw std::runtime_error("ethernet type needs to be 4 hex values long");
-        }
-        const std::string data = remove_seperator_from_mac(dmac) + remove_seperator_from_mac(smac) + type;
-        return to_binary(data);
+std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac, const uint16_t type) {
+        const std::string data = remove_seperator_from_mac(dmac) + remove_seperator_from_mac(smac);
+        auto binary = to_binary(data);
+        binary.push_back(type >> 8);
+        binary.push_back(type & 0xFF);
+        return binary;
 }
 

@@ -62,7 +62,7 @@ void wol_ethernet(const std::string& iface, const std::string& mac) {
         const std::vector<uint8_t> hw_addr = sock.get_hwaddr(iface);
         std::copy(std::begin(hw_addr), std::end(hw_addr), broadcast_ll.sll_addr);
 
-        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, to_hex(hw_addr), "0842") + create_wol_udp_payload(mac);
+        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, to_hex(hw_addr), 0x0842) + create_wol_udp_payload(mac);
         sock.send_to(binary_data, 0, broadcast_ll);
 }
 

@@ -16,7 +16,6 @@
 
 #include "main.h"
 #include "ethernet.h"
-#include "../src/ethernet.h"
 
 class Ethernet_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Ethernet_test );
@@ -35,7 +34,7 @@ class Ethernet_test : public CppUnit::TestFixture {
         }
 
         void test_create_ethernet_header() {
-                std::vector<uint8_t> header = create_ethernet_header("aa:BB:cc:dd:ee:ff", "00:11:22:33:44:55", "0800");
+                std::vector<uint8_t> header = create_ethernet_header("aa:BB:cc:dd:ee:ff", "00:11:22:33:44:55", 0x800);
                 auto iter = std::begin(header);
                 check_range(iter, std::end(header), 10, 16);
                 check_range(iter, std::end(header), 0, 6);
@@ -43,7 +42,7 @@ class Ethernet_test : public CppUnit::TestFixture {
                 iter++;
                 CPPUNIT_ASSERT(0x00 == *iter);
 
-                header = create_ethernet_header("66:77:88:99:aa:bb", "33:44:55:66:77:88", "86Dd");
+                header = create_ethernet_header("66:77:88:99:aa:bb", "33:44:55:66:77:88", 0x86Dd);
                 iter = std::begin(header);
                 check_range(iter, std::end(header), 6, 12);
                 check_range(iter, std::end(header), 3, 9);
@@ -51,7 +50,7 @@ class Ethernet_test : public CppUnit::TestFixture {
                 iter++;
                 CPPUNIT_ASSERT(0xdd == *iter);
 
-                header = create_ethernet_header("66:77:88:99:aa:bb", "33:44:55:66:77:88", "0842");
+                header = create_ethernet_header("66:77:88:99:aa:bb", "33:44:55:66:77:88", 0x0842);
                 iter = std::begin(header);
                 check_range(iter, std::end(header), 6, 12);
                 check_range(iter, std::end(header), 3, 9);
