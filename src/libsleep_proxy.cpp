@@ -178,6 +178,22 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
         return false;
 }
 
+void replay_data(const std::string& iface, const int type, const std::vector<uint8_t>& data, const std::string& target_mac) {
+        basic_headers headers = get_headers(type, data);
+        const std::unique_ptr<Link_layer>& ll = std::get<0>(headers);
+        if (ll == nullptr)
+                return;
+        const uint8_t ip_version = std::get<1>(headers)->version();
+        const uint16_t payload_type = ip_version == 4 ? ip::ipv4 : ip::ipv6;
+        const Source_address& sa = dynamic_cast<const Source_address&>(*ll);
+        const auto length = static_cast<std::vector<uint8_t>::const_iterator::difference_type>(ll->header_length());
+        const std::vector<uint8_t> payload =
+                create_ethernet_header(target_mac, sa.source(), payload_type)
+                + std::vector<uint8_t>(std::begin(data) + length, std::end(data));
+        Pcap_wrapper pc(iface);
+        pc.inject(payload);
+}
+
 /**
  * Puts everything together. Sets up firewall and IPs. Waits for an incoming
  * SYN packet and wakes the sleeping host via WOL
@@ -197,6 +213,9 @@ bool emulate_host(const Args& args) {
         wol_ethernet(args.interface, args.mac);
         // wait until server responds and release ICMP rules
         log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination));
-        return ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
+        bool wake_success = ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
+        // replay SYN packet
+        replay_data(args.interface, DLT_LINUX_SLL, std::get<0>(data_source_destination), args.mac);
+        return wake_success;
 }
 
