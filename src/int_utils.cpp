@@ -93,20 +93,10 @@ std::vector<uint8_t> to_binary(const std::string& hex) {
         return binary;
 }
 
-char int_to_hex(const int8_t i) noexcept {
-        char val;
-        if (i < 10) {
-                val = '0' + i;
-        } else  {
-                val = 'a' + (i - 10);
-        }
-        return val;
-}
-
 std::string one_byte_to_two_hex_chars(const uint8_t b) noexcept {
-        const int8_t lower = static_cast<int8_t>(b & 0xf);
-        const int8_t upper = static_cast<int8_t>(b >> 4);
-        return std::string() + int_to_hex(upper) + int_to_hex(lower);
+        char val[4] = {0};
+        std::sprintf(val, "%x%x", b >> 4, b & 0xf);
+        return val;
 }
 
 std::string to_hex(const std::vector<uint8_t>& bin) noexcept {
