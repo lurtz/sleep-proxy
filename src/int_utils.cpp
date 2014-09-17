@@ -87,7 +87,7 @@ uint8_t two_hex_chars_to_byte(const char a, const char b) {
 
 std::vector<uint8_t> to_binary(const std::string& hex) {
         std::vector<uint8_t> binary;
-        for (auto iter = std::begin(hex); iter < std::end(hex); iter+= 2) {
+        for (auto iter = std::begin(hex); iter < std::end(hex)-1; iter+= 2) {
                 binary.push_back(two_hex_chars_to_byte(*iter, *(iter+1)));
         }
         return binary;
