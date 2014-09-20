@@ -30,12 +30,6 @@ std::ostream& operator<<(std::ostream& out, const in6_addr& ip) {
         return out;
 }
 
-std::ostream& operator<<(std::ostream& out, const ip& ip) {
-        out << "IPv" << ip.version() << ": ";
-        out << "dst = " << ip.destination() << ", src = " << ip.source() << ", ";
-        return out;
-}
-
 std::ostream& operator<<(std::ostream& out, const ip::Version& v) {
         switch (v) {
                 case ip::Version::ipv4:
@@ -45,6 +39,12 @@ std::ostream& operator<<(std::ostream& out, const ip::Version& v) {
                         out << 6;
                         break;
         }
+        return out;
+}
+
+std::ostream& operator<<(std::ostream& out, const ip& ip) {
+        out << "IPv" << ip.version() << ": ";
+        out << "dst = " << ip.destination() << ", src = " << ip.source() << ", ";
         return out;
 }
 
