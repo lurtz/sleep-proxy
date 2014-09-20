@@ -31,14 +31,27 @@ std::ostream& operator<<(std::ostream& out, const in6_addr& ip) {
 }
 
 std::ostream& operator<<(std::ostream& out, const ip& ip) {
-        out << "IPv" << static_cast<unsigned int>(ip.version()) << ": ";
+        out << "IPv" << ip.version() << ": ";
         out << "dst = " << ip.destination() << ", src = " << ip.source() << ", ";
         return out;
 }
 
-uint8_t sniff_ipv4::version() const {
-        return ip_vhl >> 4;
+std::ostream& operator<<(std::ostream& out, const ip::Version& v) {
+        switch (v) {
+                case ip::Version::ipv4:
+                        out << 4;
+                        break;
+                case ip::Version::ipv6:
+                        out << 6;
+                        break;
+        }
+        return out;
 }
+
+ip::Version sniff_ipv4::version() const {
+        return Version::ipv4;
+}
+
 size_t sniff_ipv4::header_length() const {
         return (ip_vhl & 0x0f) * 4;
 }
@@ -52,8 +65,8 @@ uint8_t sniff_ipv4::payload_protocol() const {
         return ip_p;
 }
 
-uint8_t sniff_ipv6::version() const {
-        return version_trafficclass_flowlabel >> 28;
+ip::Version sniff_ipv6::version() const {
+        return Version::ipv6;
 }
 size_t sniff_ipv6::header_length() const {
         return 40;

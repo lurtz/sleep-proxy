@@ -183,8 +183,7 @@ void replay_data(const std::string& iface, const int type, const std::vector<uin
         const std::unique_ptr<Link_layer>& ll = std::get<0>(headers);
         if (ll == nullptr)
                 return;
-        const uint8_t ip_version = std::get<1>(headers)->version();
-        const uint16_t payload_type = ip_version == 4 ? ip::ipv4 : ip::ipv6;
+        const uint16_t payload_type = std::get<1>(headers)->version();
         const Source_address& sa = dynamic_cast<const Source_address&>(*ll);
         const auto length = static_cast<std::vector<uint8_t>::const_iterator::difference_type>(ll->header_length());
         const std::vector<uint8_t> payload =

@@ -41,7 +41,7 @@ struct ip {
         virtual ~ip() {}
 
         /** which IP version */
-        virtual uint8_t version() const = 0;
+        virtual Version version() const = 0;
 
         /** length of IP header in bytes */
         virtual size_t header_length() const = 0;
@@ -97,6 +97,10 @@ struct sniff_ipv4 : public ip {
         template<typename iterator>
         sniff_ipv4(iterator data, iterator end) : ip(data, end) {
                 ip_vhl = *(data++);
+                const uint8_t version = ip_vhl >> 4;
+                if (version != 4) {
+                        throw std::runtime_error("while parsing ipv4, got wrong ip version: " + to_string(version));
+                }
                 if (data >= end) {
                         throw std::range_error("data iterator past the end");
                 }
@@ -119,7 +123,7 @@ struct sniff_ipv4 : public ip {
                 ip_dst = *reinterpret_cast<in_addr const *>(&(*(data++)));
         }
 
-        virtual uint8_t version() const;
+        virtual ip::Version version() const;
         virtual size_t header_length() const;
         virtual std::string source() const;
         virtual std::string destination() const;
@@ -150,6 +154,10 @@ struct sniff_ipv6 : public ip {
                         throw std::length_error("not enough data to construct an IPv6 header");
                 }
                 version_trafficclass_flowlabel = ntohl(*reinterpret_cast<uint32_t const *>(&(*(data++))));
+                const uint8_t version = version_trafficclass_flowlabel >> 28;
+                if (version != 6) {
+                        throw std::runtime_error("parsing ipv6 header, got wrong ip version: " + to_string(version));
+                }
                 data += 3;
                 payload_length = ntohs(*reinterpret_cast<uint16_t const *>(&(*(data++))));
                 data++;
@@ -159,7 +167,7 @@ struct sniff_ipv6 : public ip {
                 data += 16;
                 std::copy(data, data+16, dest_address.s6_addr);
         }
-        virtual uint8_t version() const;
+        virtual ip::Version version() const;
         virtual size_t header_length() const;
         virtual std::string source() const;
         virtual std::string destination() const;
