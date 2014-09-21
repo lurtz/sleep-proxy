@@ -17,7 +17,6 @@
 #include "ethernet.h"
 #include <iterator>
 #include <stdexcept>
-#include <sstream>
 #include "container_utils.h"
 #include "int_utils.h"
 
