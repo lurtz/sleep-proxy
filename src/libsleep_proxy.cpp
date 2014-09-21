@@ -66,7 +66,8 @@ void set_signal(const int signum, const struct sigaction& sa) {
 }
 
 void setup_signals() {
-        struct sigaction sa{{0}, {{0}}, 0, 0};
+        struct sigaction sa;
+        memset(&sa, 0, sizeof(struct sigaction));
         sa.sa_handler = signal_handler;
         set_signal(SIGTERM, sa);
         set_signal(SIGINT, sa);
