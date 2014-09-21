@@ -180,6 +180,7 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
 }
 
 void replay_data(const std::string& iface, const int type, const std::vector<uint8_t>& data, const std::string& target_mac) {
+        log_string(LOG_INFO, "replaing SYN packet");
         basic_headers headers = get_headers(type, data);
         const std::unique_ptr<Link_layer>& ll = std::get<0>(headers);
         if (ll == nullptr)
@@ -202,18 +203,20 @@ bool emulate_host(const Args& args) {
         // setup firewall rules and add IPs to the interface
         std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
         // wait until upon an incoming connection
-        auto data_source_destination = wait_and_listen(args);
+        const auto data_source_destination = wait_and_listen(args);
         log_string(LOG_INFO, "got something");
         // block icmp messages to the source IP, e.g. not tell him that his
         // destination IP is gone for a short while
-        Scope_guard block_icmp(Block_icmp{std::get<1>(data_source_destination)});
+        const Scope_guard block_icmp(Block_icmp{std::get<1>(data_source_destination)});
         // release_locks()
         locks.clear();
         // wake the sleeping server
         wol_ethernet(args.interface, args.mac);
         // wait until server responds and release ICMP rules
         log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination));
-        bool wake_success = ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
+        const bool wake_success = ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
+        const std::string status = wake_success ? " succeeded" : " failed";
+        log_string(LOG_NOTICE, "waking " + args.hostname + " with mac " + args.mac + status);
         // replay SYN packet
         replay_data(args.interface, DLT_LINUX_SLL, std::get<0>(data_source_destination), args.mac);
         return wake_success;
