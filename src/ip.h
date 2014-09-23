@@ -96,7 +96,8 @@ struct sniff_ipv4 : public ip {
          */
         template<typename iterator>
         sniff_ipv4(iterator data, iterator end) : ip(data, end) {
-                ip_vhl = *(data++);
+                ip_vhl = *data;
+                std::advance(data, 1);
                 const uint8_t version = ip_vhl >> 4;
                 if (version != 4) {
                         throw std::runtime_error("while parsing ipv4, got wrong ip version: " + to_string(version));
@@ -107,20 +108,23 @@ struct sniff_ipv4 : public ip {
                 if (header_length() - 1 > static_cast<size_t>(end - data)) {
                         throw std::length_error("not enough data to construct an IPv4 header");
                 }
-                ip_tos = *(data++);
-                ip_len = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
-                data++;
-                ip_id = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
-                data++;
-                ip_off = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
-                data++;
-                ip_ttl = *(data++);
-                ip_p = *(data++);
-                ip_sum = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
-                data++;
-                ip_src = *reinterpret_cast<in_addr const *>(&(*(data++)));
-                data += 3;
-                ip_dst = *reinterpret_cast<in_addr const *>(&(*(data++)));
+                ip_tos = *data;
+                std::advance(data, 1);
+                ip_len = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
+                std::advance(data, 2);
+                ip_id = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
+                std::advance(data, 2);
+                ip_off = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
+                std::advance(data, 2);
+                ip_ttl = *data;
+                std::advance(data, 1);
+                ip_p = *data;
+                std::advance(data, 1);
+                ip_sum = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
+                std::advance(data, 2);
+                ip_src = *reinterpret_cast<in_addr const *>(&(*data));
+                std::advance(data, 4);
+                ip_dst = *reinterpret_cast<in_addr const *>(&(*data));
         }
 
         virtual ip::Version version() const;
@@ -153,18 +157,20 @@ struct sniff_ipv6 : public ip {
                 if (static_cast<size_t>(end - data) < header_length()) {
                         throw std::length_error("not enough data to construct an IPv6 header");
                 }
-                version_trafficclass_flowlabel = ntohl(*reinterpret_cast<uint32_t const *>(&(*(data++))));
+                version_trafficclass_flowlabel = ntohl(*reinterpret_cast<uint32_t const *>(&(*data)));
                 const uint8_t version = version_trafficclass_flowlabel >> 28;
                 if (version != 6) {
                         throw std::runtime_error("parsing ipv6 header, got wrong ip version: " + to_string(version));
                 }
-                data += 3;
-                payload_length = ntohs(*reinterpret_cast<uint16_t const *>(&(*(data++))));
-                data++;
-                next_header = *(data++);
-                hop_limit = *(data++);
+                std::advance(data, 4);
+                payload_length = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+                std::advance(data, 2);
+                next_header = *data;
+                std::advance(data, 1);
+                hop_limit = *data;
+                std::advance(data, 1);
                 std::copy(data, data+16, source_address.s6_addr);
-                data += 16;
+                std::advance(data, 16);
                 std::copy(data, data+16, dest_address.s6_addr);
         }
         virtual ip::Version version() const;

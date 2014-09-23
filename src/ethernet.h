@@ -64,16 +64,16 @@ struct Linux_cooked_capture : public Link_layer, Source_address {
                         throw std::length_error("not enough data to construct an ethernet header");
                 }
                 packet_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
-                data += 2;
+                std::advance(data, 2);
                 device_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
-                data += 2;
+                std::advance(data, 2);
                 ll_address_length = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
                 if (ll_address_length > source_address.size()) {
                         throw std::length_error("invalid link address size");
                 }
-                data += 2;
+                std::advance(data, 2);
                 std::copy(data, data+ll_address_length, std::begin(source_address));
-                data += 8;
+                std::advance(data, source_address.size());
                 payload_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
         }
 
@@ -97,7 +97,7 @@ struct VLAN_Header : public Link_layer {
                         throw std::length_error("not enough data to construct a vlan header");
                 }
                 priority_canonical_id = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
-                data += 2;
+                std::advance(data, 2);
                 payload_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
         }
 
@@ -131,9 +131,9 @@ struct sniff_ethernet : public Link_layer, Source_address {
                         throw std::length_error("not enough data to construct an ethernet header");
                 }
                 std::copy(data, data+ETHER_ADDR_LEN, std::begin(ether_dhost));
-                data += ETHER_ADDR_LEN;
+                std::advance(data, ETHER_ADDR_LEN);
                 std::copy(data, data+ETHER_ADDR_LEN, std::begin(ether_shost));
-                data += ETHER_ADDR_LEN;
+                std::advance(data, ETHER_ADDR_LEN);
                 ether_type = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
         }
 

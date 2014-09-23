@@ -99,24 +99,26 @@ struct sniff_tcp : public tp {
                 if (databytes < 20) {
                         throw std::length_error("not enough data to construct a TCP header");
                 }
-                th_sport = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
-                data++;
-                th_dport = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
-                data++;
-                th_seq = ntohl(*reinterpret_cast<tcp_seq const *>(&(*(data++))));
-                data += 3;
-                th_ack = ntohl(*reinterpret_cast<tcp_seq const *>(&(*(data++))));
-                data += 3;
-                th_offx2 = *(data++);
+                th_sport = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
+                std::advance(data, 2);
+                th_dport = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
+                std::advance(data, 2);
+                th_seq = ntohl(*reinterpret_cast<tcp_seq const *>(&(*data)));
+                std::advance(data, 4);
+                th_ack = ntohl(*reinterpret_cast<tcp_seq const *>(&(*data)));
+                std::advance(data, 4);
+                th_offx2 = *data;
+                std::advance(data, 1);
                 if (databytes < header_length()) {
                         throw std::length_error("not enough data to construct a TCP header");
                 }
-                th_flags = *(data++);
-                th_win = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
-                data++;
-                th_sum = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
-                data++;
-                th_urp = ntohs(*reinterpret_cast<u_short const *>(&(*(data++))));
+                th_flags = *data;
+                std::advance(data, 1);
+                th_win = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
+                std::advance(data, 2);
+                th_sum = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
+                std::advance(data, 2);
+                th_urp = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
         }
 
         virtual size_t header_length() const;
@@ -144,13 +146,13 @@ struct sniff_udp : public tp {
                 if (static_cast<size_t>(end - data) < header_length()) {
                         throw std::length_error("not enough data to construct a UDP header");
                 }
-                source_port = ntohs(*reinterpret_cast<uint16_t const *>(&(*(data++))));
-                data++;
-                destination_port = ntohs(*reinterpret_cast<uint16_t const *>(&(*(data++))));
-                data++;
-                length = ntohs(*reinterpret_cast<uint16_t const *>(&(*(data++))));
-                data++;
-                checksum = ntohs(*reinterpret_cast<uint16_t const *>(&(*(data++))));
+                source_port = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+                std::advance(data, 2);
+                destination_port = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+                std::advance(data, 2);
+                length = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+                std::advance(data, 2);
+                checksum = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
         }
 
         virtual std::string type() const;
