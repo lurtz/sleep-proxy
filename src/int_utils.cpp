@@ -94,8 +94,8 @@ std::vector<uint8_t> to_binary(const std::string& hex) {
 }
 
 std::string one_byte_to_two_hex_chars(const uint8_t b) noexcept {
-        char val[4] = {0};
-        std::sprintf(val, "%x%x", b >> 4, b & 0xf);
+        char val[3] = {0};
+        snprintf(val, sizeof(val), "%02x", b);
         return val;
 }
 
