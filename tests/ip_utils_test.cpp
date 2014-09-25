@@ -49,8 +49,8 @@ class Ip_utils_test : public CppUnit::TestFixture {
         }
 
         void test_validate_mac() {
-                CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:AB"), validate_mac("01:23:45:67:89:AB"));
-                CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:AB"), validate_mac("01:23:45:67:89:ab"));
+                CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:ab"), validate_mac("01:23:45:67:89:AB"));
+                CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:ab"), validate_mac("01:23:45:67:89:ab"));
                 CPPUNIT_ASSERT_THROW(validate_mac("lo\""), std::runtime_error);
                 CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89:AAB"), std::runtime_error);
                 CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89"), std::runtime_error);

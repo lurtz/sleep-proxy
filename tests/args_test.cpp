@@ -89,9 +89,9 @@ class Args_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_EQUAL(interface, args.interface);
                 CPPUNIT_ASSERT(split(addresses, ',') == args.address);
                 CPPUNIT_ASSERT(parse_ports() == args.ports);
-                std::string upper_mac = mac;
-                std::transform(std::begin(upper_mac), std::end(upper_mac), std::begin(upper_mac), [](int ch){return std::toupper(ch);});
-                CPPUNIT_ASSERT_EQUAL(upper_mac, args.mac);
+                std::string lower_mac = mac;
+                std::transform(std::begin(lower_mac), std::end(lower_mac), std::begin(lower_mac), [](int ch){return std::tolower(ch);});
+                CPPUNIT_ASSERT_EQUAL(lower_mac, args.mac);
                 CPPUNIT_ASSERT_EQUAL(hostname, args.hostname);
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(std::stoul(ping_tries)), args.ping_tries);
                 CPPUNIT_ASSERT_EQUAL(syslog__, args.syslog);

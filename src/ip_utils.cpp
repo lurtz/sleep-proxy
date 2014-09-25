@@ -27,10 +27,10 @@ std::string validate_iface(const std::string iface) {
         return iface;
 }
 
-static const std::string hex_chars{":0123456789ABCDEF"};
+static const std::string hex_chars{":0123456789abcdef"};
 
 std::string validate_mac(std::string mac) {
-        std::transform(std::begin(mac), std::end(mac), std::begin(mac), [](char ch) {return std::toupper(ch);});
+        std::transform(std::begin(mac), std::end(mac), std::begin(mac), [](char ch) {return std::tolower(ch);});
         test_characters(mac, hex_chars, "mac address has to be given in hex");
         std::vector<std::string> items = split(mac, ':');
         if (items.size() != 6) {
