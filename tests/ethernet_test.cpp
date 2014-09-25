@@ -16,6 +16,7 @@
 
 #include "main.h"
 #include "ethernet.h"
+#include "check_range.h"
 
 class Ethernet_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Ethernet_test );
@@ -25,35 +26,27 @@ class Ethernet_test : public CppUnit::TestFixture {
         void setUp() {}
         void tearDown() {}
 
-        template<typename Iterator, typename End_iter>
-        static void check_range(Iterator&& iter, End_iter&& end, const unsigned char start, const unsigned char end_pos) {
-                for (unsigned char c = start; c < end_pos && iter != end; c++,iter++) {
-                        CPPUNIT_ASSERT(16*c+c == *iter);
-                }
-                CPPUNIT_ASSERT(iter != end);
-        }
-
         void test_create_ethernet_header() {
                 std::vector<uint8_t> header = create_ethernet_header("aa:BB:cc:dd:ee:ff", "00:11:22:33:44:55", 0x800);
                 auto iter = std::begin(header);
-                check_range(iter, std::end(header), 10, 16);
-                check_range(iter, std::end(header), 0, 6);
+                check_header(iter, std::end(header), 10, 16);
+                check_header(iter, std::end(header), 0, 6);
                 CPPUNIT_ASSERT(0x8 == *iter);
                 iter++;
                 CPPUNIT_ASSERT(0x00 == *iter);
 
                 header = create_ethernet_header("66:77:88:99:aa:bb", "33:44:55:66:77:88", 0x86Dd);
                 iter = std::begin(header);
-                check_range(iter, std::end(header), 6, 12);
-                check_range(iter, std::end(header), 3, 9);
+                check_header(iter, std::end(header), 6, 12);
+                check_header(iter, std::end(header), 3, 9);
                 CPPUNIT_ASSERT(0x86 == *iter);
                 iter++;
                 CPPUNIT_ASSERT(0xdd == *iter);
 
                 header = create_ethernet_header("66:77:88:99:aa:bb", "33:44:55:66:77:88", 0x0842);
                 iter = std::begin(header);
-                check_range(iter, std::end(header), 6, 12);
-                check_range(iter, std::end(header), 3, 9);
+                check_header(iter, std::end(header), 6, 12);
+                check_header(iter, std::end(header), 3, 9);
                 CPPUNIT_ASSERT(0x8 == *iter);
                 iter++;
                 CPPUNIT_ASSERT(0x42 == *iter);
