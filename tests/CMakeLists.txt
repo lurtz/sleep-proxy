@@ -39,4 +39,5 @@ make_test(spawn_process_test sleep-proxy)
 make_test(log_test sleep-proxy)
 make_test(libsleep_proxy_test sleep-proxy)
 make_test(ethernet_test sleep-proxy)
+make_test(wol_test sleep-proxy)
 
