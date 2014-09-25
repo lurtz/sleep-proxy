@@ -22,6 +22,7 @@
 #include <arpa/inet.h>
 #include <pcap/bpf.h>
 #include <memory>
+#include <netinet/ether.h>
 
 struct Link_layer {
 
@@ -110,8 +111,6 @@ struct VLAN_Header : public Link_layer {
 
 /** Ethernet header with destination address, source address and payload type */
 struct sniff_ethernet : public Link_layer, Source_address {
-        /** Ethernet addresses are 6 bytes */
-        static const unsigned int ETHER_ADDR_LEN = 6;
         private:
         /* Destination host address */
         std::array<u_char, ETHER_ADDR_LEN> ether_dhost;
@@ -178,3 +177,9 @@ std::unique_ptr<Link_layer> parse_link_layer(const int type, iterator data, iter
 std::string remove_seperator_from_mac(const std::string& mac);
 
 std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac, const uint16_t type);
+
+std::vector<uint8_t> to_vector(const ether_addr& mac);
+
+ether_addr mac_to_binary(const std::string& mac);
+
+std::string binary_to_mac(const ether_addr& mac);

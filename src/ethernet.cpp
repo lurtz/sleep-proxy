@@ -89,11 +89,30 @@ std::string remove_seperator_from_mac(const std::string& mac) {
         return rawmac;
 }
 
+std::vector<uint8_t> to_vector(const ether_addr& mac) {
+        return std::vector<uint8_t>(mac.ether_addr_octet, mac.ether_addr_octet+sizeof(mac.ether_addr_octet));
+}
+
 std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac, const uint16_t type) {
-        const std::string data = remove_seperator_from_mac(dmac) + remove_seperator_from_mac(smac);
-        auto binary = to_binary(data);
+        auto binary = to_vector(mac_to_binary(dmac)) + to_vector(mac_to_binary(smac));
         binary.push_back(type >> 8);
         binary.push_back(type & 0xFF);
         return binary;
+}
+
+ether_addr mac_to_binary(const std::string& mac) {
+        ether_addr addr{{0}};
+        if (ether_aton_r(mac.c_str(), &addr) == nullptr) {
+                throw std::runtime_error("invalid mac: " + mac);
+        }
+        return addr;
+}
+
+std::string binary_to_mac(const ether_addr& mac) {
+        char canon_mac[12+5+1] = {0};
+        if (ether_ntoa_r(&mac, canon_mac) == nullptr) {
+                throw std::runtime_error("could convert binary to hex mac");
+        }
+        return canon_mac;
 }
 
