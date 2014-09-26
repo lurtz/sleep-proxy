@@ -47,7 +47,7 @@ std::ostream& operator<<(std::ostream& out, const Link_layer&);
 
 struct Source_address {
         virtual ~Source_address() {}
-        virtual std::string source() const = 0;
+        virtual ether_addr source() const = 0;
 };
 
 struct Linux_cooked_capture : public Link_layer, Source_address {
@@ -78,7 +78,7 @@ struct Linux_cooked_capture : public Link_layer, Source_address {
                 payload_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
         }
 
-        virtual std::string source() const;
+        virtual ether_addr source() const;
 
         virtual size_t header_length() const;
 
@@ -149,12 +149,12 @@ struct sniff_ethernet : public Link_layer, Source_address {
         /**
          * destination address
          */
-        std::string destination() const;
+        ether_addr destination() const;
 
         /**
          * source address
          */
-        virtual std::string source() const;
+        virtual ether_addr source() const;
 
         virtual std::string get_info() const;
 };
@@ -173,8 +173,6 @@ std::unique_ptr<Link_layer> parse_link_layer(const int type, iterator data, iter
                 default: return std::unique_ptr<Link_layer>(nullptr);
         }
 }
-
-std::string remove_seperator_from_mac(const std::string& mac);
 
 std::vector<uint8_t> create_ethernet_header(const ether_addr& dmac, const ether_addr& smac, const uint16_t type);
 

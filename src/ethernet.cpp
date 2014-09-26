@@ -25,9 +25,10 @@ std::ostream& operator<<(std::ostream& out, const Link_layer& ll) {
         return out;
 }
 
-std::string Linux_cooked_capture::source() const {
-        std::vector<uint8_t> tmp_source_address(std::begin(source_address), std::begin(source_address) + ll_address_length);
-        return join(tmp_source_address, one_byte_to_two_hex_chars, ":");
+ether_addr Linux_cooked_capture::source() const {
+        ether_addr addr;
+        std::copy(std::begin(source_address), std::begin(source_address) + sizeof(addr.ether_addr_octet), std::begin(addr.ether_addr_octet));
+        return addr;
 }
 
 size_t Linux_cooked_capture::header_length() const {
@@ -39,7 +40,7 @@ uint16_t Linux_cooked_capture::payload_protocol() const {
 }
 
 std::string Linux_cooked_capture::get_info() const {
-        return "Linux cooked capture: src: " + source();
+        return "Linux cooked capture: src: " + binary_to_mac(source());
 }
 
 
@@ -63,30 +64,16 @@ uint16_t sniff_ethernet::payload_protocol() const {
         return ether_type;
 }
 
-std::string sniff_ethernet::destination() const {
-        return binary_to_mac(ether_dhost);
+ether_addr sniff_ethernet::destination() const {
+        return ether_dhost;
 }
 
-std::string sniff_ethernet::source() const {
-        return binary_to_mac(ether_shost);
+ether_addr sniff_ethernet::source() const {
+        return ether_shost;
 }
 
 std::string sniff_ethernet::get_info() const {
-        return "Ethernet: dst = " + destination() + ", src = " + source();
-}
-
-std::string remove_seperator_from_mac(const std::string& mac) {
-        if (mac.size() != 12 && mac.size() != 12+5) {
-                throw std::runtime_error("Incorrect MAC address format");
-        }
-        // check macaddress format and try to compensate
-        std::string rawmac(12, '0');
-        char sep = mac[2];
-        if (mac.size() == 12) {
-                sep = -1;
-        }
-        std::copy_if(std::begin(mac), std::end(mac), std::begin(rawmac), [&](char ch) {return ch != sep;});
-        return rawmac;
+        return "Ethernet: dst = " + binary_to_mac(destination()) + ", src = " + binary_to_mac(source());
 }
 
 std::vector<uint8_t> to_vector(const ether_addr& mac) {
