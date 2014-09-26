@@ -42,6 +42,6 @@ T repeat(const T& s, const unsigned int count, T&& init = T()) {
 template<typename T, typename Alloc>
 std::vector<T, Alloc> operator+(std::vector<T, Alloc>&& lhs, const std::vector<T, Alloc>& rhs) {
         lhs.insert(std::end(lhs), std::begin(rhs), std::end(rhs));
-        return lhs;
+        return std::move(lhs);
 }
 
