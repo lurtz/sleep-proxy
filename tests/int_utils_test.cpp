@@ -26,6 +26,7 @@ class Str_to_integral_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_EXCEPTION(outofposbounds, std::out_of_range);
         CPPUNIT_TEST( test_stoll );
         CPPUNIT_TEST( test_stoull );
+        CPPUNIT_TEST( test_one_byte_to_two_hex_chars );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -67,6 +68,14 @@ class Str_to_integral_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long long int>(10), fallback::std::stoull("a", 16));
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long long int>(15), fallback::std::stoull("F", 16));
         }
+
+        void test_one_byte_to_two_hex_chars() {
+                CPPUNIT_ASSERT_EQUAL(std::string("ff"), one_byte_to_two_hex_chars(255));
+                CPPUNIT_ASSERT_EQUAL(std::string("00"), one_byte_to_two_hex_chars(0));
+                CPPUNIT_ASSERT_EQUAL(std::string("0a"), one_byte_to_two_hex_chars(10));
+                CPPUNIT_ASSERT_EQUAL(std::string("a0"), one_byte_to_two_hex_chars(160));
+        }
+
 };
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Str_to_integral_test );
