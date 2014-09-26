@@ -86,8 +86,8 @@ std::string sanitize_ip(const std::string& ip) {
         // check if the subnet size is in correct bounds
         const unsigned int maxsubnetlen = version == AF_INET ? 32 : 128;
         std::string subnet{split(sane_ip, '/').at(1)};
-        long long postfix = str_to_integral<long long>(subnet);
-        if (postfix < 0 || postfix > maxsubnetlen) {
+        uint8_t postfix = str_to_integral<uint8_t>(subnet);
+        if (postfix > maxsubnetlen) {
                 std::string ss = "Subnet " + subnet + " is not in range 0.." + to_string(maxsubnetlen);
                 throw std::invalid_argument(ss);
         }
