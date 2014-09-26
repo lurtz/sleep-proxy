@@ -29,7 +29,6 @@
 #include "args.h"
 #include "container_utils.h"
 #include "libsleep_proxy.h"
-#include "libsleep_proxy_test_interface.h"
 #include "spawn_process.h"
 #include "wol.h"
 #include "packet_parser.h"

@@ -18,8 +18,7 @@
 #include <string>
 #include "check_range.h"
 #include "ethernet.h"
-
-std::vector<uint8_t> create_wol_udp_payload(const ether_addr& mac);
+#include "wol_test_interface.h"
 
 class Wol_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Wol_test );
