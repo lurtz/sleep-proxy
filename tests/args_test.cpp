@@ -23,6 +23,7 @@
 #include "args_test_interface.h"
 #include "to_string.h"
 #include "split.h"
+#include "ethernet.h"
 
 class Args_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Args_test );
@@ -91,7 +92,7 @@ class Args_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT(parse_ports() == args.ports);
                 std::string lower_mac = mac;
                 std::transform(std::begin(lower_mac), std::end(lower_mac), std::begin(lower_mac), [](int ch){return std::tolower(ch);});
-                CPPUNIT_ASSERT_EQUAL(lower_mac, args.mac);
+                CPPUNIT_ASSERT_EQUAL(lower_mac, binary_to_mac(args.mac));
                 CPPUNIT_ASSERT_EQUAL(hostname, args.hostname);
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(std::stoul(ping_tries)), args.ping_tries);
                 CPPUNIT_ASSERT_EQUAL(syslog__, args.syslog);
@@ -173,7 +174,7 @@ class Args_test : public CppUnit::TestFixture {
                 interface = "lo";
                 addresses = "10.0.0.1/16,fe80::123/64";
                 ports = "12345,23456";
-                mac = "01:12:34:45:67:89";
+                mac = "1:12:34:45:67:89";
                 hostname = "test.lan";
                 ping_tries = "5";
                 compare(args.at(0));

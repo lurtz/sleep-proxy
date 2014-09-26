@@ -179,7 +179,7 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
         return false;
 }
 
-void replay_data(const std::string& iface, const int type, const std::vector<uint8_t>& data, const std::string& target_mac) {
+void replay_data(const std::string& iface, const int type, const std::vector<uint8_t>& data, const ether_addr& target_mac) {
         log_string(LOG_INFO, "replaing SYN packet");
         basic_headers headers = get_headers(type, data);
         const std::unique_ptr<Link_layer>& ll = std::get<0>(headers);
@@ -190,7 +190,7 @@ void replay_data(const std::string& iface, const int type, const std::vector<uin
         auto data_iter = std::begin(data);
         std::advance(data_iter, ll->header_length());
         const std::vector<uint8_t> payload =
-                create_ethernet_header(mac_to_binary(target_mac), mac_to_binary(sa.source()), payload_type)
+                create_ethernet_header(target_mac, mac_to_binary(sa.source()), payload_type)
                 + std::vector<uint8_t>(data_iter, std::end(data));
         Pcap_wrapper pc(iface);
         pc.inject(payload);
@@ -212,12 +212,12 @@ bool emulate_host(const Args& args) {
         // release_locks()
         locks.clear();
         // wake the sleeping server
-        wol_ethernet(args.interface, mac_to_binary(args.mac));
+        wol_ethernet(args.interface, args.mac);
         // wait until server responds and release ICMP rules
         log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination));
         const bool wake_success = ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
         const std::string status = wake_success ? " succeeded" : " failed";
-        log_string(LOG_NOTICE, "waking " + args.hostname + " with mac " + args.mac + status);
+        log_string(LOG_NOTICE, "waking " + args.hostname + " with mac " + binary_to_mac(args.mac) + status);
         // replay SYN packet
         replay_data(args.interface, DLT_LINUX_SLL, std::get<0>(data_source_destination), args.mac);
         return wake_success;

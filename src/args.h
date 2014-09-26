@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <ostream>
+#include <netinet/ether.h>
 
 /**
  * Parses and checks the input of the command line arguments
@@ -31,7 +32,7 @@ struct Args {
         /** ports to listen on */
         const std::vector<uint16_t> ports;
         /** mac of the target machine to wake up */
-        const std::string mac;
+        const ether_addr mac;
         const std::string hostname;
         const unsigned int ping_tries;
         const bool& syslog;

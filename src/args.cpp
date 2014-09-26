@@ -15,7 +15,6 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "args.h"
-#include "args_test_interface.h"
 #include <stdexcept>
 #include <getopt.h>
 #include <fstream>
@@ -23,6 +22,7 @@
 #include "ip_utils.h"
 #include "split.h"
 #include "int_utils.h"
+#include "ethernet.h"
 
 bool to_syslog = false;
 
@@ -30,13 +30,13 @@ void reset() {
         to_syslog = false;
 }
 
-Args::Args() : ping_tries(0), syslog(to_syslog) {}
+Args::Args() : mac{{0}}, ping_tries{0}, syslog(to_syslog) {}
 
 Args::Args(const std::string interface_, const std::vector<std::string> addresss_, const std::vector<std::string> ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_) :
         interface(validate_iface(std::move(interface_))),
         address(parse_items(std::move(addresss_), sanitize_ip)),
         ports(parse_items(std::move(ports_), str_to_integral<uint16_t>)),
-        mac(validate_mac(std::move(mac_))),
+        mac(mac_to_binary(validate_mac(std::move(mac_)))),
         hostname(test_characters(hostname_, iface_chars + "-", std::string("invalid token in hostname: ") + hostname_)),
         ping_tries(str_to_integral<unsigned int>(ping_tries_)),
         syslog(to_syslog)
@@ -207,7 +207,7 @@ std::ostream& operator<<(std::ostream& out, const Args& args) {
         out << "Args(interface = " << args.interface
                 << ", address = " << args.address
                 << ", ports = " << args.ports
-                << ", mac = " << args.mac
+                << ", mac = " << binary_to_mac(args.mac)
                 << ", hostname = " << args.hostname
                 << ", print_tries = " << args.ping_tries
                 << ", syslog = " << args.syslog
