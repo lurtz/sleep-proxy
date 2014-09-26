@@ -27,8 +27,8 @@
 /**
  * create the payload for a UDP wol packet to be broadcast in to the network
  */
-std::vector<uint8_t> create_wol_udp_payload(const std::string& mac) {
-        const std::vector<uint8_t> binary_mac = to_vector(mac_to_binary(mac));
+std::vector<uint8_t> create_wol_udp_payload(const ether_addr& mac) {
+        const std::vector<uint8_t> binary_mac = to_vector(mac);
         std::vector<uint8_t> magic_bytes{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
         for (unsigned int i = 0; i < 20; i++) {
                 magic_bytes.insert(std::end(magic_bytes), std::begin(binary_mac), std::end(binary_mac));
@@ -39,8 +39,8 @@ std::vector<uint8_t> create_wol_udp_payload(const std::string& mac) {
 /**
  * Send a WOL UDP packet to the given mac
  */
-void wol_udp(const std::string& mac) {
-        log_string(LOG_INFO, "waking (udp) " + mac);
+void wol_udp(const ether_addr& mac) {
+        log_string(LOG_INFO, "waking (udp) " + binary_to_mac(mac));
         const std::vector<uint8_t> binary_data = create_wol_udp_payload(mac);
         // Broadcast it to the LAN.
         Socket sock(AF_INET, SOCK_DGRAM);
@@ -49,8 +49,8 @@ void wol_udp(const std::string& mac) {
         sock.send_to(binary_data, 0, broadcast_port9);
 }
 
-void wol_ethernet(const std::string& iface, const std::string& mac) {
-        log_string(LOG_INFO, "waking (ethernet) " + mac);
+void wol_ethernet(const std::string& iface, const ether_addr& mac) {
+        log_string(LOG_INFO, "waking (ethernet) " + binary_to_mac(mac));
 
         // Broadcast it to the LAN.
         Socket sock(PF_PACKET, SOCK_RAW, 0);
@@ -63,7 +63,7 @@ void wol_ethernet(const std::string& iface, const std::string& mac) {
         const ether_addr hw_addr = sock.get_hwaddr(iface);
         std::copy(std::begin(hw_addr.ether_addr_octet), std::end(hw_addr.ether_addr_octet), broadcast_ll.sll_addr);
 
-        const std::vector<uint8_t> binary_data = create_ethernet_header(mac_to_binary(mac), hw_addr, 0x0842) + create_wol_udp_payload(mac);
+        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, hw_addr, 0x0842) + create_wol_udp_payload(mac);
         sock.send_to(binary_data, 0, broadcast_ll);
 }
 

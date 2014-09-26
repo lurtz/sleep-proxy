@@ -212,7 +212,7 @@ bool emulate_host(const Args& args) {
         // release_locks()
         locks.clear();
         // wake the sleeping server
-        wol_ethernet(args.interface, args.mac);
+        wol_ethernet(args.interface, mac_to_binary(args.mac));
         // wait until server responds and release ICMP rules
         log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination));
         const bool wake_success = ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);

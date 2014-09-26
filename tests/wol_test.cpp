@@ -17,8 +17,9 @@
 #include "main.h"
 #include <string>
 #include "check_range.h"
+#include "ethernet.h"
 
-std::vector<uint8_t> create_wol_udp_payload(const std::string& mac);
+std::vector<uint8_t> create_wol_udp_payload(const ether_addr& mac);
 
 class Wol_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Wol_test );
@@ -41,9 +42,9 @@ class Wol_test : public CppUnit::TestFixture {
         }
 
         void test_create_wol_udp_payload() {
-                auto wol_packet = create_wol_udp_payload("11:22:33:44:55:66");
+                auto wol_packet = create_wol_udp_payload(mac_to_binary("11:22:33:44:55:66"));
                 check_wol_udp_payload(wol_packet, 1, 7);
-                wol_packet = create_wol_udp_payload("88:99:aA:bB:cc:dd");
+                wol_packet = create_wol_udp_payload(mac_to_binary("88:99:aA:bB:cc:dd"));
                 check_wol_udp_payload(wol_packet, 8, 14);
         }
 };

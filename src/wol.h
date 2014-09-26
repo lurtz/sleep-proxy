@@ -17,7 +17,8 @@
 #pragma once
 
 #include <string>
+#include <netinet/ether.h>
 
-void wol_udp(const std::string& mac);
-void wol_ethernet(const std::string& iface, const std::string& mac);
+void wol_udp(const ether_addr& mac);
+void wol_ethernet(const std::string& iface, const ether_addr& mac);
 
