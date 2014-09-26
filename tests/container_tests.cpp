@@ -44,23 +44,3 @@ class Join_test : public CppUnit::TestFixture {
 
 CPPUNIT_TEST_SUITE_REGISTRATION( Join_test );
 
-class Repeat_test : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE( Repeat_test );
-        CPPUNIT_TEST( testConstructor );
-        CPPUNIT_TEST_SUITE_END();
-        public:
-        void setUp() {}
-        void tearDown() {}
-        void testConstructor() {
-                CPPUNIT_ASSERT_EQUAL(0, repeat(10, 0, 0));
-                CPPUNIT_ASSERT_EQUAL(10, repeat(10, 1, 0));
-                CPPUNIT_ASSERT_EQUAL(20, repeat(10, 2, 0));
-                CPPUNIT_ASSERT_EQUAL(std::string(""), repeat(std::string("asdf"), 0, std::string("")));
-                CPPUNIT_ASSERT_EQUAL(std::string("asdf"), repeat(std::string("asdf"), 1, std::string("")));
-                CPPUNIT_ASSERT_EQUAL(std::string("asdfasdf"), repeat(std::string("asdf"), 2, std::string("")));
-                CPPUNIT_ASSERT_EQUAL(std::string("blaasdfasdf"), repeat(std::string("asdf"), 2, std::string("bla")));
-        }
-};
-
-CPPUNIT_TEST_SUITE_REGISTRATION( Repeat_test );
-
