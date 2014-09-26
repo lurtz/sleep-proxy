@@ -64,9 +64,5 @@ T str_to_integral(const std::string& string) {
         return static_cast<T>(value);
 }
 
-std::vector<uint8_t> to_binary(const std::string& hex);
-
 std::string one_byte_to_two_hex_chars(const uint8_t b) noexcept;
-
-std::string to_hex(const std::vector<uint8_t>& bin) noexcept;
 

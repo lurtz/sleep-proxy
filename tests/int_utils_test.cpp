@@ -26,8 +26,6 @@ class Str_to_integral_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_EXCEPTION(outofposbounds, std::out_of_range);
         CPPUNIT_TEST( test_stoll );
         CPPUNIT_TEST( test_stoull );
-        CPPUNIT_TEST( test_to_binary );
-        CPPUNIT_TEST( test_to_hex );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -68,34 +66,6 @@ class Str_to_integral_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long long int>(0), fallback::std::stoull("0", 16));
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long long int>(10), fallback::std::stoull("a", 16));
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long long int>(15), fallback::std::stoull("F", 16));
-        }
-
-        void test_to_binary() {
-                std::vector<uint8_t> data;
-                CPPUNIT_ASSERT(data == to_binary(""));
-                data.push_back(170);
-                CPPUNIT_ASSERT(data == to_binary("aA"));
-                data.push_back(156);
-                CPPUNIT_ASSERT(data == to_binary("aa9c"));
-                data.push_back(3);
-                CPPUNIT_ASSERT(data == to_binary("aa9c03"));
-                data.push_back(32);
-                CPPUNIT_ASSERT(data == to_binary("aa9c0320"));
-                CPPUNIT_ASSERT_THROW(to_binary("ag"), std::invalid_argument);
-                CPPUNIT_ASSERT_THROW(to_binary("ga"), std::invalid_argument);
-        }
-
-        void test_to_hex() {
-                std::vector<uint8_t> data;
-                CPPUNIT_ASSERT("" == to_hex(data));
-                data.push_back(170);
-                CPPUNIT_ASSERT("aa" == to_hex(data));
-                data.push_back(156);
-                CPPUNIT_ASSERT("aa9c" == to_hex(data));
-                data.push_back(3);
-                CPPUNIT_ASSERT("aa9c03" == to_hex(data));
-                data.push_back(32);
-                CPPUNIT_ASSERT("aa9c0320" == to_hex(data));
         }
 };
 
