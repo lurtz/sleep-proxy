@@ -52,8 +52,10 @@ int Socket::get_ifindex(const std::string& iface) const {
         return ifr.ifr_ifindex;
 }
 
-std::vector<uint8_t> Socket::get_hwaddr(const std::string& iface) const {
+ether_addr Socket::get_hwaddr(const std::string& iface) const {
         struct ifreq ifr = get_ifreq(iface);
         ioctl(SIOCGIFHWADDR, ifr);
-        return std::vector<uint8_t>(ifr.ifr_hwaddr.sa_data, ifr.ifr_hwaddr.sa_data+ETH_ALEN);
+        ether_addr addr;
+        std::copy(ifr.ifr_hwaddr.sa_data, ifr.ifr_hwaddr.sa_data + sizeof(addr.ether_addr_octet), std::begin(addr.ether_addr_octet));
+        return addr;
 }

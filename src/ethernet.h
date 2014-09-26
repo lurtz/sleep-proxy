@@ -113,9 +113,9 @@ struct VLAN_Header : public Link_layer {
 struct sniff_ethernet : public Link_layer, Source_address {
         private:
         /* Destination host address */
-        std::array<u_char, ETHER_ADDR_LEN> ether_dhost;
+        ether_addr ether_dhost;
         /* Source host address */
-        std::array<u_char, ETHER_ADDR_LEN> ether_shost;
+        ether_addr ether_shost;
         /* IP? ARP? RARP? etc */
         u_short ether_type;
 
@@ -129,9 +129,9 @@ struct sniff_ethernet : public Link_layer, Source_address {
                 if (static_cast<size_t>(end - data) < header_length()) {
                         throw std::length_error("not enough data to construct an ethernet header");
                 }
-                std::copy(data, data+ETHER_ADDR_LEN, std::begin(ether_dhost));
+                std::copy(data, data+ETHER_ADDR_LEN, std::begin(ether_dhost.ether_addr_octet));
                 std::advance(data, ETHER_ADDR_LEN);
-                std::copy(data, data+ETHER_ADDR_LEN, std::begin(ether_shost));
+                std::copy(data, data+ETHER_ADDR_LEN, std::begin(ether_shost.ether_addr_octet));
                 std::advance(data, ETHER_ADDR_LEN);
                 ether_type = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
         }
@@ -176,7 +176,7 @@ std::unique_ptr<Link_layer> parse_link_layer(const int type, iterator data, iter
 
 std::string remove_seperator_from_mac(const std::string& mac);
 
-std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac, const uint16_t type);
+std::vector<uint8_t> create_ethernet_header(const ether_addr& dmac, const ether_addr& smac, const uint16_t type);
 
 std::vector<uint8_t> to_vector(const ether_addr& mac);
 

@@ -190,7 +190,7 @@ void replay_data(const std::string& iface, const int type, const std::vector<uin
         auto data_iter = std::begin(data);
         std::advance(data_iter, ll->header_length());
         const std::vector<uint8_t> payload =
-                create_ethernet_header(target_mac, sa.source(), payload_type)
+                create_ethernet_header(mac_to_binary(target_mac), mac_to_binary(sa.source()), payload_type)
                 + std::vector<uint8_t>(data_iter, std::end(data));
         Pcap_wrapper pc(iface);
         pc.inject(payload);

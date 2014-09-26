@@ -60,10 +60,10 @@ void wol_ethernet(const std::string& iface, const std::string& mac) {
         broadcast_ll.sll_family = AF_PACKET;
         broadcast_ll.sll_ifindex = sock.get_ifindex(iface);
         broadcast_ll.sll_halen = ETH_ALEN;
-        const std::vector<uint8_t> hw_addr = sock.get_hwaddr(iface);
-        std::copy(std::begin(hw_addr), std::end(hw_addr), broadcast_ll.sll_addr);
+        const ether_addr hw_addr = sock.get_hwaddr(iface);
+        std::copy(std::begin(hw_addr.ether_addr_octet), std::end(hw_addr.ether_addr_octet), broadcast_ll.sll_addr);
 
-        const std::vector<uint8_t> binary_data = create_ethernet_header(mac, to_hex(hw_addr), 0x0842) + create_wol_udp_payload(mac);
+        const std::vector<uint8_t> binary_data = create_ethernet_header(mac_to_binary(mac), hw_addr, 0x0842) + create_wol_udp_payload(mac);
         sock.send_to(binary_data, 0, broadcast_ll);
 }
 

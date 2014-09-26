@@ -27,7 +27,7 @@ class Ethernet_test : public CppUnit::TestFixture {
         void tearDown() {}
 
         void test_create_ethernet_header() {
-                std::vector<uint8_t> header = create_ethernet_header("aa:BB:cc:dd:ee:ff", "00:11:22:33:44:55", 0x800);
+                std::vector<uint8_t> header = create_ethernet_header(mac_to_binary("aa:BB:cc:dd:ee:ff"), mac_to_binary("00:11:22:33:44:55"), 0x800);
                 auto iter = std::begin(header);
                 check_header(iter, std::end(header), 10, 16);
                 check_header(iter, std::end(header), 0, 6);
@@ -35,7 +35,7 @@ class Ethernet_test : public CppUnit::TestFixture {
                 iter++;
                 CPPUNIT_ASSERT(0x00 == *iter);
 
-                header = create_ethernet_header("66:77:88:99:aa:bb", "33:44:55:66:77:88", 0x86Dd);
+                header = create_ethernet_header(mac_to_binary("66:77:88:99:aa:bb"), mac_to_binary("33:44:55:66:77:88"), 0x86Dd);
                 iter = std::begin(header);
                 check_header(iter, std::end(header), 6, 12);
                 check_header(iter, std::end(header), 3, 9);
@@ -43,7 +43,7 @@ class Ethernet_test : public CppUnit::TestFixture {
                 iter++;
                 CPPUNIT_ASSERT(0xdd == *iter);
 
-                header = create_ethernet_header("66:77:88:99:aa:bb", "33:44:55:66:77:88", 0x0842);
+                header = create_ethernet_header(mac_to_binary("66:77:88:99:aa:bb"), mac_to_binary("33:44:55:66:77:88"), 0x0842);
                 iter = std::begin(header);
                 check_header(iter, std::end(header), 6, 12);
                 check_header(iter, std::end(header), 3, 9);

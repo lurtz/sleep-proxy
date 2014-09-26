@@ -22,6 +22,7 @@
 #include <cstring>
 #include <stdexcept>
 #include <linux/if.h>
+#include <netinet/ether.h>
 
 /** C++ wrapper to socket functions */
 struct Socket {
@@ -72,6 +73,6 @@ struct Socket {
 
         void ioctl(const unsigned long, ifreq&) const;
         int get_ifindex(const std::string& iface) const;
-        std::vector<uint8_t> get_hwaddr(const std::string&) const;
+        ether_addr get_hwaddr(const std::string&) const;
 };
 

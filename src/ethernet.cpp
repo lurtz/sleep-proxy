@@ -64,11 +64,11 @@ uint16_t sniff_ethernet::payload_protocol() const {
 }
 
 std::string sniff_ethernet::destination() const {
-        return join(ether_dhost, one_byte_to_two_hex_chars, ":");
+        return binary_to_mac(ether_dhost);
 }
 
 std::string sniff_ethernet::source() const {
-        return join(ether_shost, one_byte_to_two_hex_chars, ":");
+        return binary_to_mac(ether_shost);
 }
 
 std::string sniff_ethernet::get_info() const {
@@ -93,8 +93,8 @@ std::vector<uint8_t> to_vector(const ether_addr& mac) {
         return std::vector<uint8_t>(mac.ether_addr_octet, mac.ether_addr_octet+sizeof(mac.ether_addr_octet));
 }
 
-std::vector<uint8_t> create_ethernet_header(const std::string& dmac, const std::string& smac, const uint16_t type) {
-        auto binary = to_vector(mac_to_binary(dmac)) + to_vector(mac_to_binary(smac));
+std::vector<uint8_t> create_ethernet_header(const ether_addr& dmac, const ether_addr& smac, const uint16_t type) {
+        auto binary = to_vector(dmac) + to_vector(smac);
         binary.push_back(type >> 8);
         binary.push_back(type & 0xFF);
         return binary;
