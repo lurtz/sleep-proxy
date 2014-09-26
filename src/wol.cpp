@@ -28,11 +28,12 @@
  * create the payload for a UDP wol packet to be broadcast in to the network
  */
 std::vector<uint8_t> create_wol_udp_payload(const std::string& mac) {
-        const std::string rawmac = remove_seperator_from_mac(mac);
-        // pad the synchronization stream
-        const std::string data = repeat<std::string>(rawmac, 20, "FFFFFFFFFFFF");
-        // convert chars to binary data
-        return to_binary(data);
+        const std::vector<uint8_t> binary_mac = to_vector(mac_to_binary(mac));
+        std::vector<uint8_t> magic_bytes{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+        for (unsigned int i = 0; i < 20; i++) {
+                magic_bytes.insert(std::end(magic_bytes), std::begin(binary_mac), std::end(binary_mac));
+        }
+        return magic_bytes;
 }
 
 /**
