@@ -105,6 +105,13 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
         return guards;
 }
 
+std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address>& ips, const std::vector<uint16_t>& ports) {
+        std::string bpf = "tcp[tcpflags] == tcp-syn";
+        bpf += " and dst host (" + join(ips, get_pure_ip, " or ") + ")";
+        bpf += " and dst port (" + join(ports, [](uint16_t in){return in;}, " or ") + ")";
+        return bpf;
+}
+
 /**
  * Waits and blocks until a SYN packet to any of the given IPs in Args and to
  * any of the given ports in Args is received. Returns the data, the IP
@@ -120,9 +127,7 @@ std::tuple<std::vector<uint8_t>, IP_address, IP_address> wait_and_listen(const A
                 guards.emplace_back(Duplicate_address_watcher{args.interface, ip, pc});
         }
 
-        std::string bpf = "tcp[tcpflags] == tcp-syn";
-        bpf += " and dst host (" + join(args.address, get_pure_ip, " or ") + ")";
-        bpf += " and dst port (" + join(args.ports, [](uint16_t in){return in;}, " or ") + ")";
+        const std::string bpf = rule_to_listen_on_ips_and_ports(args.address, args.ports);
         log_string(LOG_INFO, "Listening with filter: " + bpf);
         pc.set_filter(bpf);
 

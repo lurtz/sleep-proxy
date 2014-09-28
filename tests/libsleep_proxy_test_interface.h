@@ -19,3 +19,4 @@
 void reset_signaled();
 
 std::string get_bindable_ip(const std::string& iface, const std::string& ip);
+std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address>& ips, const std::vector<uint16_t>& ports);
