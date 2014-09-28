@@ -21,6 +21,7 @@
 #include "ip_utils.h"
 #include "int_utils.h"
 #include "split.h"
+#include "container_utils.h"
 
 class Ip_utils_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Ip_utils_test );
@@ -59,8 +60,7 @@ class Ip_utils_test : public CppUnit::TestFixture {
                 std::vector<int> ints{1,2,3,4};
                 CPPUNIT_ASSERT(ints == parse_items(split("1,2,3,4", ','), str_to_integral<int>));
                 CPPUNIT_ASSERT(ints == parse_items(strings, str_to_integral<int>));
-                auto lamb = [](std::string s){return s;};
-                CPPUNIT_ASSERT(strings == parse_items(strings, lamb));
+                CPPUNIT_ASSERT(strings == parse_items(strings, identity<std::string>));
                 CPPUNIT_ASSERT(std::vector<int>() == parse_items(std::vector<std::string>(), str_to_integral<int>));
         }
 };

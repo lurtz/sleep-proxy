@@ -21,6 +21,11 @@
 #include <algorithm>
 #include <iterator>
 
+template<typename T>
+T identity(const T& t) {
+        return t;
+}
+
 template<typename Container, typename Func>
 std::string join(Container c, Func fun, std::string sep) {
         typedef typename std::result_of<decltype(fun)(typename Container::value_type)>::type input_type;

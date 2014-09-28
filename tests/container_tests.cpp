@@ -27,17 +27,16 @@ class Join_test : public CppUnit::TestFixture {
         void setUp() {}
         void tearDown() {}
         void testConstructor() {
-                auto lambid = [](const int i){return i;};
-                std::string result = join(std::vector<int>(), lambid, "," );
+                std::string result = join(std::vector<int>(), identity<int>, "," );
                 CPPUNIT_ASSERT_EQUAL(std::string(""), result);
                 std::vector<int> ints{1,2,3,4};
-                result = join(ints, lambid, ",");
+                result = join(ints, identity<int>, ",");
                 CPPUNIT_ASSERT_EQUAL(std::string("1,2,3,4"), result);
                 std::vector<std::string> strings{"a","b","c","d"};
-                result = join(strings, [](const std::string& s){return s;}, ",");
+                result = join(strings, identity<std::string>, ",");
                 CPPUNIT_ASSERT_EQUAL(std::string("a,b,c,d"), result);
                 std::array<uint8_t, 3> arr{{10,20,30}};
-                result = join(arr, lambid, ";");
+                result = join(arr, identity<int>, ";");
                 CPPUNIT_ASSERT_EQUAL(std::string("10;20;30"), result);
         }
 };

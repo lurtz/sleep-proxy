@@ -108,7 +108,7 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
 std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address>& ips, const std::vector<uint16_t>& ports) {
         std::string bpf = "tcp[tcpflags] == tcp-syn";
         bpf += " and dst host (" + join(ips, get_pure_ip, " or ") + ")";
-        bpf += " and dst port (" + join(ports, [](uint16_t in){return in;}, " or ") + ")";
+        bpf += " and dst port (" + join(ports, identity<uint16_t>, " or ") + ")";
         return bpf;
 }
 
