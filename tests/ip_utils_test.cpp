@@ -21,6 +21,7 @@
 #include "ip_utils.h"
 #include "int_utils.h"
 #include "split.h"
+#include "ip_address.h"
 
 class Ip_utils_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Ip_utils_test );
@@ -106,6 +107,7 @@ class Ip_utils_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_EQUAL(family, ipa.family);
                 CPPUNIT_ASSERT_EQUAL(ip, ipa.pure());
                 CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(subnet), ipa.subnet);
+                CPPUNIT_ASSERT_EQUAL(ip + "/" + to_string(subnet), ipa.with_subnet());
         }
 
         void test_parse_ip() {

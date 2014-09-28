@@ -21,7 +21,6 @@
 #include <type_traits>
 #include <algorithm>
 #include <functional>
-#include "ip_address.h"
 
 static const std::string iface_chars{"qwertzuiopasdfghjklyxcvbnm.-0123456789"};
 
@@ -55,6 +54,4 @@ auto parse_items(Container&& items, Func&& parser) -> std::vector<typename std::
  * checks the format of ip and appends standard subnet sizes if none are given
  */
 std::string sanitize_ip(const std::string& ip);
-
-IP_address parse_ip(const std::string& ip);
 
