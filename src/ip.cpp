@@ -44,7 +44,7 @@ std::ostream& operator<<(std::ostream& out, const ip::Version& v) {
 
 std::ostream& operator<<(std::ostream& out, const ip& ip) {
         out << "IPv" << ip.version() << ": ";
-        out << "dst = " << ip.destination() << ", src = " << ip.source() << ", ";
+        out << "dst = " << ip.destination().pure() << ", src = " << ip.source().pure() << ", ";
         return out;
 }
 
@@ -55,11 +55,11 @@ ip::Version sniff_ipv4::version() const {
 size_t sniff_ipv4::header_length() const {
         return (ip_vhl & 0x0f) * 4;
 }
-std::string sniff_ipv4::source() const {
-        return to_string(ip_src);
+IP_address sniff_ipv4::source() const {
+        return IP_address{AF_INET, {ip_src}, 32};
 }
-std::string sniff_ipv4::destination() const {
-        return to_string(ip_dst);
+IP_address sniff_ipv4::destination() const {
+        return IP_address{AF_INET, {ip_dst}, 32};
 }
 uint8_t sniff_ipv4::payload_protocol() const {
         return ip_p;
@@ -71,11 +71,20 @@ ip::Version sniff_ipv6::version() const {
 size_t sniff_ipv6::header_length() const {
         return 40;
 }
-std::string sniff_ipv6::source() const {
-        return to_string(source_address);
+
+IP_address get_ipv6_address(const in6_addr& addr) {
+        IP_address ipa;
+        ipa.family = AF_INET6;
+        ipa.address.ipv6 = addr;
+        ipa.subnet = 128;
+        return ipa;
 }
-std::string sniff_ipv6::destination() const {
-        return to_string(dest_address);
+
+IP_address sniff_ipv6::source() const {
+        return get_ipv6_address(source_address);
+}
+IP_address sniff_ipv6::destination() const {
+        return get_ipv6_address(dest_address);
 }
 uint32_t sniff_ipv6::traffic_class() const {
         return (version_trafficclass_flowlabel >> 20) & 0xff;

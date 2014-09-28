@@ -27,12 +27,12 @@
  * replacement */
 struct Pseudo_future {
         const std::string iface_;
-        const std::string ip_;
+        const IP_address ip_;
         const unsigned int tries_;
         std::thread thread;
         bool result;
 
-        Pseudo_future(const std::string iface, const std::string ip, const unsigned int tries) : iface_(std::move(iface)), ip_(std::move(ip)), tries_(std::move(tries)), thread([&](){result = ping_and_wait(iface_, ip_, tries_);}) {
+        Pseudo_future(const std::string iface, const IP_address ip, const unsigned int tries) : iface_(std::move(iface)), ip_(std::move(ip)), tries_(std::move(tries)), thread([&](){result = ping_and_wait(iface_, ip_, tries_);}) {
         }
 
         Pseudo_future(Pseudo_future&& pf) = default;

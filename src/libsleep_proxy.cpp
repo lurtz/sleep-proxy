@@ -110,7 +110,7 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
  * any of the given ports in Args is received. Returns the data, the IP
  * source of the received packet and the destination IP
  */
-std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const Args& args) {
+std::tuple<std::vector<uint8_t>, IP_address, IP_address> wait_and_listen(const Args& args) {
         Pcap_wrapper pc("any");
 
         // guards to handle signals and address duplication
@@ -151,22 +151,22 @@ std::tuple<std::vector<uint8_t>, std::string, std::string> wait_and_listen(const
         return std::make_tuple(catcher.data, std::get<1>(catcher.headers)->source(), std::get<1>(catcher.headers)->destination());
 }
 
-std::string get_ping_cmd(const std::string& ip) {
+std::string get_ping_cmd(const IP_address& ip) {
         std::map<int, std::string> which_pingcmd{{AF_INET, "ping"}, {AF_INET6, "ping6"}};
-        return get_path(which_pingcmd.at(getAF(ip)));
+        return get_path(which_pingcmd.at(ip.family));
 }
 
 std::string get_bindable_ip(const std::string& iface, const std::string& ip) {
         if (ip.find("fe80") == 0) {
-                return get_pure_ip(ip) + '%' + iface;
+                return ip + '%' + iface;
         } else {
-                return get_pure_ip(ip);
+                return ip;
         }
 }
 
-bool ping_and_wait(const std::string& iface, const std::string& ip, const unsigned int tries) {
+bool ping_and_wait(const std::string& iface, const IP_address& ip, const unsigned int tries) {
         std::string ipcmd = get_ping_cmd(ip);
-        std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip)};
+        std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip.pure())};
         for (unsigned int i = 0; i < tries && !is_signaled(); i++) {
                 pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
                 uint8_t ret_val = wait_until_pid_exits(pid);
@@ -174,7 +174,7 @@ bool ping_and_wait(const std::string& iface, const std::string& ip, const unsign
                         return true;
                 }
         }
-        log(LOG_ERR, "failed to ping ip %s after %d ping attempts", ip.c_str(), tries);
+        log(LOG_ERR, "failed to ping ip %s after %d ping attempts", ip.pure().c_str(), tries);
         return false;
 }
 
@@ -213,7 +213,7 @@ bool emulate_host(const Args& args) {
         // wake the sleeping server
         wol_ethernet(args.interface, args.mac);
         // wait until server responds and release ICMP rules
-        log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination));
+        log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination).pure());
         const bool wake_success = ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
         const std::string status = wake_success ? " succeeded" : " failed";
         log_string(LOG_NOTICE, "waking " + args.hostname + " with mac " + binary_to_mac(args.mac) + status);

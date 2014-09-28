@@ -19,6 +19,7 @@
 #include <string>
 #include <exception>
 #include "args.h"
+#include "ip_address.h"
 
 void setup_signals();
 
@@ -31,5 +32,5 @@ class Duplicate_address_exception : public std::exception {
         virtual const char * what() const noexcept;
 };
 
-bool ping_and_wait(const std::string& iface, const std::string& ip, const unsigned int tries);
+bool ping_and_wait(const std::string& iface, const IP_address& ip, const unsigned int tries);
 bool emulate_host(const Args& args);

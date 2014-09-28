@@ -34,7 +34,7 @@ Args::Args() : mac{{0}}, ping_tries{0}, syslog(to_syslog) {}
 
 Args::Args(const std::string interface_, const std::vector<std::string> addresss_, const std::vector<std::string> ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_) :
         interface(validate_iface(std::move(interface_))),
-        address(parse_items(std::move(addresss_), sanitize_ip)),
+        address(parse_items(std::move(addresss_), parse_ip)),
         ports(parse_items(std::move(ports_), str_to_integral<uint16_t>)),
         mac(mac_to_binary(validate_mac(std::move(mac_)))),
         hostname(test_characters(hostname_, iface_chars + "-", std::string("invalid token in hostname: ") + hostname_)),

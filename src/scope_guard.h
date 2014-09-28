@@ -23,6 +23,7 @@
 #include <atomic>
 #include <map>
 #include "pcap_wrapper.h"
+#include "ip_address.h"
 
 std::string get_path(const std::string command);
 
@@ -86,14 +87,14 @@ struct Scope_guard {
 /** Adds ip to iface, removes it afterwards */
 struct Temp_ip {
         const std::string iface;
-        const std::string ip;
+        const IP_address ip;
 
         std::string operator()(const Action action) const;
 };
 
 /** Adds a firewall rule to open port for ip */
 struct Drop_port {
-        const std::string ip;
+        const IP_address ip;
         const uint16_t port;
 
         std::string operator()(const Action action) const;
@@ -105,7 +106,7 @@ struct Reject_tp {
                 TCP,
                 UDP
         };
-        const std::string ip;
+        const IP_address ip;
         const TP tcp_udp;
 
         std::string operator()(const Action action) const;
@@ -113,7 +114,7 @@ struct Reject_tp {
 
 /** Adds a firewall rule to block ICMP messages directed to ip */
 struct Block_icmp {
-        const std::string ip;
+        const IP_address ip;
 
         std::string operator()(const Action action) const;
 };
@@ -150,12 +151,12 @@ Ptr_guard<Cont, T> ptr_guard(Cont& cont, std::mutex& cont_mutex, T& ref) {
 
 struct Duplicate_address_watcher {
         const std::string iface;
-        const std::string ip;
+        const IP_address ip;
         Pcap_wrapper& pcap;
         std::shared_ptr<std::thread> watcher;
         std::shared_ptr<std::atomic_bool> loop;
 
-        Duplicate_address_watcher(const std::string, const std::string, Pcap_wrapper&);
+        Duplicate_address_watcher(const std::string, const IP_address, Pcap_wrapper&);
 
         std::string operator()(const Action action);
 };

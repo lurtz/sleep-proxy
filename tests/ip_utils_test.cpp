@@ -27,10 +27,7 @@ class Ip_utils_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Ip_utils_test );
         CPPUNIT_TEST( test_validate_iface );
         CPPUNIT_TEST( test_validate_mac );
-        CPPUNIT_TEST( test_get_pure_ip );
-        CPPUNIT_TEST( test_get_af );
         CPPUNIT_TEST( test_parse_items );
-        CPPUNIT_TEST( test_sanitize_ip );
         CPPUNIT_TEST( test_parse_ip );
         CPPUNIT_TEST_SUITE_END();
         public:
@@ -59,25 +56,6 @@ class Ip_utils_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89:"), std::runtime_error);
         }
 
-        void test_get_pure_ip() {
-                CPPUNIT_ASSERT_EQUAL(std::string("fe80::123"), get_pure_ip("fe80::123/64%lo"));
-                CPPUNIT_ASSERT_EQUAL(std::string("fe80::123"), get_pure_ip("fe80::123/64"));
-                CPPUNIT_ASSERT_EQUAL(std::string("fe80::123"), get_pure_ip("fe80::123"));
-                CPPUNIT_ASSERT_EQUAL(std::string("192.168.1.1"), get_pure_ip("192.168.1.1/24"));
-                CPPUNIT_ASSERT_EQUAL(std::string("blabla"), get_pure_ip("blabla//rumsbums"));
-                CPPUNIT_ASSERT_EQUAL(std::string("blabla"), get_pure_ip("blabla/%rumsbums"));
-                CPPUNIT_ASSERT_EQUAL(std::string("blabla"), get_pure_ip("blabla/%rumsbums/abcabd"));
-        }
-
-        void test_get_af() {
-                CPPUNIT_ASSERT_EQUAL(AF_INET, getAF("192.168.1.1"));
-                CPPUNIT_ASSERT_EQUAL(AF_INET, getAF("10.0.0.1"));
-                CPPUNIT_ASSERT_EQUAL(AF_INET6, getAF("::1"));
-                CPPUNIT_ASSERT_EQUAL(AF_INET6, getAF("fe80::123"));
-                CPPUNIT_ASSERT_EQUAL(AF_INET6, getAF("2001::123"));
-                CPPUNIT_ASSERT_THROW(getAF("abc"), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(getAF("2001::123::123"), std::runtime_error);
-        }
         void test_parse_items() {
                 std::vector<std::string> strings{"1","2","3","4"};
                 std::vector<int> ints{1,2,3,4};
@@ -86,20 +64,6 @@ class Ip_utils_test : public CppUnit::TestFixture {
                 auto lamb = [](std::string s){return s;};
                 CPPUNIT_ASSERT(strings == parse_items(strings, lamb));
                 CPPUNIT_ASSERT(std::vector<int>() == parse_items(std::vector<std::string>(), str_to_integral<int>));
-        }
-
-        void test_sanitize_ip() {
-                CPPUNIT_ASSERT_EQUAL(std::string("192.168.1.1/24"), sanitize_ip("192.168.1.1/24"));
-                CPPUNIT_ASSERT_EQUAL(std::string("192.168.1.1/24"), sanitize_ip("192.168.1.1"));
-                CPPUNIT_ASSERT_EQUAL(std::string("192.168.1.1/16"), sanitize_ip("192.168.1.1/16"));
-                CPPUNIT_ASSERT_EQUAL(std::string("fe80::12/64"), sanitize_ip("fe80::12"));
-                CPPUNIT_ASSERT_EQUAL(std::string("fe80::12/64"), sanitize_ip("fe80::12%lo"));
-                CPPUNIT_ASSERT_EQUAL(std::string("fe80::12/64"), sanitize_ip("fe80::12/64%lo"));
-                CPPUNIT_ASSERT_THROW(sanitize_ip("bla/bla/"), std::invalid_argument);
-                CPPUNIT_ASSERT_THROW(sanitize_ip("fe80::123::123"), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(sanitize_ip("10"), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(sanitize_ip("fe80::123/200"), std::invalid_argument);
-                CPPUNIT_ASSERT_THROW(sanitize_ip("10.0.0.1/200"), std::invalid_argument);
         }
 
         void compare_ip(const std::string& full_ip, const int family, const std::string& ip, const uint8_t subnet) {

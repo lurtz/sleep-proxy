@@ -25,7 +25,6 @@ class Scope_guard_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_drop_port );
         CPPUNIT_TEST( test_reject_tp );
         CPPUNIT_TEST( test_block_icmp );
-        CPPUNIT_TEST( test_duplicate_address_watcher );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -80,92 +79,61 @@ class Scope_guard_test : public CppUnit::TestFixture {
         }
 
         void test_temp_ip() {
-                std::string ip{"10.0.0.1/16"};
+                IP_address ip = parse_ip("10.0.0.1/16");
                 std::string iface{"eth0"};
                 Temp_ip ti{iface, ip};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr add " + ip + " dev " + iface), ti(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr del " + ip + " dev " + iface), ti(Action::del));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr add " + ip.with_subnet() + " dev " + iface), ti(Action::add));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr del " + ip.with_subnet() + " dev " + iface), ti(Action::del));
 
-                ip = "random stuff";
                 iface = "even more randomness";
                 Temp_ip ti2{iface, ip};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr add " + ip + " dev " + iface), ti2(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr del " + ip + " dev " + iface), ti2(Action::del));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr add " + ip.with_subnet() + " dev " + iface), ti2(Action::add));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr del " + ip.with_subnet() + " dev " + iface), ti2(Action::del));
         }
 
         void test_drop_port() {
-                std::string ip{"10.0.0.1/16"};
+                IP_address ip = parse_ip("10.0.0.1/16");
                 uint16_t port{1234};
                 Drop_port op{ip, port};
-                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -I INPUT -d 10.0.0.1 -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op(Action::add));
-                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -D INPUT -d 10.0.0.1 -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op(Action::del));
+                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op(Action::add));
+                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -D INPUT -d " + ip.pure() + " -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op(Action::del));
 
-                ip = "fe80::affe";
+                ip = parse_ip("fe80::affe");
                 port = 666;
                 Drop_port op2{ip, port};
-                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -I INPUT -d fe80::affe -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op2(Action::add));
-                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -D INPUT -d fe80::affe -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op2(Action::del));
-
-                Drop_port op3{"blabla", 1234};
-                CPPUNIT_ASSERT_THROW(op3(Action::add), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(op3(Action::del), std::runtime_error);
+                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op2(Action::add));
+                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -D INPUT -d " + ip.pure() + " -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op2(Action::del));
         }
 
         void test_reject_tp() {
-                Reject_tp rt{"10.0.0.1/16", Reject_tp::TP::UDP};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I INPUT -d 10.0.0.1 -p udp -j REJECT"), rt(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D INPUT -d 10.0.0.1 -p udp -j REJECT"), rt(Action::del));
-       ;
-                Reject_tp rt2{"10.0.0.1/16", Reject_tp::TP::TCP};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I INPUT -d 10.0.0.1 -p tcp -j REJECT"), rt2(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D INPUT -d 10.0.0.1 -p tcp -j REJECT"), rt2(Action::del));
+                IP_address ip = parse_ip("10.0.0.1/16");
 
-                Reject_tp rt3{"2001::dead:affe/16", Reject_tp::TP::TCP};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I INPUT -d 2001::dead:affe -p tcp -j REJECT"), rt3(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D INPUT -d 2001::dead:affe -p tcp -j REJECT"), rt3(Action::del));
+                Reject_tp rt{ip, Reject_tp::TP::UDP};
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I INPUT -d " + ip.pure() + " -p udp -j REJECT"), rt(Action::add));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D INPUT -d " + ip.pure() + " -p udp -j REJECT"), rt(Action::del));
 
-                Reject_tp rt4{"invalid", Reject_tp::TP::TCP};
-                CPPUNIT_ASSERT_THROW(rt4(Action::add), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(rt4(Action::del), std::runtime_error);
+                ip = parse_ip("10.0.0.1/16");
+                Reject_tp rt2{ip, Reject_tp::TP::TCP};
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I INPUT -d " + ip.pure() + " -p tcp -j REJECT"), rt2(Action::add));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D INPUT -d " + ip.pure() + " -p tcp -j REJECT"), rt2(Action::del));
+
+                ip = parse_ip("2001::dead:affe/16");
+                Reject_tp rt3{ip, Reject_tp::TP::TCP};
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I INPUT -d " + ip.pure() + " -p tcp -j REJECT"), rt3(Action::add));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D INPUT -d " + ip.pure() + " -p tcp -j REJECT"), rt3(Action::del));
         }
 
         void test_block_icmp() {
-                Block_icmp bi{"10.0.0.1/16"};
+                IP_address ip = parse_ip("10.0.0.1/16");
+
+                Block_icmp bi{ip};
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I OUTPUT -d 10.0.0.1 -p icmp --icmp-type destination-unreachable -j DROP"), bi(Action::add));
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D OUTPUT -d 10.0.0.1 -p icmp --icmp-type destination-unreachable -j DROP"), bi(Action::del));
 
-                Block_icmp bi2{"fe80::affe:affe"};
+                ip = parse_ip("fe80::affe:affe");
+                Block_icmp bi2{ip};
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I OUTPUT -d fe80::affe:affe -p icmpv6 --icmpv6-type destination-unreachable -j DROP"), bi2(Action::add));
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D OUTPUT -d fe80::affe:affe -p icmpv6 --icmpv6-type destination-unreachable -j DROP"), bi2(Action::del));
-
-                Block_icmp bi3{"ratzfatz"};
-                CPPUNIT_ASSERT_THROW(bi3(Action::add), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(bi3(Action::del), std::runtime_error);
-        }
-
-        struct Pcap_dummy : public Pcap_wrapper {
-                Pcap_dummy() {}
-                Pcap_wrapper::Loop_end_reason get_end_reason() const {
-                        return loop_end_reason;
-                }
-        };
-
-        void test_duplicate_address_watcher() {
-                Pcap_dummy pcap;
-                Duplicate_address_watcher daw{"eth0", "10.0.0.1/16", pcap};
-                CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::add));
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                CPPUNIT_ASSERT(Pcap_dummy().get_end_reason() == pcap.get_end_reason());
-                CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::del));
-                CPPUNIT_ASSERT(Pcap_dummy().get_end_reason() == pcap.get_end_reason());
-                Duplicate_address_watcher daw2{"wlan0", "192.168.1.1/24", pcap};
-                Duplicate_address_watcher daw3{"eth0", "192.168.1.1/24", pcap};
-                CPPUNIT_ASSERT_EQUAL(std::string(""), daw2(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string(""), daw3(Action::add));
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                CPPUNIT_ASSERT_EQUAL(std::string(""), daw2(Action::del));
-                CPPUNIT_ASSERT_EQUAL(std::string(""), daw3(Action::del));
-                CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address == pcap.get_end_reason());
         }
 };
 

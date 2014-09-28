@@ -24,6 +24,7 @@
 #include "to_string.h"
 #include "split.h"
 #include "ethernet.h"
+#include "ip_utils.h"
 
 class Args_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Args_test );
@@ -88,7 +89,11 @@ class Args_test : public CppUnit::TestFixture {
 
         void compare(const Args& args) const {
                 CPPUNIT_ASSERT_EQUAL(interface, args.interface);
-                CPPUNIT_ASSERT(split(addresses, ',') == args.address);
+                std::vector<IP_address> parsed_ips;
+                for (const auto& ip : split(addresses, ',')) {
+                        parsed_ips.push_back(parse_ip(ip));
+                }
+                CPPUNIT_ASSERT(parsed_ips == args.address);
                 CPPUNIT_ASSERT(parse_ports() == args.ports);
                 std::string lower_mac = mac;
                 std::transform(std::begin(lower_mac), std::end(lower_mac), std::begin(lower_mac), [](int ch){return std::tolower(ch);});

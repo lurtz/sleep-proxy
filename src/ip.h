@@ -21,6 +21,7 @@
 #include <memory>
 #include <vector>
 #include <stdexcept>
+#include "ip_address.h"
 #include "log.h"
 
 /** Abstract base class for any IP version */
@@ -47,10 +48,10 @@ struct ip {
         virtual size_t header_length() const = 0;
 
         /** source address */
-        virtual std::string source() const = 0;
+        virtual IP_address source() const = 0;
 
         /** destination address */
-        virtual std::string destination() const = 0;
+        virtual IP_address destination() const = 0;
 
         /** which protocol header to expect next */
         virtual uint8_t payload_protocol() const = 0;
@@ -129,8 +130,8 @@ struct sniff_ipv4 : public ip {
 
         virtual ip::Version version() const;
         virtual size_t header_length() const;
-        virtual std::string source() const;
-        virtual std::string destination() const;
+        virtual IP_address source() const;
+        virtual IP_address destination() const;
         virtual uint8_t payload_protocol() const;
 };
 
@@ -175,8 +176,8 @@ struct sniff_ipv6 : public ip {
         }
         virtual ip::Version version() const;
         virtual size_t header_length() const;
-        virtual std::string source() const;
-        virtual std::string destination() const;
+        virtual IP_address source() const;
+        virtual IP_address destination() const;
         uint32_t traffic_class() const;
         uint32_t flow_label() const;
         virtual uint8_t payload_protocol() const;

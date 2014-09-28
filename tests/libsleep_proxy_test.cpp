@@ -52,19 +52,19 @@ class Libsleep_proxy_test : public CppUnit::TestFixture {
         }
 
         void test_ping_and_wait() {
-                CPPUNIT_ASSERT(ping_and_wait("lo", "127.0.0.1", 1));
-                CPPUNIT_ASSERT(!ping_and_wait("lo", "127.0.0.1", 0));
-                CPPUNIT_ASSERT(ping_and_wait("eth0", "127.0.0.1", 1));
-                CPPUNIT_ASSERT(!ping_and_wait("eth0", "127.0.0.1", 0));
-                CPPUNIT_ASSERT(ping_and_wait("lo", "::1", 1));
-                CPPUNIT_ASSERT(!ping_and_wait("lo", "::1", 0));
-                CPPUNIT_ASSERT(ping_and_wait("eth0", "::1", 1));
-                CPPUNIT_ASSERT(!ping_and_wait("eth0", "::1", 0));
+                CPPUNIT_ASSERT(ping_and_wait("lo", parse_ip("127.0.0.1"), 1));
+                CPPUNIT_ASSERT(!ping_and_wait("lo", parse_ip("127.0.0.1"), 0));
+                CPPUNIT_ASSERT(ping_and_wait("eth0", parse_ip("127.0.0.1"), 1));
+                CPPUNIT_ASSERT(!ping_and_wait("eth0", parse_ip("127.0.0.1"), 0));
+                CPPUNIT_ASSERT(ping_and_wait("lo", parse_ip("::1"), 1));
+                CPPUNIT_ASSERT(!ping_and_wait("lo", parse_ip("::1"), 0));
+                CPPUNIT_ASSERT(ping_and_wait("eth0", parse_ip("::1"), 1));
+                CPPUNIT_ASSERT(!ping_and_wait("eth0", parse_ip("::1"), 0));
 
-                CPPUNIT_ASSERT(!ping_and_wait("lo", "192.168.254.200", 1));
-                CPPUNIT_ASSERT(!ping_and_wait("eth0", "192.168.254.200", 1));
-                CPPUNIT_ASSERT(!ping_and_wait("lo", "::2", 1));
-                CPPUNIT_ASSERT(!ping_and_wait("eth0", "::2", 1));
+                CPPUNIT_ASSERT(!ping_and_wait("lo", parse_ip("192.168.254.200"), 1));
+                CPPUNIT_ASSERT(!ping_and_wait("eth0", parse_ip("192.168.254.200"), 1));
+                CPPUNIT_ASSERT(!ping_and_wait("lo", parse_ip("::2"), 1));
+                CPPUNIT_ASSERT(!ping_and_wait("eth0", parse_ip("::2"), 1));
         }
 
         void test_duplicate_address_detection_exception() {

@@ -20,6 +20,7 @@
 #include <vector>
 #include <ostream>
 #include <netinet/ether.h>
+#include "ip_address.h"
 
 /**
  * Parses and checks the input of the command line arguments
@@ -28,7 +29,7 @@ struct Args {
         /** the interface to use */
         const std::string interface;
         /** addresses to listen on */
-        const std::vector<std::string> address;
+        const std::vector<IP_address> address;
         /** ports to listen on */
         const std::vector<uint16_t> ports;
         /** mac of the target machine to wake up */
