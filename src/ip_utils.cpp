@@ -93,12 +93,6 @@ std::string sanitize_ip(const std::string& ip) {
         return sane_ip;
 }
 
-std::string IP_address::pure() const {
-        std::array<char, INET6_ADDRSTRLEN> text{{0}};
-        inet_ntop(family, &address.ipv6, text.data(), text.size());
-        return text.data();
-}
-
 int get_af(const std::string& ip) {
         in6_addr ipv6;
         if (inet_pton(AF_INET, ip.c_str(), &ipv6) == 1) {
