@@ -41,4 +41,5 @@ make_test(libsleep_proxy_test sleep-proxy)
 make_test(ethernet_test sleep-proxy)
 make_test(wol_test sleep-proxy)
 make_test(duplicate_address_watcher_test sleep-proxy)
+make_test(ip_address_test sleep-proxy)
 
