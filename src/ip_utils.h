@@ -21,6 +21,7 @@
 #include <type_traits>
 #include <algorithm>
 #include <functional>
+#include <arpa/inet.h>
 
 static const std::string iface_chars{"qwertzuiopasdfghjklyxcvbnm.-0123456789"};
 
@@ -54,4 +55,13 @@ auto parse_items(Container&& items, Func&& parser) -> std::vector<typename std::
  * checks the format of ip and appends standard subnet sizes if none are given
  */
 std::string sanitize_ip(const std::string& ip);
+
+struct IP_address {
+        int family;
+        union { in_addr ipv4; in6_addr ipv6; } address;
+        uint8_t subnet;
+        std::string pure() const;
+};
+
+IP_address parse_ip(const std::string& ip);
 
