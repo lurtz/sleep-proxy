@@ -22,6 +22,7 @@
 class Join_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Join_test );
         CPPUNIT_TEST( testConstructor );
+        CPPUNIT_TEST( test_vector_addition );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -38,6 +39,14 @@ class Join_test : public CppUnit::TestFixture {
                 std::array<uint8_t, 3> arr{{10,20,30}};
                 result = join(arr, identity<int>, ";");
                 CPPUNIT_ASSERT_EQUAL(std::string("10;20;30"), result);
+        }
+
+        void test_vector_addition() {
+                std::vector<int> v0{1,2,3};
+                std::vector<int> v1{4,5,6};
+                std::vector<int> r0{1,2,3,4,5,6};
+                CPPUNIT_ASSERT(r0 == std::move(v0) + v1);
+                CPPUNIT_ASSERT(std::vector<int>() == std::vector<int>() + std::vector<int>());
         }
 };
 
