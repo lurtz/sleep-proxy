@@ -61,7 +61,7 @@ void Scope_guard::take_action(const Action a) const {
 
 bool file_exists(const std::string& filename) {
         struct stat stats;
-        auto errno_save = errno;
+        const auto errno_save = errno;
         bool ret_val = stat(filename.c_str(), &stats) == 0;
         errno = errno_save;
         return ret_val;
@@ -81,7 +81,7 @@ std::string get_path(const std::string command) {
 
 std::string Temp_ip::operator()(const Action action) const {
         const static std::map<Action, std::string> which_action{{Action::add, "add"}, {Action::del, "del"}};
-        std::string saction{which_action.at(action)};
+        const std::string saction{which_action.at(action)};
         return get_path("ip") + " addr " + saction + " " + ip.with_subnet() + " dev " + iface;
 }
 
@@ -94,21 +94,24 @@ std::string get_iptables_cmd(const IP_address& ip) {
         return get_path(which_iptcmd.at(ip.family));
 }
 
-std::string Drop_port::operator()(const Action action) const {
+std::string iptables_action(const Action& action) {
         const static std::map<Action, std::string> which_action{{Action::add, "I"}, {Action::del, "D"}};
-        std::string saction{which_action.at(action)};
-        std::string iptcmd = get_iptables_cmd(ip);
-        std::string pip = ip.pure();
+        return which_action.at(action);
+}
+
+std::string Drop_port::operator()(const Action action) const {
+        const std::string saction{iptables_action(action)};
+        const std::string iptcmd = get_iptables_cmd(ip);
+        const std::string pip = ip.pure();
         return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p tcp --syn --dport " + to_string(port) + " -j DROP";
 }
 
 std::string Reject_tp::operator()(const Action action) const {
-        const static std::map<Action, std::string> which_action{{Action::add, "I"}, {Action::del, "D"}};
         const static std::map<TP, std::string> which_tp{{TP::TCP, "tcp"}, {TP::UDP, "udp"}};
-        std::string saction{which_action.at(action)};
-        std::string stp{which_tp.at(tcp_udp)};
-        std::string iptcmd = get_iptables_cmd(ip);
-        std::string pip = ip.pure();
+        const std::string saction{iptables_action(action)};
+        const std::string stp{which_tp.at(tcp_udp)};
+        const std::string iptcmd = get_iptables_cmd(ip);
+        const std::string pip = ip.pure();
         return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p " + stp + " -j REJECT";
 }
 
@@ -117,29 +120,24 @@ std::string Reject_tp::operator()(const Action action) const {
  * the correct one according to the ip version
  */
 std::string get_icmp_version(const IP_address& ip) {
-        switch (ip.family) {
-                case AF_INET: return "icmp";
-                case AF_INET6: return "icmpv6";
-                default: throw std::runtime_error("can't determine icmp type for ip:" + ip.with_subnet());
-        }
-        return "";
+        const static std::map<int, std::string> which_icmp{{AF_INET, "icmp"}, {AF_INET6, "icmpv6"}};
+        return which_icmp.at(ip.family);
 }
 
 std::string Block_icmp::operator()(const Action action) const {
-        const static std::map<Action, std::string> which_action{{Action::add, "I"}, {Action::del, "D"}};
-        std::string saction{which_action.at(action)};
-        std::string iptcmd = get_iptables_cmd(ip);
-        std::string icmpv = get_icmp_version(ip);
+        const std::string saction{iptables_action(action)};
+        const std::string iptcmd = get_iptables_cmd(ip);
+        const std::string icmpv = get_icmp_version(ip);
         return iptcmd + " -w -" + saction + " OUTPUT -d " + ip.pure() + " -p " + icmpv + " --" + icmpv + "-type destination-unreachable -j DROP";
 }
 
 void daw_thread_main(const std::string iface, const IP_address ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
-        std::string cmd = get_path("arping") + " -q -D -c 1 -I " + iface + " " + ip.pure();
+        const std::string cmd = get_path("arping") + " -q -D -c 1 -I " + iface + " " + ip.pure();
         log_string(LOG_INFO, "starting: " + cmd);
         auto cmd_split = split(cmd, ' ');
         while (loop) {
-                pid_t pid = spawn(cmd_split, "/dev/null");
-                uint8_t status = wait_until_pid_exits(pid);
+                const pid_t pid = spawn(cmd_split, "/dev/null");
+                const uint8_t status = wait_until_pid_exits(pid);
                 if (status == 1) {
                         loop = false;
                         pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);

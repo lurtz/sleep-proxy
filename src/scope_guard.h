@@ -126,12 +126,12 @@ struct Ptr_guard {
         T& ref;
 
         std::string operator()(const Action action) {
-                std::lock_guard<std::mutex> lock(cont_mutex);
+                const std::lock_guard<std::mutex> lock(cont_mutex);
                 switch (action) {
                         case Action::add: cont.emplace_back(&ref);
                                           break;
                         case Action::del: {
-                                          auto pos = std::find(std::begin(cont), std::end(cont), &ref);
+                                          const auto pos = std::find(std::begin(cont), std::end(cont), &ref);
                                           if (pos == std::end(cont)) {
                                                   throw std::runtime_error("element supposed to be managed by ptr_guard is gone missing from container");
                                           }
