@@ -28,6 +28,9 @@ include_directories("${PROJECT_SOURCE_DIR}/src")
 file(COPY "${PROJECT_SOURCE_DIR}/tests/watchhosts" DESTINATION "${PROJECT_BINARY_DIR}/tests")
 file(COPY "${PROJECT_SOURCE_DIR}/tests/watchhosts-empty" DESTINATION "${PROJECT_BINARY_DIR}/tests")
 
+add_library(packet_test_utils packet_test_utils.cpp)
+target_link_libraries(packet_test_utils sleep-proxy)
+
 make_test(container_tests)
 make_test(int_utils_test sleep-proxy)
 make_test(split_test sleep-proxy)
@@ -42,5 +45,5 @@ make_test(ethernet_test sleep-proxy)
 make_test(wol_test sleep-proxy)
 make_test(duplicate_address_watcher_test sleep-proxy)
 make_test(ip_address_test sleep-proxy)
-make_test(packet_parser_test sleep-proxy)
+make_test(packet_parser_test packet_test_utils)
 
