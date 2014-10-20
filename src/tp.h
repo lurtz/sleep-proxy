@@ -25,6 +25,7 @@
 
 /** abstract base class for transport protocols like TCP and UDP */
 struct tp {
+        enum Type {TCP = 6, UDP = 17};
         /**
          * perform sanity and bounds checks on data and end
          */
@@ -39,7 +40,7 @@ struct tp {
         virtual ~tp() {}
 
         /** which type of transports protocol is it actually */
-        virtual std::string type() const = 0;
+        virtual tp::Type type() const = 0;
 
         /** source port */
         virtual uint16_t source() const = 0;
@@ -122,7 +123,7 @@ struct sniff_tcp : public tp {
         }
 
         virtual size_t header_length() const;
-        virtual std::string type() const;
+        virtual tp::Type type() const;
         virtual uint16_t source() const;
         virtual uint16_t destination() const;
         virtual std::string extra_info() const;
@@ -155,7 +156,7 @@ struct sniff_udp : public tp {
                 checksum = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
         }
 
-        virtual std::string type() const;
+        virtual tp::Type type() const;
         virtual uint16_t source() const;
         virtual uint16_t destination() const;
         virtual size_t header_length() const;
@@ -168,8 +169,8 @@ struct sniff_udp : public tp {
 template<typename iterator>
 std::unique_ptr<tp> parse_tp(uint8_t type, iterator data, iterator end) {
         switch(type) {
-                case 6: return std::unique_ptr<tp>(new sniff_tcp(data, end));
-                case 17: return std::unique_ptr<tp>(new sniff_udp(data, end));
+                case tp::Type::TCP: return std::unique_ptr<tp>(new sniff_tcp(data, end));
+                case tp::Type::UDP: return std::unique_ptr<tp>(new sniff_udp(data, end));
                 default: return std::unique_ptr<tp>(nullptr);
         }
 }

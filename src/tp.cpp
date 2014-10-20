@@ -18,6 +18,16 @@
 
 std::string tp::extra_info() const { return ""; }
 
+std::ostream& operator<<(std::ostream& out, const tp::Type& t) {
+        switch (t) {
+                case tp::Type::UDP: out << "UDP";
+                                    break;
+                case tp::Type::TCP: out << "TCP";
+                                    break;
+        }
+        return out;
+}
+
 std::ostream& operator<<(std::ostream& out, const tp& tp) {
         out << tp.type() << ": src port = " << tp.source() << ", ";
         out << "destination = " << tp.destination() << ", " << tp.extra_info();
@@ -27,8 +37,8 @@ std::ostream& operator<<(std::ostream& out, const tp& tp) {
 size_t sniff_tcp::header_length() const {
         return ((th_offx2 & 0xf0) >> 4) * 4;
 }
-std::string sniff_tcp::type() const {
-        return "TCP";
+tp::Type sniff_tcp::type() const {
+        return tp::Type::TCP;
 }
 uint16_t sniff_tcp::source() const {
         return th_sport;
@@ -57,8 +67,8 @@ std::string sniff_tcp::extra_info() const {
         return retval.substr(0, retval.size() - 1);
 }
 
-std::string sniff_udp::type() const {
-        return "UDP";
+tp::Type sniff_udp::type() const {
+        return tp::Type::UDP;
 }
 uint16_t sniff_udp::source() const {
         return source_port;
