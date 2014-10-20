@@ -68,12 +68,6 @@ unsigned long long int stoull(const ::std::string& s, const int base) {
 }
 }
 
-void check_range(const long long int val, const long long int lower, const long long int upper) {
-        if (val < lower || val >= upper) {
-                throw std::out_of_range(to_string(val) + " is not in range [" + to_string(lower) + "," + to_string(upper) + ")");
-        }
-}
-
 std::string one_byte_to_two_hex_chars(const uint8_t b) noexcept {
         char val[3] = {0};
         snprintf(val, sizeof(val), "%02x", b);
