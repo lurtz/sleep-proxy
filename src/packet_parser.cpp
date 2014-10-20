@@ -28,8 +28,6 @@ std::ostream& operator<<(std::ostream& out, const basic_headers& headers) {
         print_if_not_nullptr(out, std::get<0>(headers));
         out << '\n';
         print_if_not_nullptr(out, std::get<1>(headers));
-        out << '\n';
-        print_if_not_nullptr(out, std::get<2>(headers));
         return out;
 }
 
@@ -41,7 +39,7 @@ basic_headers get_headers(const int type, const std::vector<u_char>& packet) {
         std::unique_ptr<Link_layer> ll = parse_link_layer(type, data, end);
         if (ll == nullptr) {
                 log(LOG_ERR, "unsupported link layer protocol: %i", type);
-                return std::make_tuple(std::unique_ptr<Link_layer>(nullptr), std::unique_ptr<ip>(nullptr), std::unique_ptr<tp>(nullptr));
+                return std::make_tuple(std::unique_ptr<Link_layer>(nullptr), std::unique_ptr<ip>(nullptr));
         }
         std::advance(data, ll->header_length());
 
@@ -57,17 +55,11 @@ basic_headers get_headers(const int type, const std::vector<u_char>& packet) {
         std::unique_ptr<ip> ipp = parse_ip(payload_type, data, end);
         if (ipp == nullptr) {
                 log(LOG_ERR, "unsupported link layer payload: %u", payload_type);
-                return std::make_tuple(std::move(ll), std::unique_ptr<ip>(nullptr), std::unique_ptr<tp>(nullptr));
+                return std::make_tuple(std::move(ll), std::unique_ptr<ip>(nullptr));
         }
         std::advance(data, ipp->header_length());
 
-        // TCP/UDP header
-        std::unique_ptr<tp> tpp = parse_tp(ipp->payload_protocol(), data, end);
-        if (tpp == nullptr) {
-                log(LOG_ERR, "unsupported ip payload: %u", ipp->payload_protocol());
-        }
-
-        return std::make_tuple(std::move(ll), std::move(ipp), std::move(tpp));
+        return std::make_tuple(std::move(ll), std::move(ipp));
 }
 
 Catch_incoming_connection::Catch_incoming_connection(const int link_layer_typee) : link_layer_type(link_layer_typee) {}

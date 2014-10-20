@@ -22,12 +22,11 @@
 #include <pcap/pcap.h>
 #include "ethernet.h"
 #include "ip.h"
-#include "tp.h"
 
 /**
  * Ethernet, IP and TCP/UDP header in one tuple
  * */
-typedef std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>, std::unique_ptr<tp>> basic_headers;
+typedef std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>> basic_headers;
 
 /**
  * Prints the headers to stdout
