@@ -47,9 +47,15 @@ void test_ll(const std::unique_ptr<Link_layer>& ll, const size_t length, const i
         CPPUNIT_ASSERT_EQUAL(info, ll->get_info());
 }
 
+void test_source(const std::unique_ptr<Link_layer>& ll, const std::string& src) {
+        CPPUNIT_ASSERT(ll != nullptr);
+        const Source_address& sa = dynamic_cast<const Source_address&>(*ll);
+        CPPUNIT_ASSERT_EQUAL(src, binary_to_mac(sa.source()));
+}
+
 void test_ethernet(const std::unique_ptr<Link_layer>& ll, const std::string& src, const std::string& dst) {
         const sniff_ethernet& ether = dynamic_cast<const sniff_ethernet&>(*ll);
         CPPUNIT_ASSERT_EQUAL(dst, binary_to_mac(ether.destination()));
-        CPPUNIT_ASSERT_EQUAL(src, binary_to_mac(ether.source()));
+        test_source(ll, src);
 }
 

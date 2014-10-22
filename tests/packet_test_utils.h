@@ -26,6 +26,8 @@ std::vector<uint8_t> to_binary(const std::string& hex);
 
 void test_ll(const std::unique_ptr<Link_layer>& ll, const size_t length, const ip::Version payload_protocol, const std::string& info);
 
+void test_source(const std::unique_ptr<Link_layer>& ll, const std::string& src);
+
 void test_ethernet(const std::unique_ptr<Link_layer>& ll, const std::string& src, const std::string& dst);
 
 void test_ip(const std::unique_ptr<ip>& ip, const ip::Version v, const std::string& src, const std::string& dst, const size_t header_length, const ip::Payload pl_type);
