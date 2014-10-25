@@ -52,6 +52,7 @@ class Ethernet_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_create_ethernet_header_1 );
         CPPUNIT_TEST( test_create_ethernet_header_2 );
         CPPUNIT_TEST( test_create_ethernet_header_3 );
+        CPPUNIT_TEST( test_non_supported_protocol);
         CPPUNIT_TEST_SUITE_END();
 
         const std::vector<uint8_t> lcc_no_ethernet = to_binary(lcc_no_ethernet_ipv4_0_wireshark);
@@ -175,6 +176,15 @@ class Ethernet_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT(0x8 == *iter);
                 iter++;
                 CPPUNIT_ASSERT(0x42 == *iter);
+        }
+
+        void test_non_supported_protocol() {
+                std::vector<uint8_t> data;
+                for (int type = 0; type < 0xFFFFF; type++) {
+                        if (type == DLT_LINUX_SLL || type == DLT_EN10MB || type == ETHERTYPE_VLAN)
+                                continue;
+                        CPPUNIT_ASSERT(std::unique_ptr<Link_layer>(nullptr) == parse_link_layer(type,std::begin(data), std::end(data)));
+                }
         }
 };
 
