@@ -28,9 +28,9 @@ const std::string ethernet_ipv4_tcp_wireshark = "0000000000000000000000000800450
 
 const std::string ethernet_ipv6_tcp_wireshark = "00000000000000000000000086dd60000000002806400000000000000000000000000000000100000000000000000000000000000001";
 
-const std::string lcc_ipv4_udp_wireshark = "000003040006000000000000000008004500003e057f40004011372e7f0000017f000001";
+const std::string lcc_ipv4_udp_wireshark = "000000010006000000000000000008004500003e057f40004011372e7f0000017f000001";
 
-const std::string lcc_ipv6_tcp_wireshark = "000003040006000000000000000086dd60000000001406400000000000000000000000000000000100000000000000000000000000000001";
+const std::string lcc_ipv6_tcp_wireshark = "000000010006000000000000000086dd60000000001406400000000000000000000000000000000100000000000000000000000000000001";
 
 // src 192.168.1.155 dst 79.143.179.211 UDP 164
 const std::string lcc_vlan_ipv4_udp_wireshark = "000000010006e8de2755a17100008100000108004500009000004000401174b7c0a8019b4f8fb3d3";
@@ -124,7 +124,7 @@ class Packet_parser_test : public CppUnit::TestFixture {
         void test_parse_lcc_vlan_ipv4_udp() {
                 auto headers = get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp);
                 auto& ll = std::get<0>(headers);
-                test_ll(ll, 16, static_cast<ip::Version>(VLAN_HEADER), "Linux cooked capture: src: e8:de:27:55:a1:71");
+                test_ll(ll, 16, static_cast<ip::Version>(ETHERTYPE_VLAN), "Linux cooked capture: src: e8:de:27:55:a1:71");
                 test_ip(std::get<1>(headers), ip::ipv4, "192.168.1.155/32", "79.143.179.211/32", 20, ip::UDP);
         }
 

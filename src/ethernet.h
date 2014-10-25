@@ -67,6 +67,9 @@ struct Linux_cooked_capture : public Link_layer, Source_address {
                 packet_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
                 std::advance(data, 2);
                 device_type = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
+                if (device_type != ARPHRD_ETHER) {
+                        throw std::runtime_error("Linux_cooked_capture only supports ethernet");
+                }
                 std::advance(data, 2);
                 ll_address_length = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
                 if (ll_address_length > source_address.size()) {
@@ -162,14 +165,12 @@ struct sniff_ethernet : public Link_layer, Source_address {
 /** writes destination and source from eth into out */
 std::ostream& operator<<(std::ostream& out, const sniff_ethernet& eth);
 
-const unsigned int VLAN_HEADER = 0x8100;
-
 template<typename iterator>
 std::unique_ptr<Link_layer> parse_link_layer(const int type, iterator data, iterator end) {
         switch (type) {
                 case DLT_LINUX_SLL: return std::unique_ptr<Link_layer>(new Linux_cooked_capture(data, end));
                 case DLT_EN10MB: return std::unique_ptr<Link_layer>(new sniff_ethernet(data, end));
-                case VLAN_HEADER: return std::unique_ptr<Link_layer>(new VLAN_Header(data, end));
+                case ETHERTYPE_VLAN: return std::unique_ptr<Link_layer>(new VLAN_Header(data, end));
                 default: return std::unique_ptr<Link_layer>(nullptr);
         }
 }

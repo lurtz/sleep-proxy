@@ -45,7 +45,7 @@ basic_headers get_headers(const int type, const std::vector<u_char>& packet) {
 
         // possible VLAN header, skip it
         uint16_t payload_type = ll->payload_protocol();
-        if (payload_type == VLAN_HEADER) {
+        if (payload_type == ETHERTYPE_VLAN) {
                 std::unique_ptr<Link_layer> vlan_header = parse_link_layer(payload_type, data, end);
                 payload_type = vlan_header->payload_protocol();
                 std::advance(data, vlan_header->header_length());
