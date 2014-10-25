@@ -49,22 +49,12 @@ class Packet_parser_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_parse_lcc_vlan_ipv4_udp_too_short );
         CPPUNIT_TEST_SUITE_END();
 
-        std::vector<uint8_t> ethernet_ipv4_tcp;
-        std::vector<uint8_t> ethernet_ipv6_tcp;
-        std::vector<uint8_t> lcc_ipv4_udp;
-        std::vector<uint8_t> lcc_ipv6_tcp;
-        std::vector<uint8_t> lcc_vlan_ipv4_udp;
+        const std::vector<uint8_t> ethernet_ipv4_tcp = to_binary(ethernet_ipv4_tcp_wireshark);
+        const std::vector<uint8_t> ethernet_ipv6_tcp = to_binary(ethernet_ipv6_tcp_wireshark);
+        const std::vector<uint8_t> lcc_ipv4_udp = to_binary(lcc_ipv4_udp_wireshark);
+        const std::vector<uint8_t> lcc_ipv6_tcp = to_binary(lcc_ipv6_tcp_wireshark);
+        const std::vector<uint8_t> lcc_vlan_ipv4_udp = to_binary(lcc_vlan_ipv4_udp_wireshark);
         public:
-        void setUp() {
-                ethernet_ipv4_tcp = to_binary(ethernet_ipv4_tcp_wireshark);
-                ethernet_ipv6_tcp = to_binary(ethernet_ipv6_tcp_wireshark);
-                lcc_ipv4_udp = to_binary(lcc_ipv4_udp_wireshark);
-                lcc_ipv6_tcp = to_binary(lcc_ipv6_tcp_wireshark);
-                lcc_vlan_ipv4_udp = to_binary(lcc_vlan_ipv4_udp_wireshark);
-        }
-
-        void tearDown() {}
-
         void test_parse_ethernet_ipv4_tcp() {
                 auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
 

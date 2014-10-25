@@ -47,23 +47,13 @@ class Ip_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_unknown_ip_version );
         CPPUNIT_TEST_SUITE_END();
 
-        std::vector<uint8_t> ipv4_tcp_0;
-        std::vector<uint8_t> ipv4_tcp_1;
-        std::vector<uint8_t> ipv4_udp;
-        std::vector<uint8_t> ipv6_udp;
-        std::vector<uint8_t> ipv6_tcp;
+        const std::vector<uint8_t> ipv4_tcp_0 = to_binary(ipv4_tcp_wireshark);
+        const std::vector<uint8_t> ipv4_tcp_1 = to_binary(ipv4_tcp_wireshark2);
+        const std::vector<uint8_t> ipv4_udp = to_binary(ipv4_udp_wireshark);
+        const std::vector<uint8_t> ipv6_udp = to_binary(ipv6_udp_wireshark);
+        const std::vector<uint8_t> ipv6_tcp = to_binary(ipv6_tcp_wireshark);
 
         public:
-        void setUp() {
-                ipv4_tcp_0 = to_binary(ipv4_tcp_wireshark);
-                ipv4_tcp_1 = to_binary(ipv4_tcp_wireshark2);
-                ipv4_udp = to_binary(ipv4_udp_wireshark);
-                ipv6_udp = to_binary(ipv6_udp_wireshark);
-                ipv6_tcp = to_binary(ipv6_tcp_wireshark);
-        }
-
-        void tearDown() {}
-
         void test_ipv4_tcp_0() {
                 auto ip = parse_ip(ip::ipv4, std::begin(ipv4_tcp_0), std::end(ipv4_tcp_0) );
                 test_ip(ip, ip::ipv4, "141.76.2.4/32", "10.38.4.225/32", 20, ip::TCP);
