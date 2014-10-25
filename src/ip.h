@@ -18,6 +18,7 @@
 
 #include <string>
 #include <arpa/inet.h>
+#include <net/ethernet.h>
 #include <memory>
 #include <vector>
 #include <stdexcept>
@@ -26,8 +27,8 @@
 
 /** Abstract base class for any IP version */
 struct ip {
-        enum Version {ipv4 = 0x800, ipv6 = 0x86DD};
-        enum Payload {TCP = 6, UDP = 17};
+        enum Version {ipv4 = ETHERTYPE_IP, ipv6 = ETHERTYPE_IPV6};
+        enum Payload {TCP = IPPROTO_TCP, UDP = IPPROTO_UDP};
         /**
          * Constructs nothing. Checks if data < end and the data consists
          * of bytes
