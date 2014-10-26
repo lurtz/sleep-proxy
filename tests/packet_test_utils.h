@@ -32,3 +32,7 @@ void test_ethernet(const std::unique_ptr<Link_layer>& ll, const std::string& src
 
 void test_ip(const std::unique_ptr<ip>& ip, const ip::Version v, const std::string& src, const std::string& dst, const size_t header_length, const ip::Payload pl_type);
 
+bool operator==(const Link_layer& lhs, const Link_layer& rhs);
+
+bool operator==(const ip& lhs, const ip& rhs);
+

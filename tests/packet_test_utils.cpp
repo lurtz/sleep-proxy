@@ -59,3 +59,16 @@ void test_ethernet(const std::unique_ptr<Link_layer>& ll, const std::string& src
         test_source(ll, src);
 }
 
+bool operator==(const Link_layer& lhs, const Link_layer& rhs) {
+        return lhs.header_length() == rhs.header_length()
+                && lhs.payload_protocol() == rhs.payload_protocol()
+                && lhs.get_info() == rhs.get_info();
+}
+
+bool operator==(const ip& lhs, const ip& rhs) {
+        return lhs.version() == rhs.version()
+                && lhs.destination() == rhs.destination()
+                && lhs.payload_protocol() == rhs.payload_protocol()
+                && lhs.source() == rhs.source();
+}
+

@@ -47,6 +47,7 @@ class Packet_parser_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_parse_lcc_ipv6_tcp_too_short );
         CPPUNIT_TEST( test_parse_lcc_vlan_ipv4_udp );
         CPPUNIT_TEST( test_parse_lcc_vlan_ipv4_udp_too_short );
+        CPPUNIT_TEST( test_catch_incoming_connection );
         CPPUNIT_TEST_SUITE_END();
 
         const std::vector<uint8_t> ethernet_ipv4_tcp = to_binary(ethernet_ipv4_tcp_wireshark);
@@ -121,6 +122,17 @@ class Packet_parser_test : public CppUnit::TestFixture {
         void test_parse_lcc_vlan_ipv4_udp_too_short() {
                 std::vector<uint8_t> lcc_vlan_ipv4_udp_short(std::begin(lcc_vlan_ipv4_udp), std::end(lcc_vlan_ipv4_udp)-1);
                 CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp_short), std::length_error);
+        }
+
+        void test_catch_incoming_connection() {
+                auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
+                Catch_incoming_connection cic(DLT_EN10MB);
+                pcap_pkthdr hdr;
+                hdr.len = static_cast<bpf_u_int32>(ethernet_ipv4_tcp.size());
+                cic(&hdr, ethernet_ipv4_tcp.data());
+                CPPUNIT_ASSERT(ethernet_ipv4_tcp == cic.data);
+                CPPUNIT_ASSERT_EQUAL(*std::get<0>(headers), *std::get<0>(cic.headers));
+                CPPUNIT_ASSERT_EQUAL(*std::get<1>(headers), *std::get<1>(cic.headers));
         }
 };
 
