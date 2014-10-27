@@ -23,6 +23,8 @@
 class Spawn_process_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Spawn_process_test );
         CPPUNIT_TEST( test_fork_exec );
+        CPPUNIT_TEST( test_file_exists );
+        CPPUNIT_TEST( test_get_path );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -62,6 +64,20 @@ class Spawn_process_test : public CppUnit::TestFixture {
         void test_fork_exec() {
                 test_without_exceptions();
                 test_with_exceptions();
+        }
+
+        void test_file_exists() {
+                CPPUNIT_ASSERT(file_exists("/dev"));
+                CPPUNIT_ASSERT(file_exists("/dev/null"));
+                CPPUNIT_ASSERT(file_exists("/etc/fstab"));
+                CPPUNIT_ASSERT(!file_exists("/dev/nullfdasfdsafdsafdsa"));
+        }
+
+        void test_get_path() {
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip"), get_path("ip"));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables"), get_path("iptables"));
+                CPPUNIT_ASSERT_EQUAL(std::string("/bin/sh"), get_path("sh"));
+                CPPUNIT_ASSERT_EQUAL(std::string("/usr/bin/make"), get_path("make"));
         }
 };
 

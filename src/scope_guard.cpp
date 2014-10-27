@@ -17,7 +17,6 @@
 #include "scope_guard.h"
 #include <map>
 #include <arpa/inet.h>
-#include <sys/stat.h>
 #include <cerrno>
 #include "log.h"
 #include "to_string.h"
@@ -57,26 +56,6 @@ void Scope_guard::take_action(const Action a) const {
                         throw std::runtime_error("command failed: " + cmd);
                 }
         }
-}
-
-bool file_exists(const std::string& filename) {
-        struct stat stats;
-        const auto errno_save = errno;
-        bool ret_val = stat(filename.c_str(), &stats) == 0;
-        errno = errno_save;
-        return ret_val;
-}
-
-const std::array<std::string, 4> paths{{"/sbin", "/usr/sbin", "/bin", "/usr/bin"}};
-
-std::string get_path(const std::string command) {
-        for (const auto& p : paths) {
-                const std::string fn = p + '/' + command;
-                if (file_exists(fn))
-                        return fn;
-        }
-        throw std::runtime_error("unable to find path for file: " + command);
-        return "";
 }
 
 std::string Temp_ip::operator()(const Action action) const {

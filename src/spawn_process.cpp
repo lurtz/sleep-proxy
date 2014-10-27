@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <cerrno>
 #include <tuple>
+#include <sys/stat.h>
 
 uint8_t wait_until_pid_exits(const pid_t& pid) {
         int status;
@@ -114,5 +115,25 @@ pid_t fork_exec_pipes(const std::vector<const char *>& command, const std::strin
                      }
         }
         return child;
+}
+
+bool file_exists(const std::string& filename) {
+        struct stat stats;
+        const auto errno_save = errno;
+        bool ret_val = stat(filename.c_str(), &stats) == 0;
+        errno = errno_save;
+        return ret_val;
+}
+
+const std::array<std::string, 4> paths{{"/sbin", "/usr/sbin", "/bin", "/usr/bin"}};
+
+std::string get_path(const std::string command) {
+        for (const auto& p : paths) {
+                const std::string fn = p + '/' + command;
+                if (file_exists(fn))
+                        return fn;
+        }
+        throw std::runtime_error("unable to find path for file: " + command);
+        return "";
 }
 
