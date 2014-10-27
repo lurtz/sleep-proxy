@@ -18,6 +18,9 @@
 
 #include "scope_guard.h"
 
+bool file_exists(const std::string& filename);
+std::string get_path(const std::string command);
+
 class Scope_guard_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Scope_guard_test );
         CPPUNIT_TEST( test_scope_guard );
@@ -25,6 +28,11 @@ class Scope_guard_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_drop_port );
         CPPUNIT_TEST( test_reject_tp );
         CPPUNIT_TEST( test_block_icmp );
+        CPPUNIT_TEST( test_file_exists );
+        CPPUNIT_TEST( test_get_path );
+        CPPUNIT_TEST( test_take_action );
+        CPPUNIT_TEST( test_take_action_failed_command );
+        CPPUNIT_TEST( test_take_action_non_existing_command );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -75,7 +83,6 @@ class Scope_guard_test : public CppUnit::TestFixture {
                         CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
                         CPPUNIT_ASSERT_EQUAL(&y, ints.at(0));
                 }
-                // TODO test take_action()
         }
 
         void test_temp_ip() {
@@ -134,6 +141,50 @@ class Scope_guard_test : public CppUnit::TestFixture {
                 Block_icmp bi2{ip};
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I OUTPUT -d fe80::affe:affe -p icmpv6 --icmpv6-type destination-unreachable -j DROP"), bi2(Action::add));
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D OUTPUT -d fe80::affe:affe -p icmpv6 --icmpv6-type destination-unreachable -j DROP"), bi2(Action::del));
+        }
+
+        void test_file_exists() {
+                CPPUNIT_ASSERT(file_exists("/dev"));
+                CPPUNIT_ASSERT(file_exists("/dev/null"));
+                CPPUNIT_ASSERT(file_exists("/etc/fstab"));
+                CPPUNIT_ASSERT(!file_exists("/dev/nullfdasfdsafdsafdsa"));
+        }
+
+        void test_get_path() {
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip"), get_path("ip"));
+                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables"), get_path("iptables"));
+                CPPUNIT_ASSERT_EQUAL(std::string("/bin/sh"), get_path("sh"));
+                CPPUNIT_ASSERT_EQUAL(std::string("/usr/bin/make"), get_path("make"));
+        }
+
+        struct Take_action_function {
+                const std::string filename;
+                std::string operator()(const Action a) {
+                        const std::map<Action, std::string> amap{{Action::add, "touch"}, {Action::del, "rm"}};
+                        return get_path(amap.at(a)) + " " + filename;
+                }
+        };
+
+        void test_take_action() {
+              const std::string filename{"/tmp/take_action_test_testfile"};
+              CPPUNIT_ASSERT(!file_exists(filename));
+              {
+                      Scope_guard sg{Take_action_function{filename}};
+                      CPPUNIT_ASSERT(file_exists(filename));
+              }
+              CPPUNIT_ASSERT(!file_exists(filename));
+        }
+
+        std::string exception_causing_function(const Action&) {
+                return get_path("false");
+        }
+
+        void test_take_action_failed_command() {
+              CPPUNIT_ASSERT_THROW(Scope_guard{[](const Action&){return get_path("false");}}, std::runtime_error);
+        }
+
+        void test_take_action_non_existing_command() {
+              CPPUNIT_ASSERT_THROW(Scope_guard{[](const Action&){return "falsefalsefalsefalse";}}, std::runtime_error);
         }
 };
 
