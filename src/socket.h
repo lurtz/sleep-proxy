@@ -26,7 +26,7 @@
 
 /** C++ wrapper to socket functions */
 struct Socket {
-        private:
+        protected:
         /** socket fd */
         int sock;
 
@@ -38,13 +38,13 @@ struct Socket {
         ~Socket();
 
         /**
-         * do not provide a copy constructor as it might leads to multiple
+         * do not provide a copy constructor as it might lead to multiple
          * closing of one socket
          */
         Socket(const Socket&) = delete;
 
         /**
-         * do not provide a copy constructor as it might leads to multiple
+         * do not provide a copy constructor as it might lead to multiple
          * closing of one socket
          */
         Socket& operator=(const Socket&) = delete;
