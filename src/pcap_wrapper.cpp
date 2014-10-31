@@ -93,11 +93,11 @@ Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count, std::function<
                 case 0:
                         loop_end_reason = Loop_end_reason::packets_captured;
                         break;
-                case -1:
+                case PCAP_ERROR:
                         loop_end_reason = Loop_end_reason::error;
                         throw std::runtime_error(std::string("error while captching data: ") + pcap_geterr(pc.get()));
                         break;
-                case -2:
+                case PCAP_ERROR_BREAK:
                         break;
 
         }
