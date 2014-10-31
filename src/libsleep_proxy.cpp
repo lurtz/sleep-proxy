@@ -170,17 +170,15 @@ std::string get_bindable_ip(const std::string& iface, const std::string& ip) {
 }
 
 bool ping_and_wait(const std::string& iface, const IP_address& ip, const unsigned int tries) {
-        std::string ipcmd = get_ping_cmd(ip);
-        std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip.pure())};
-        for (unsigned int i = 0; i < tries && !is_signaled(); i++) {
-                pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
-                uint8_t ret_val = wait_until_pid_exits(pid);
-                if (ret_val == 0) {
-                        return true;
-                }
+        const std::string ipcmd = get_ping_cmd(ip);
+        const std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip.pure())};
+        uint8_t ret_val = 1;
+        for (unsigned int i = 0; i < tries && !is_signaled() && ret_val != 0; i++) {
+                const pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
+                ret_val = wait_until_pid_exits(pid);
         }
         log(LOG_ERR, "failed to ping ip %s after %d ping attempts", ip.pure().c_str(), tries);
-        return false;
+        return ret_val == 0;
 }
 
 void replay_data(const std::string& iface, const int type, const std::vector<uint8_t>& data, const ether_addr& target_mac) {
