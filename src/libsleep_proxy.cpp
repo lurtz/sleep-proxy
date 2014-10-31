@@ -157,7 +157,7 @@ std::tuple<std::vector<uint8_t>, IP_address, IP_address> wait_and_listen(const A
 }
 
 std::string get_ping_cmd(const IP_address& ip) {
-        std::map<int, std::string> which_pingcmd{{AF_INET, "ping"}, {AF_INET6, "ping6"}};
+        const std::map<int, std::string> which_pingcmd{{AF_INET, "ping"}, {AF_INET6, "ping6"}};
         return get_path(which_pingcmd.at(ip.family));
 }
 
