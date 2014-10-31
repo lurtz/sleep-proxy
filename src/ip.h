@@ -66,29 +66,11 @@ std::ostream& operator<<(std::ostream& out, const ip& ip);
  * IPv4 header
  */
 struct sniff_ipv4 : public ip {
-        enum IP_Flags {
-                IP_RF = 0x8000,      /* reserved fragment flag */
-                IP_DF = 0x4000,      /* dont fragment flag */
-                IP_MF = 0x2000,      /* more fragments flag */
-                IP_OFFMASK = 0x1fff  /* mask for fragmenting bits */
-        };
         private:
         /** version << 4 | header length >> 2 */
         u_char ip_vhl;
-        /** type of service */
-        u_char ip_tos;
-        /** total length */
-        u_short ip_len;
-        /** identification */
-        u_short ip_id;
-        /** fragment offset field */
-        u_short ip_off;
-        /** time to live */
-        u_char ip_ttl;
         /** protocol */
         u_char ip_p;
-        /** checksum */
-        u_short ip_sum;
         /** source and dest address */
         struct in_addr ip_src,ip_dst;
 
@@ -100,7 +82,6 @@ struct sniff_ipv4 : public ip {
         template<typename iterator>
         sniff_ipv4(iterator data, iterator end) : ip(data, end) {
                 ip_vhl = *data;
-                std::advance(data, 1);
                 const uint8_t version = ip_vhl >> 4;
                 if (version != 4) {
                         throw std::runtime_error("while parsing ipv4, got wrong ip version: " + to_string(version));
@@ -108,23 +89,12 @@ struct sniff_ipv4 : public ip {
                 if (data >= end) {
                         throw std::range_error("data iterator past the end");
                 }
-                if (header_length() - 1 > static_cast<size_t>(end - data)) {
+                if (header_length() > static_cast<size_t>(end - data)) {
                         throw std::length_error("not enough data to construct an IPv4 header");
                 }
-                ip_tos = *data;
-                std::advance(data, 1);
-                ip_len = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
-                std::advance(data, 2);
-                ip_id = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
-                std::advance(data, 2);
-                ip_off = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
-                std::advance(data, 2);
-                ip_ttl = *data;
-                std::advance(data, 1);
+                std::advance(data, 9);
                 ip_p = *data;
-                std::advance(data, 1);
-                ip_sum = ntohs(*reinterpret_cast<u_short const *>(&(*data)));
-                std::advance(data, 2);
+                std::advance(data, 3);
                 ip_src = *reinterpret_cast<in_addr const *>(&(*data));
                 std::advance(data, 4);
                 ip_dst = *reinterpret_cast<in_addr const *>(&(*data));
@@ -141,12 +111,8 @@ struct sniff_ipv4 : public ip {
 struct sniff_ipv6 : public ip {
         private:
         uint32_t version_trafficclass_flowlabel;
-        /** size of the payload */
-        uint16_t payload_length;
         /** type of the following protocol */
         uint8_t next_header;
-        /** maximum number of nodes to pass */
-        uint8_t hop_limit;
         in6_addr source_address;
         in6_addr dest_address;
 
@@ -165,13 +131,9 @@ struct sniff_ipv6 : public ip {
                 if (version != 6) {
                         throw std::runtime_error("parsing ipv6 header, got wrong ip version: " + to_string(version));
                 }
-                std::advance(data, 4);
-                payload_length = ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
-                std::advance(data, 2);
+                std::advance(data, 6);
                 next_header = *data;
-                std::advance(data, 1);
-                hop_limit = *data;
-                std::advance(data, 1);
+                std::advance(data, 2);
                 std::copy(data, data+16, source_address.s6_addr);
                 std::advance(data, 16);
                 std::copy(data, data+16, dest_address.s6_addr);
@@ -180,8 +142,6 @@ struct sniff_ipv6 : public ip {
         virtual size_t header_length() const;
         virtual IP_address source() const;
         virtual IP_address destination() const;
-        uint32_t traffic_class() const;
-        uint32_t flow_label() const;
         virtual uint8_t payload_protocol() const;
 };
 

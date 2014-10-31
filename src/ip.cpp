@@ -83,15 +83,11 @@ IP_address get_ipv6_address(const in6_addr& addr) {
 IP_address sniff_ipv6::source() const {
         return get_ipv6_address(source_address);
 }
+
 IP_address sniff_ipv6::destination() const {
         return get_ipv6_address(dest_address);
 }
-uint32_t sniff_ipv6::traffic_class() const {
-        return (version_trafficclass_flowlabel >> 20) & 0xff;
-}
-uint32_t sniff_ipv6::flow_label() const {
-        return version_trafficclass_flowlabel & 0xfffff;
-}
+
 uint8_t sniff_ipv6::payload_protocol() const {
         return next_header;
 }
