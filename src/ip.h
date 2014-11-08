@@ -25,142 +25,96 @@
 #include "ip_address.h"
 #include "log.h"
 
-/** Abstract base class for any IP version */
 struct ip {
         enum Version {ipv4 = ETHERTYPE_IP, ipv6 = ETHERTYPE_IPV6};
         enum Payload {TCP = IPPROTO_TCP, UDP = IPPROTO_UDP};
-        /**
-         * Constructs nothing. Checks if data < end and the data consists
-         * of bytes
-         */
-        template<typename iterator>
-        ip(iterator data, iterator end) {
-                static_assert(std::is_same<typename iterator::value_type, uint8_t>::value, "container has to carry u_char or uint8_t");
-                if (data >= end) {
-                        throw std::range_error("data iterator past the end");
-                }
-        }
 
-        virtual ~ip() {}
+        ip::Version m_version;
+        size_t m_header_length;
+        IP_address m_source;
+        IP_address m_destination;
+        uint8_t m_payload_protocol;
+
+        ip(ip::Version const version, size_t const header_length, IP_address const source, IP_address const destination, uint8_t const payload_protocol);
 
         /** which IP version */
-        virtual Version version() const = 0;
+        Version version() const;
 
         /** length of IP header in bytes */
-        virtual size_t header_length() const = 0;
+        size_t header_length() const;
 
         /** source address */
-        virtual IP_address source() const = 0;
+        IP_address source() const;
 
         /** destination address */
-        virtual IP_address destination() const = 0;
+        IP_address destination() const;
 
         /** which protocol header to expect next */
-        virtual uint8_t payload_protocol() const = 0;
+        uint8_t payload_protocol() const;
 };
 
 /** writes ip into out which every information available to the base class */
 std::ostream& operator<<(std::ostream& out, const ip& ip);
 
-/**
- * IPv4 header
- */
-struct sniff_ipv4 : public ip {
-        private:
-        /** version << 4 | header length >> 2 */
-        u_char ip_vhl;
-        /** protocol */
-        u_char ip_p;
-        /** source and dest address */
-        struct in_addr ip_src,ip_dst;
-
-        public:
-        /**
-         * Constructs an IPv4 header from data. Using end checks are performed
-         * if enough data is present
-         */
-        template<typename iterator>
-        sniff_ipv4(iterator data, iterator end) : ip(data, end) {
-                ip_vhl = *data;
-                const uint8_t version = ip_vhl >> 4;
-                if (version != 4) {
-                        throw std::runtime_error("while parsing ipv4, got wrong ip version: " + to_string(version));
-                }
-                if (data >= end) {
-                        throw std::range_error("data iterator past the end");
-                }
-                if (header_length() > static_cast<size_t>(end - data)) {
-                        throw std::length_error("not enough data to construct an IPv4 header");
-                }
-                std::advance(data, 9);
-                ip_p = *data;
-                std::advance(data, 3);
-                ip_src = *reinterpret_cast<in_addr const *>(&(*data));
-                std::advance(data, 4);
-                ip_dst = *reinterpret_cast<in_addr const *>(&(*data));
-        }
-
-        virtual ip::Version version() const;
-        virtual size_t header_length() const;
-        virtual IP_address source() const;
-        virtual IP_address destination() const;
-        virtual uint8_t payload_protocol() const;
-};
-
-/** IPv6 header */
-struct sniff_ipv6 : public ip {
-        private:
-        uint32_t version_trafficclass_flowlabel;
-        /** type of the following protocol */
-        uint8_t next_header;
-        in6_addr source_address;
-        in6_addr dest_address;
-
-        public:
-        /**
-         * Constructs an IPv6 header using data. with end bounds checks are
-         * performed to make sure that enough data exists
-         */
-        template<typename iterator>
-        sniff_ipv6(iterator data, iterator end) : ip(data, end) {
-                if (static_cast<size_t>(end - data) < header_length()) {
-                        throw std::length_error("not enough data to construct an IPv6 header");
-                }
-                version_trafficclass_flowlabel = ntohl(*reinterpret_cast<uint32_t const *>(&(*data)));
-                const uint8_t version = version_trafficclass_flowlabel >> 28;
-                if (version != 6) {
-                        throw std::runtime_error("parsing ipv6 header, got wrong ip version: " + to_string(version));
-                }
-                std::advance(data, 6);
-                next_header = *data;
-                std::advance(data, 2);
-                std::copy(data, data+16, source_address.s6_addr);
-                std::advance(data, 16);
-                std::copy(data, data+16, dest_address.s6_addr);
-        }
-        virtual ip::Version version() const;
-        virtual size_t header_length() const;
-        virtual IP_address source() const;
-        virtual IP_address destination() const;
-        virtual uint8_t payload_protocol() const;
-};
-
-/**
- * using type as a hint and to perform validity checks parse an IPv4/IPv6
- * header from data and perform bounds check with end
- */
 template<typename iterator>
-std::unique_ptr<ip> parse_ip(uint16_t type, iterator data, iterator end) {
-        uint8_t version = *data >> 4;
-        // check wether type and the version the ip headers matches
-        if ((type == ip::Version::ipv4 && version != 4) || (type == ip::Version::ipv6 && version != 6)) {
+void check_type_and_range(iterator data, iterator end, size_t const min_size) {
+        static_assert(std::is_same<typename iterator::value_type, uint8_t>::value, "container has to carry u_char or uint8_t");
+        if (data >= end || static_cast<size_t>(std::distance(data, end)) < min_size) {
+                throw std::length_error("not enough data");
+        }
+}
+
+template<typename iterator>
+bool ethernet_payload_and_ip_version_dont_match(uint16_t const type, iterator data) {
+        uint8_t const version = *data >> 4;
+        bool const result = (type == ip::Version::ipv4 && version != 4) || (type == ip::Version::ipv6 && version != 6);
+        if (result) {
                 log_string(LOG_ERR, "ethernet type and ip version do not match");
+        }
+        return result;
+}
+
+IP_address get_ipv6_address(const in6_addr& addr);
+
+template<typename iterator>
+std::unique_ptr<ip> parse_ipv4(iterator data, iterator end) {
+        check_type_and_range(data, end, 20);
+        uint8_t const ip_vhl = *data;
+        size_t const header_length = (ip_vhl & 0x0f) * 4;
+        std::advance(data, 9);
+        uint8_t const ip_p = *data;
+        std::advance(data, 3);
+        struct in_addr const ip_src = *reinterpret_cast<in_addr const *>(&(*data));
+        std::advance(data, 4);
+        struct in_addr const ip_dst = *reinterpret_cast<in_addr const *>(&(*data));
+        return std::unique_ptr<ip>(new ip(ip::ipv4, header_length, IP_address{AF_INET, {ip_src}, 32}, IP_address{AF_INET, {ip_dst}, 32}, ip_p));
+}
+
+template<typename iterator>
+std::unique_ptr<ip> parse_ipv6(iterator data, iterator end) {
+        const size_t ipv6_header_size = 40;
+        check_type_and_range(data, end, ipv6_header_size);
+        std::advance(data, 6);
+        uint8_t const next_header = *data;
+        std::advance(data, 2);
+        in6_addr source_address;
+        std::copy(data, data+16, source_address.s6_addr);
+        std::advance(data, 16);
+        in6_addr dest_address;
+        std::copy(data, data+16, dest_address.s6_addr);
+        return std::unique_ptr<ip>(new ip(ip::ipv6, ipv6_header_size, get_ipv6_address(source_address), get_ipv6_address(dest_address), next_header));
+}
+
+template<typename iterator>
+std::unique_ptr<ip> parse_ip(uint16_t const type, iterator data, iterator end) {
+        // check wether type and the version the ip headers matches
+        if (ethernet_payload_and_ip_version_dont_match(type, data)) {
                 return std::unique_ptr<ip>(nullptr);
         }
         // construct the IPv4/IPv6 header
         switch (type) {
-                case ip::Version::ipv4: return std::unique_ptr<ip>(new sniff_ipv4(data, end));
-                case ip::Version::ipv6: return std::unique_ptr<ip>(new sniff_ipv6(data, end));
+                case ip::Version::ipv4: return parse_ipv4(data, end);
+                case ip::Version::ipv6: return parse_ipv6(data, end);
                 // do not know the IP version which is given
                 default: return std::unique_ptr<ip>(nullptr);
         }

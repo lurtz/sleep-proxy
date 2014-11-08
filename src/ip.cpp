@@ -48,28 +48,26 @@ std::ostream& operator<<(std::ostream& out, const ip& ip) {
         return out;
 }
 
-ip::Version sniff_ipv4::version() const {
-        return Version::ipv4;
+ip::ip(ip::Version const version, size_t const header_length, IP_address const source, IP_address const destination, uint8_t const payload_protocol) : m_version(version), m_header_length(header_length), m_source(source), m_destination(destination), m_payload_protocol(payload_protocol) {}
+
+ip::Version ip::version() const {
+        return m_version;
 }
 
-size_t sniff_ipv4::header_length() const {
-        return (ip_vhl & 0x0f) * 4;
-}
-IP_address sniff_ipv4::source() const {
-        return IP_address{AF_INET, {ip_src}, 32};
-}
-IP_address sniff_ipv4::destination() const {
-        return IP_address{AF_INET, {ip_dst}, 32};
-}
-uint8_t sniff_ipv4::payload_protocol() const {
-        return ip_p;
+size_t ip::header_length() const {
+        return m_header_length;
 }
 
-ip::Version sniff_ipv6::version() const {
-        return Version::ipv6;
+IP_address ip::source() const {
+        return m_source;
 }
-size_t sniff_ipv6::header_length() const {
-        return 40;
+
+IP_address ip::destination() const {
+        return m_destination;
+}
+
+uint8_t ip::payload_protocol() const {
+        return m_payload_protocol;
 }
 
 IP_address get_ipv6_address(const in6_addr& addr) {
@@ -78,17 +76,5 @@ IP_address get_ipv6_address(const in6_addr& addr) {
         ipa.address.ipv6 = addr;
         ipa.subnet = 128;
         return ipa;
-}
-
-IP_address sniff_ipv6::source() const {
-        return get_ipv6_address(source_address);
-}
-
-IP_address sniff_ipv6::destination() const {
-        return get_ipv6_address(dest_address);
-}
-
-uint8_t sniff_ipv6::payload_protocol() const {
-        return next_header;
 }
 
