@@ -22,6 +22,7 @@
 #include <memory>
 #include <vector>
 #include <stdexcept>
+#include "container_utils.h"
 #include "ip_address.h"
 #include "log.h"
 
@@ -55,14 +56,6 @@ struct ip {
 
 /** writes ip into out which every information available to the base class */
 std::ostream& operator<<(std::ostream& out, const ip& ip);
-
-template<typename iterator>
-void check_type_and_range(iterator data, iterator end, size_t const min_size) {
-        static_assert(std::is_same<typename iterator::value_type, uint8_t>::value, "container has to carry u_char or uint8_t");
-        if (data >= end || static_cast<size_t>(std::distance(data, end)) < min_size) {
-                throw std::length_error("not enough data");
-        }
-}
 
 template<typename iterator>
 bool ethernet_payload_and_ip_version_dont_match(uint16_t const type, iterator data) {
