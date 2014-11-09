@@ -18,7 +18,6 @@
 #include <stdexcept>
 #include <vector>
 #include <tuple>
-#include <map>
 #include <mutex>
 #include <csignal>
 #include <cstring>
@@ -157,8 +156,8 @@ std::tuple<std::vector<uint8_t>, IP_address, IP_address> wait_and_listen(const A
 }
 
 std::string get_ping_cmd(const IP_address& ip) {
-        const std::map<int, std::string> which_pingcmd{{AF_INET, "ping"}, {AF_INET6, "ping6"}};
-        return get_path(which_pingcmd.at(ip.family));
+        std::string const pingcmd = ip.family == AF_INET ? "ping" : "ping6";
+        return get_path(pingcmd);
 }
 
 std::string get_bindable_ip(const std::string& iface, const std::string& ip) {
