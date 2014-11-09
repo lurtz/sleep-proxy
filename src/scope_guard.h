@@ -21,7 +21,6 @@
 #include <mutex>
 #include <thread>
 #include <atomic>
-#include <map>
 #include "pcap_wrapper.h"
 #include "ip_address.h"
 

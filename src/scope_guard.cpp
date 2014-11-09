@@ -15,7 +15,6 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "scope_guard.h"
-#include <map>
 #include <arpa/inet.h>
 #include <cerrno>
 #include "log.h"
@@ -59,8 +58,7 @@ void Scope_guard::take_action(const Action a) const {
 }
 
 std::string Temp_ip::operator()(const Action action) const {
-        const static std::map<Action, std::string> which_action{{Action::add, "add"}, {Action::del, "del"}};
-        const std::string saction{which_action.at(action)};
+        const std::string saction{action == Action::add ? "add" : "del"};
         return get_path("ip") + " addr " + saction + " " + ip.with_subnet() + " dev " + iface;
 }
 
@@ -69,13 +67,12 @@ std::string Temp_ip::operator()(const Action action) const {
  * the version of ip
  */
 std::string get_iptables_cmd(const IP_address& ip) {
-        const static std::map<int, std::string> which_iptcmd{{AF_INET, "iptables"}, {AF_INET6, "ip6tables"}};
-        return get_path(which_iptcmd.at(ip.family));
+        std::string const iptcmd{ip.family == AF_INET ? "iptables" : "ip6tables"};
+        return get_path(iptcmd);
 }
 
 std::string iptables_action(const Action& action) {
-        const static std::map<Action, std::string> which_action{{Action::add, "I"}, {Action::del, "D"}};
-        return which_action.at(action);
+        return action == Action::add ? "I" : "D";
 }
 
 std::string Drop_port::operator()(const Action action) const {
@@ -86,9 +83,8 @@ std::string Drop_port::operator()(const Action action) const {
 }
 
 std::string Reject_tp::operator()(const Action action) const {
-        const static std::map<TP, std::string> which_tp{{TP::TCP, "tcp"}, {TP::UDP, "udp"}};
         const std::string saction{iptables_action(action)};
-        const std::string stp{which_tp.at(tcp_udp)};
+        const std::string stp{tcp_udp == TP::TCP ? "tcp" : "udp"};
         const std::string iptcmd = get_iptables_cmd(ip);
         const std::string pip = ip.pure();
         return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p " + stp + " -j REJECT";
@@ -99,8 +95,7 @@ std::string Reject_tp::operator()(const Action action) const {
  * the correct one according to the ip version
  */
 std::string get_icmp_version(const IP_address& ip) {
-        const static std::map<int, std::string> which_icmp{{AF_INET, "icmp"}, {AF_INET6, "icmpv6"}};
-        return which_icmp.at(ip.family);
+        return ip.family == AF_INET ? "icmp" : "icmpv6";
 }
 
 std::string Block_icmp::operator()(const Action action) const {
