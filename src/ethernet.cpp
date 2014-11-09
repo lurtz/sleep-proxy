@@ -17,12 +17,30 @@
 #include "ethernet.h"
 #include <iterator>
 #include <stdexcept>
-#include "container_utils.h"
 #include "int_utils.h"
 
 std::ostream& operator<<(std::ostream& out, const Link_layer& ll) {
         out << ll.get_info();
         return out;
+}
+
+Generic_Link_layer::Generic_Link_layer(size_t const header_length, ether_addr const source, uint16_t const payload_protocol, std::string const info) : m_header_length(header_length), m_source(source), m_payload_protocol(payload_protocol), m_info(info) {}
+
+
+size_t Generic_Link_layer::header_length() const {
+        return m_header_length;
+}
+
+uint16_t Generic_Link_layer::payload_protocol() const {
+        return m_payload_protocol;
+}
+
+std::string Generic_Link_layer::get_info() const {
+        return m_info;
+}
+
+ether_addr Generic_Link_layer::source() const {
+        return m_source;
 }
 
 ether_addr Linux_cooked_capture::source() const {

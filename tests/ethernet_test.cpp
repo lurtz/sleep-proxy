@@ -85,9 +85,7 @@ class Ethernet_test : public CppUnit::TestFixture {
         }
 
         void test_parse_lcc_ipv4_2() {
-                auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_2), std::end(lcc_ipv4_2));
-                test_ll(ll, 16, ip::ipv4, "Linux cooked capture: src: 60:60:60:60:60:60");
-                test_source(ll, "60:60:60:60:60:60");
+                CPPUNIT_ASSERT_THROW(parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_2), std::end(lcc_ipv4_2)), std::length_error);
         }
 
         void test_parse_lcc_ipv4_3() {

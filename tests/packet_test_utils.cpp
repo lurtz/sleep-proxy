@@ -53,9 +53,7 @@ void test_source(const std::unique_ptr<Link_layer>& ll, const std::string& src) 
         CPPUNIT_ASSERT_EQUAL(src, binary_to_mac(sa.source()));
 }
 
-void test_ethernet(const std::unique_ptr<Link_layer>& ll, const std::string& src, const std::string& dst) {
-        const sniff_ethernet& ether = dynamic_cast<const sniff_ethernet&>(*ll);
-        CPPUNIT_ASSERT_EQUAL(dst, binary_to_mac(ether.destination()));
+void test_ethernet(const std::unique_ptr<Link_layer>& ll, const std::string& src, const std::string&) {
         test_source(ll, src);
 }
 
