@@ -40,21 +40,12 @@ void test_ip(const std::unique_ptr<ip>& ip, const ip::Version v, const std::stri
         CPPUNIT_ASSERT_EQUAL(header_length, ip->header_length());
 }
 
-void test_ll(const std::unique_ptr<Link_layer>& ll, const size_t length, const ip::Version payload_protocol, const std::string& info) {
+void test_ll(const std::unique_ptr<Link_layer>& ll, const size_t length, const std::string& src, const ip::Version payload_protocol, const std::string& info) {
         CPPUNIT_ASSERT(ll != nullptr);
         CPPUNIT_ASSERT_EQUAL(length, ll->header_length());
+        CPPUNIT_ASSERT_EQUAL(src, binary_to_mac(ll->source()));
         CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(payload_protocol), ll->payload_protocol());
         CPPUNIT_ASSERT_EQUAL(info, ll->get_info());
-}
-
-void test_source(const std::unique_ptr<Link_layer>& ll, const std::string& src) {
-        CPPUNIT_ASSERT(ll != nullptr);
-        const Source_address& sa = dynamic_cast<const Source_address&>(*ll);
-        CPPUNIT_ASSERT_EQUAL(src, binary_to_mac(sa.source()));
-}
-
-void test_ethernet(const std::unique_ptr<Link_layer>& ll, const std::string& src, const std::string&) {
-        test_source(ll, src);
 }
 
 bool operator==(const Link_layer& lhs, const Link_layer& rhs) {

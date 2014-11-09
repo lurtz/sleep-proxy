@@ -60,8 +60,7 @@ class Packet_parser_test : public CppUnit::TestFixture {
                 auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
 
                 auto& ll = std::get<0>(headers);
-                test_ll(ll, 14, ip::ipv4, "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
-                test_ethernet(ll, "0:0:0:0:0:0", "0:0:0:0:0:0");
+                test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv4, "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
 
                 test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32", 20, ip::TCP);
         }
@@ -70,8 +69,7 @@ class Packet_parser_test : public CppUnit::TestFixture {
                 auto headers = get_headers(DLT_EN10MB, ethernet_ipv6_tcp);
 
                 auto& ll = std::get<0>(headers);
-                test_ll(ll, 14, ip::ipv6, "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
-                test_ethernet(ll, "0:0:0:0:0:0", "0:0:0:0:0:0");
+                test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv6, "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
 
                 test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128", 40, ip::TCP);
         }
@@ -89,16 +87,14 @@ class Packet_parser_test : public CppUnit::TestFixture {
         void test_parse_lcc_ipv4_udp() {
                 auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv4_udp);
                 auto& ll = std::get<0>(headers);
-                test_ll(ll, 16, ip::ipv4, "Linux cooked capture: src: 0:0:0:0:0:0");
-                test_source(ll, "0:0:0:0:0:0");
+                test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv4, "Linux cooked capture: src: 0:0:0:0:0:0");
                 test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32", 20, ip::UDP);
         }
 
         void test_parse_lcc_ipv6_tcp() {
                 auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp);
                 auto& ll = std::get<0>(headers);
-                test_ll(ll, 16, ip::ipv6, "Linux cooked capture: src: 0:0:0:0:0:0");
-                test_source(ll, "0:0:0:0:0:0");
+                test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv6, "Linux cooked capture: src: 0:0:0:0:0:0");
                 test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128", 40, ip::TCP);
         }
 
@@ -115,7 +111,7 @@ class Packet_parser_test : public CppUnit::TestFixture {
         void test_parse_lcc_vlan_ipv4_udp() {
                 auto headers = get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp);
                 auto& ll = std::get<0>(headers);
-                test_ll(ll, 16, static_cast<ip::Version>(ETHERTYPE_VLAN), "Linux cooked capture: src: e8:de:27:55:a1:71");
+                test_ll(ll, 16, "e8:de:27:55:a1:71", static_cast<ip::Version>(ETHERTYPE_VLAN), "Linux cooked capture: src: e8:de:27:55:a1:71");
                 test_ip(std::get<1>(headers), ip::ipv4, "192.168.1.155/32", "79.143.179.211/32", 20, ip::UDP);
         }
 

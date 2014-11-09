@@ -24,74 +24,23 @@ std::ostream& operator<<(std::ostream& out, const Link_layer& ll) {
         return out;
 }
 
-Generic_Link_layer::Generic_Link_layer(size_t const header_length, ether_addr const source, uint16_t const payload_protocol, std::string const info) : m_header_length(header_length), m_source(source), m_payload_protocol(payload_protocol), m_info(info) {}
+Link_layer::Link_layer(size_t const header_length, ether_addr const source, uint16_t const payload_protocol, std::string const info) : m_header_length(header_length), m_source(source), m_payload_protocol(payload_protocol), m_info(info) {}
 
 
-size_t Generic_Link_layer::header_length() const {
+size_t Link_layer::header_length() const {
         return m_header_length;
 }
 
-uint16_t Generic_Link_layer::payload_protocol() const {
+uint16_t Link_layer::payload_protocol() const {
         return m_payload_protocol;
 }
 
-std::string Generic_Link_layer::get_info() const {
+std::string Link_layer::get_info() const {
         return m_info;
 }
 
-ether_addr Generic_Link_layer::source() const {
+ether_addr Link_layer::source() const {
         return m_source;
-}
-
-ether_addr Linux_cooked_capture::source() const {
-        ether_addr addr;
-        std::copy(std::begin(source_address), std::begin(source_address) + sizeof(addr.ether_addr_octet), std::begin(addr.ether_addr_octet));
-        return addr;
-}
-
-size_t Linux_cooked_capture::header_length() const {
-        return 16;
-}
-
-uint16_t Linux_cooked_capture::payload_protocol() const {
-        return payload_type;
-}
-
-std::string Linux_cooked_capture::get_info() const {
-        return "Linux cooked capture: src: " + binary_to_mac(source());
-}
-
-
-size_t VLAN_Header::header_length() const {
-        return 4;
-}
-
-uint16_t VLAN_Header::payload_protocol() const {
-        return payload_type;
-}
-
-std::string VLAN_Header::get_info() const {
-        return "VLAN Header";
-}
-
-size_t sniff_ethernet::header_length() const {
-        return 14;
-}
-
-uint16_t sniff_ethernet::payload_protocol() const {
-        return ether_type;
-}
-
-ether_addr sniff_ethernet::destination() const {
-        return ether_dhost;
-}
-
-ether_addr sniff_ethernet::source() const {
-        return ether_shost;
-}
-
-std::string sniff_ethernet::get_info() const {
-        return "Ethernet: dst = " + binary_to_mac(destination()) + ", src = " + binary_to_mac(source());
 }
 
 std::vector<uint8_t> to_vector(const ether_addr& mac) {

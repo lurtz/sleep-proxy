@@ -188,11 +188,10 @@ void replay_data(const std::string& iface, const int type, const std::vector<uin
         if (ll == nullptr)
                 return;
         const uint16_t payload_type = std::get<1>(headers)->version();
-        const Source_address& sa = dynamic_cast<const Source_address&>(*ll);
         auto data_iter = std::begin(data);
         std::advance(data_iter, ll->header_length());
         const std::vector<uint8_t> payload =
-                create_ethernet_header(target_mac, sa.source(), payload_type)
+                create_ethernet_header(target_mac, ll->source(), payload_type)
                 + std::vector<uint8_t>(data_iter, std::end(data));
         Pcap_wrapper pc(iface);
         pc.inject(payload);
