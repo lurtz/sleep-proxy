@@ -26,8 +26,17 @@ File_descriptor::File_descriptor(const int fdd) : fd(fdd) {
         }
 }
 
-File_descriptor::File_descriptor(File_descriptor&& rhs) : fd(rhs.fd), closed(rhs.closed) {
+File_descriptor::File_descriptor(File_descriptor&& rhs) {
+        *this = std::move(rhs);
+}
+
+File_descriptor& File_descriptor::operator=(File_descriptor&& rhs) {
+        fd = rhs.fd;
+        closed = rhs.closed;
+
         rhs.closed = true;
+
+        return *this;
 }
 
 File_descriptor::~File_descriptor() {

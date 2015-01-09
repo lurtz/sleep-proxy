@@ -24,6 +24,7 @@ class To_string_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_to_string );
         CPPUNIT_TEST( test_test_characters );
         CPPUNIT_TEST( test_get_c_string_array );
+        CPPUNIT_TEST( test_get_tmp_file );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -61,6 +62,12 @@ class To_string_test : public CppUnit::TestFixture {
                 compare(strings, get_c_string_array(strings));
                 std::vector<std::string> strings1{"bla", "foo", "bar"};
                 compare(strings1, get_c_string_array(strings1));
+        }
+
+        void test_get_tmp_file() {
+                File_descriptor tmp_name = get_tmp_file("blaXXXXXX");
+                CPPUNIT_ASSERT(0 < tmp_name);
+                CPPUNIT_ASSERT_THROW(get_tmp_file("tmp/blaXXXXXX"), std::runtime_error);
         }
 };
 

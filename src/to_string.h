@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <iterator>
 #include <ostream>
+#include "file_descriptor.h"
 
 /**
  * Writes the items of a vector seperated by ", " into out
@@ -56,4 +57,6 @@ std::vector<const char *> get_c_string_array(const Container& strings) {
         ch_ptr.push_back(nullptr);
         return ch_ptr;
 }
+
+File_descriptor get_tmp_file(std::string const & filename);
 

@@ -17,12 +17,14 @@
 #pragma once
 
 struct File_descriptor {
-        const int fd;
+        int fd;
         bool closed = false;
 
         File_descriptor(const int fdd);
 
         File_descriptor(File_descriptor&& rhs);
+
+        File_descriptor& operator=(File_descriptor&& rhs);
 
         File_descriptor(const File_descriptor&) = delete;
 
