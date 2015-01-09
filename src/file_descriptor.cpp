@@ -14,29 +14,36 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#pragma once
-
-#include <type_traits>
-#include <string>
-#include <functional>
-#include "to_string.h"
 #include "file_descriptor.h"
+#include <unistd.h>
+#include <string>
+#include <stdexcept>
+#include <cstring>
 
-uint8_t wait_until_pid_exits(const pid_t& pid);
-
-pid_t fork_exec_pipes(const std::vector<const char *>& command, const std::string& in, const std::string& out);
-
-template<typename Container>
-pid_t spawn(Container&& cmd, const std::string& in = "", const std::string& out = "") {
-        static_assert(std::is_same<typename std::decay<Container>::type::value_type, std::string>::value, "container has to carry std::string");
-
-        // get char * of each string
-        std::vector<const char *> ch_ptr = get_c_string_array(cmd);
-
-        return fork_exec_pipes(ch_ptr, in, out);
+File_descriptor::File_descriptor(const int fdd) : fd(fdd) {
+        if (fdd < 0) {
+                throw std::runtime_error(std::string("file descriptor is negative: ") + strerror(errno));
+        }
 }
 
-bool file_exists(const std::string& filename);
+File_descriptor::File_descriptor(File_descriptor&& rhs) : fd(rhs.fd), closed(rhs.closed) {
+        rhs.closed = true;
+}
 
-std::string get_path(const std::string command);
+File_descriptor::~File_descriptor() {
+        close();
+}
+
+File_descriptor::operator int() const {
+        return fd;
+}
+
+void File_descriptor::close() {
+        if (!closed) {
+                if (::close(fd) == -1) {
+                        throw std::runtime_error(std::string("pipe close() failed: ") + strerror(errno));
+                }
+        }
+        closed = true;
+}
 

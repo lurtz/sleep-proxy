@@ -39,38 +39,12 @@ uint8_t wait_until_pid_exits(const pid_t& pid) {
         return WEXITSTATUS(status);
 }
 
-struct Pipe {
-        const int fd;
-        bool closed = false;
-        Pipe(const int fdd) : fd(fdd) {
-                if (fdd < 0) {
-                        throw std::runtime_error(std::string("file descriptor is negative: ") + strerror(errno));
-                }
-        }
-        Pipe(Pipe&& rhs) : fd(rhs.fd), closed(rhs.closed) {
-                rhs.closed = true;
-        }
-        Pipe(const Pipe&) = delete;
-        ~Pipe() {
-                close();
-        }
-        Pipe& operator=(const Pipe&) = delete;
-        void close() {
-                if (!closed) {
-                        if (::close(fd) == -1) {
-                                throw std::runtime_error(std::string("pipe close() failed: ") + strerror(errno));
-                        }
-                }
-                closed = true;
-        }
-};
-
-std::tuple<Pipe, Pipe> get_self_pipes() {
+std::tuple<File_descriptor, File_descriptor> get_self_pipes() {
         int pipefds[2];
         if (pipe(pipefds)) {
                 throw std::runtime_error(std::string("pipe() failed: ") + strerror(errno));
         }
-        Pipe p0{pipefds[0]}, p1{pipefds[1]};
+        File_descriptor p0{pipefds[0]}, p1{pipefds[1]};
         if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC)) {
                 throw std::runtime_error(std::string("fcntl() failed: ") + strerror(errno));
         }
@@ -87,7 +61,7 @@ void freopen_with_exception(const std::string& path, const std::string& mode, FI
 }
 
 pid_t fork_exec_pipes(const std::vector<const char *>& command, const std::string& in, const std::string& out) {
-        std::tuple<Pipe, Pipe> pipes = get_self_pipes();
+        std::tuple<File_descriptor, File_descriptor> pipes = get_self_pipes();
 
         pid_t child = fork();
         switch (child) {
