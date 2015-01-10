@@ -37,10 +37,10 @@ File_descriptor get_tmp_file(std::string const & filename) {
         std::vector<char> modifiable_string(path.size() + 1, '\0');
         strncpy(modifiable_string.data(), path.c_str(), path.size());
 
-        File_descriptor fd(mkstemp(modifiable_string.data()));
-
-        if (errno != 0) {
+        int const raw_fd = mkstemp(modifiable_string.data());
+        if (raw_fd == -1) {
                 throw std::runtime_error(std::string("failed to create temporary file: ") + strerror(errno));
         }
-        return fd;
+
+        return File_descriptor{raw_fd, modifiable_string.data()};
 }

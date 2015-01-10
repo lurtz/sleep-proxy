@@ -16,11 +16,14 @@
 
 #pragma once
 
+#include <string>
+
 struct File_descriptor {
         int fd;
-        bool closed = false;
+        std::string filename;
+        bool delete_on_close;
 
-        File_descriptor(const int fdd);
+        File_descriptor(const int fdd, std::string name, bool delete_on_closee = true);
 
         File_descriptor(File_descriptor&& rhs);
 

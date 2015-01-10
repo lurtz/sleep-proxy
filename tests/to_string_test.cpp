@@ -18,6 +18,7 @@
 #include <string>
 
 #include "to_string.h"
+#include "spawn_process.h"
 
 class To_string_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( To_string_test );
@@ -67,6 +68,8 @@ class To_string_test : public CppUnit::TestFixture {
         void test_get_tmp_file() {
                 File_descriptor tmp_name = get_tmp_file("blaXXXXXX");
                 CPPUNIT_ASSERT(0 < tmp_name);
+                CPPUNIT_ASSERT(file_exists(tmp_name.filename));
+
                 CPPUNIT_ASSERT_THROW(get_tmp_file("tmp/blaXXXXXX"), std::runtime_error);
         }
 };

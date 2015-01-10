@@ -32,6 +32,7 @@ class File_descriptor_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_fd_copy_constructor );
         CPPUNIT_TEST( test_fd_destructor );
         CPPUNIT_TEST( test_fd_close );
+        CPPUNIT_TEST( test_fd_delete_on_close );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {
@@ -42,8 +43,8 @@ class File_descriptor_test : public CppUnit::TestFixture {
                 if (file_exists(filename)) {
                         std::vector<std::string> cmd{get_path("rm"), filename};
                         CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), wait_until_pid_exits(spawn(cmd)));
-                        CPPUNIT_ASSERT(!file_exists(filename));
                 }
+                CPPUNIT_ASSERT(!file_exists(filename));
         }
 
         int open_file() const {
@@ -51,11 +52,11 @@ class File_descriptor_test : public CppUnit::TestFixture {
         }
 
         void test_fd_constructor() {
-                CPPUNIT_ASSERT_THROW(File_descriptor(-1), std::runtime_error);
+                CPPUNIT_ASSERT_THROW(File_descriptor(-1, ""), std::runtime_error);
         }
 
         void test_fd_copy_constructor() {
-                File_descriptor fd(open_file());
+                File_descriptor fd(open_file(), filename);
                 CPPUNIT_ASSERT(file_exists(filename));
                 CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
 
@@ -64,7 +65,7 @@ class File_descriptor_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT(-1 == fcntl(fd, F_GETFD));
 
                 CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
-                CPPUNIT_ASSERT(fd.closed);
+                CPPUNIT_ASSERT_EQUAL(std::string(), fd.filename);
 
                 CPPUNIT_ASSERT(file_exists(filename));
         }
@@ -74,16 +75,23 @@ class File_descriptor_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT(-1 != fcntl(c_fd, F_GETFD));
                 CPPUNIT_ASSERT(file_exists(filename));
                 {
-                        File_descriptor fd(c_fd);
+                        File_descriptor fd(c_fd, filename);
                         CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
                         CPPUNIT_ASSERT_EQUAL(c_fd, static_cast<int>(fd));
+                        CPPUNIT_ASSERT(file_exists(filename));
                 }
                 CPPUNIT_ASSERT(-1 == fcntl(c_fd, F_GETFD));
-                CPPUNIT_ASSERT(file_exists(filename));
         }
 
         void test_fd_close() {
-                File_descriptor fd(open_file());
+                File_descriptor fd(open_file(), filename);
+                CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
+                fd.close();
+                CPPUNIT_ASSERT_EQUAL(-1, fcntl(fd, F_GETFD));
+        }
+
+        void test_fd_delete_on_close() {
+                File_descriptor fd(open_file(), filename, false);
                 CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
                 fd.close();
                 CPPUNIT_ASSERT_EQUAL(-1, fcntl(fd, F_GETFD));

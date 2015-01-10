@@ -83,7 +83,8 @@ std::tuple<File_descriptor, File_descriptor> get_self_pipes() {
         if (pipe(pipefds)) {
                 throw std::runtime_error(std::string("pipe() failed: ") + strerror(errno));
         }
-        File_descriptor p0{pipefds[0]}, p1{pipefds[1]};
+        File_descriptor p0{pipefds[0], "selfpipe0", false};
+        File_descriptor p1{pipefds[1], "selfpipe1", false};
         if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC)) {
                 throw std::runtime_error(std::string("fcntl() failed: ") + strerror(errno));
         }
