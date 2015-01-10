@@ -24,10 +24,34 @@
 
 uint8_t wait_until_pid_exits(const pid_t& pid);
 
-pid_t fork_exec_pipes(const std::vector<const char *>& command, const std::string& in, const std::string& out);
+struct IO_remap_params {
+        enum Type {PATH, FILE_DESCRIPTOR};
+
+        IO_remap_params(const char * p);
+
+        IO_remap_params(std::string p);
+
+        IO_remap_params(File_descriptor fd);
+
+        IO_remap_params& operator=(IO_remap_params&& rhs);
+
+        ~IO_remap_params();
+
+        Type get_type() const;
+
+        std::string const & get_path() const;
+
+        File_descriptor const & get_file_descriptor() const;
+
+        private:
+        Type type;
+        union { std::string path; File_descriptor file_descriptor; };
+};
+
+pid_t fork_exec_pipes(const std::vector<const char *>& command, IO_remap_params const & in, IO_remap_params const & out);
 
 template<typename Container>
-pid_t spawn(Container&& cmd, const std::string& in = "", const std::string& out = "") {
+pid_t spawn(Container&& cmd, IO_remap_params const & in = IO_remap_params(""), IO_remap_params const & out = IO_remap_params("")) {
         static_assert(std::is_same<typename std::decay<Container>::type::value_type, std::string>::value, "container has to carry std::string");
 
         // get char * of each string
