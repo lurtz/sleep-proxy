@@ -31,7 +31,7 @@ struct IO_remap_params {
 
         IO_remap_params(std::string p);
 
-        IO_remap_params(File_descriptor fd);
+        IO_remap_params(File_descriptor & fd);
 
         IO_remap_params& operator=(IO_remap_params&& rhs);
 
@@ -45,7 +45,7 @@ struct IO_remap_params {
 
         private:
         Type type;
-        union { std::string path; File_descriptor file_descriptor; };
+        union { std::string path; File_descriptor * file_descriptor; };
 };
 
 pid_t fork_exec_pipes(const std::vector<const char *>& command, IO_remap_params const & in, IO_remap_params const & out);

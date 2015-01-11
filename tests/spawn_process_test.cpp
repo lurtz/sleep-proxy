@@ -24,6 +24,7 @@ class Spawn_process_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Spawn_process_test );
         CPPUNIT_TEST( test_fork_exec );
         CPPUNIT_TEST( test_direct_output_to_file );
+        CPPUNIT_TEST( test_direct_output_to_tmp_file );
         CPPUNIT_TEST( test_file_exists );
         CPPUNIT_TEST( test_get_path );
         CPPUNIT_TEST_SUITE_END();
@@ -82,6 +83,23 @@ class Spawn_process_test : public CppUnit::TestFixture {
                 status = wait_until_pid_exits(pid);
                 CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
                 CPPUNIT_ASSERT(!file_exists("/tmp/blublub"));
+        }
+
+        void test_direct_output_to_tmp_file() {
+                File_descriptor fd = get_tmp_file("test_tmp_name_XXXXXX");
+
+                std::vector<std::string> const cmd{get_path("echo"), "blabla"};
+                pid_t const pid = spawn(cmd, "/dev/null", fd);
+                uint8_t const status = wait_until_pid_exits(pid);
+                CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+                CPPUNIT_ASSERT(file_exists(fd.filename));
+
+                std::ifstream read_file(fd.filename);
+                CPPUNIT_ASSERT(read_file);
+                std::string line;
+                CPPUNIT_ASSERT(std::getline(read_file, line));
+                CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
+                CPPUNIT_ASSERT(!std::getline(read_file, line));
         }
 
         void test_file_exists() {
