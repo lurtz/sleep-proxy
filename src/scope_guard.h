@@ -118,6 +118,13 @@ struct Block_icmp {
         std::string operator()(const Action action) const;
 };
 
+struct Block_ipv6_neighbor_solicitation {
+        const IP_address ip;
+
+        std::string operator()(const Action action) const;
+};
+
+/** adds and removes an element of type T to container of type Cont */
 template<typename Cont, typename T>
 struct Ptr_guard {
         Cont& cont;

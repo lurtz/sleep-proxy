@@ -22,6 +22,8 @@
 #include "ip_utils.h"
 #include "split.h"
 #include "spawn_process.h"
+#include "container_utils.h"
+#include "int_utils.h"
 
 Scope_guard::Scope_guard() : freed{true}, aquire_release{} {
 }
@@ -105,7 +107,34 @@ std::string Block_icmp::operator()(const Action action) const {
         return iptcmd + " -w -" + saction + " OUTPUT -d " + ip.pure() + " -p " + icmpv + " --" + icmpv + "-type destination-unreachable -j DROP";
 }
 
-void daw_thread_main(const std::string iface, const IP_address ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
+std::string ipv6_to_u32_rule(IP_address const & ip) {
+        if (ip.family != AF_INET6 ) {
+                throw std::runtime_error("cannot convert ipv4 address into u32 ip6tables rule");
+        }
+
+        // from fe80::123
+        // to   -m u32 --u32 48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123
+
+        uint8_t pos = 48;
+        auto const address_byte_to_rule = [&](uint8_t ipv6_byte) { return to_string(static_cast<uint32_t>(pos++)) + "=0x" + one_byte_to_two_hex_chars(ipv6_byte); };
+        std::vector<uint8_t> const ipv6_address{std::begin(ip.address.ipv6.s6_addr), std::end(ip.address.ipv6.s6_addr)};
+        std::string const rule = join(ipv6_address, address_byte_to_rule, " && ");
+
+        return " -m u32 --u32 " + rule;
+}
+
+std::string Block_ipv6_neighbor_solicitation::operator()(const Action action) const {
+        const std::string saction{iptables_action(action)};
+        const std::string iptcmd{get_iptables_cmd(ip)};
+        const std::string ip_rule{ipv6_to_u32_rule(ip)};
+
+        // blocks neighbor solicitation for fe80::123
+        // ip6tables -I INPUT -s :: -p icmpv6 --icmpv6-type neighbour-solicitation -m u32 --u32 "48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123" -j DROP
+        // we also need to match the ipv6 address using u32 ip6tables modul
+        return iptcmd + " -w -" + saction + " INPUT -s :: -p icmpv6 --icmpv6-type neighbour-solicitation" + ip_rule + " -j DROP";
+}
+
+void daw_thread_main_ipv4(const std::string iface, const IP_address ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
         const std::string cmd = get_path("arping") + " -q -D -c 1 -I " + iface + " " + ip.pure();
         log_string(LOG_INFO, "starting: " + cmd);
         auto cmd_split = split(cmd, ' ');
@@ -119,6 +148,25 @@ void daw_thread_main(const std::string iface, const IP_address ip, std::atomic_b
         }
 }
 
+void daw_thread_main_ipv6(const std::string iface, const IP_address ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
+        // 1. block incoming duplicate address detection for ip using firewall
+        Scope_guard const bipv6ns{Block_ipv6_neighbor_solicitation{ip}};
+
+        // 2. while(loop)
+//        // 2.1 use 'ip neigh' to watch for neighbors with the same ip
+        // 2.1 watch for neighbor solicitation using pcap, also faster
+        // 2.2 if someone uses ip
+        // 2.2.1 loop = false
+        // 2.2.2 pc.break_loop
+        std::string const cmd = get_path("ip") + " neigh";
+        auto const cmd_split = split(cmd, ' ');
+        while (loop) {
+                const pid_t pid = spawn(cmd_split, "/dev/null");
+                const uint8_t status = wait_until_pid_exits(pid);
+        }
+        return;
+}
+
 Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee, const IP_address ipp, Pcap_wrapper& pc) : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc), loop(std::make_shared<std::atomic_bool>(false)) {
 }
 
@@ -126,13 +174,16 @@ std::string Duplicate_address_watcher::operator()(const Action action) {
         // TODO this does not work for ipv6
         if (ip.family == AF_INET6)
                 return "";
+
+        std::function<void(const std::string, const IP_address, std::atomic_bool&, Pcap_wrapper&)> const main_function = ip.family == AF_INET ? daw_thread_main_ipv4 : daw_thread_main_ipv6;
+
         if (Action::add == action) {
                 *loop = true;
-                watcher = std::make_shared<std::thread>(daw_thread_main, iface, ip, std::ref(*loop), std::ref(pcap));
+                watcher = std::make_shared<std::thread>(main_function, iface, ip, std::ref(*loop), std::ref(pcap));
         }
         if (Action::del == action) {
                 *loop = false;
-                if (watcher->joinable()) {
+                if (watcher != nullptr && watcher->joinable()) {
                         watcher->join();
                 }
                 watcher = nullptr;

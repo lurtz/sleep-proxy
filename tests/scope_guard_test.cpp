@@ -26,6 +26,8 @@ class Scope_guard_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_drop_port );
         CPPUNIT_TEST( test_reject_tp );
         CPPUNIT_TEST( test_block_icmp );
+        CPPUNIT_TEST( test_block_ipv6_neighbor_solicitation_link_local );
+        CPPUNIT_TEST( test_block_ipv6_neighbor_solicitation_global_address );
         CPPUNIT_TEST( test_take_action );
         CPPUNIT_TEST( test_take_action_failed_command );
         CPPUNIT_TEST( test_take_action_non_existing_command );
@@ -137,6 +139,35 @@ class Scope_guard_test : public CppUnit::TestFixture {
                 Block_icmp bi2{ip};
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I OUTPUT -d fe80::affe:affe -p icmpv6 --icmpv6-type destination-unreachable -j DROP"), bi2(Action::add));
                 CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D OUTPUT -d fe80::affe:affe -p icmpv6 --icmpv6-type destination-unreachable -j DROP"), bi2(Action::del));
+        }
+
+        std::string block_ipv6_neighbor_solicitation_cmd(std::string const & action, std::string const & rule) {
+                std::string const binary{"/sbin/ip6tables -w -"};
+                std::string const options{" INPUT -s :: -p icmpv6 --icmpv6-type neighbour-solicitation -m u32 --u32 "};
+                std::string const jump{" -j DROP"};
+                return binary + action + options + rule + jump;
+        }
+
+        void test_block_ipv6_neighbor_solicitation_link_local() {
+                Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("fe80::123")};
+
+                std::string const rule{"48=0xfe && 49=0x80 && 50=0x00 && 51=0x00 && 52=0x00 && 53=0x00 && 54=0x00 && 55=0x00 && 56=0x00 && 57=0x00 && 58=0x00 && 59=0x00 && 60=0x00 && 61=0x00 && 62=0x01 && 63=0x23"};
+                std::string const expected_insert{block_ipv6_neighbor_solicitation_cmd("I", rule)};
+                std::string const expected_delete{block_ipv6_neighbor_solicitation_cmd("D", rule)};
+
+                CPPUNIT_ASSERT_EQUAL(expected_insert, bipv6ns(Action::add));
+                CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
+        }
+
+        void test_block_ipv6_neighbor_solicitation_global_address() {
+                Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("2a00:1450:4005:800::1004")};
+
+                std::string const rule{"48=0x2a && 49=0x00 && 50=0x14 && 51=0x50 && 52=0x40 && 53=0x05 && 54=0x08 && 55=0x00 && 56=0x00 && 57=0x00 && 58=0x00 && 59=0x00 && 60=0x00 && 61=0x00 && 62=0x10 && 63=0x04"};
+                std::string const expected_insert{block_ipv6_neighbor_solicitation_cmd("I", rule)};
+                std::string const expected_delete{block_ipv6_neighbor_solicitation_cmd("D", rule)};
+
+                CPPUNIT_ASSERT_EQUAL(expected_insert, bipv6ns(Action::add));
+                CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
         }
 
         struct Take_action_function {
