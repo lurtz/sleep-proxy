@@ -44,7 +44,7 @@ IO_remap_params::IO_remap_params(char const * p) : type(PATH), path(p) {}
 
 IO_remap_params::IO_remap_params(std::string p) : type(PATH), path(std::move(p)) {}
 
-IO_remap_params::IO_remap_params(File_descriptor & fd) : type(FILE_DESCRIPTOR), file_descriptor(&fd) {}
+IO_remap_params::IO_remap_params(File_descriptor const & fd) : type(FILE_DESCRIPTOR), file_descriptor(&fd) {}
 
 IO_remap_params::~IO_remap_params() {}
 
