@@ -35,7 +35,7 @@ std::string test_characters(const std::string& input, const std::string& valid_c
 File_descriptor get_tmp_file(std::string const & filename) {
         std::string const path = std::string(P_tmpdir) + '/' + filename;
         std::vector<char> modifiable_string(path.size() + 1, '\0');
-        strncpy(modifiable_string.data(), path.c_str(), path.size());
+        std::copy(std::begin(path), std::end(path), std::begin(modifiable_string));
 
         int const raw_fd = mkstemp(modifiable_string.data());
         if (raw_fd == -1) {
