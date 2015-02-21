@@ -19,6 +19,7 @@
 #include <string>
 #include <stdexcept>
 #include <cstring>
+#include <iostream>
 
 File_descriptor::File_descriptor(const int fdd, std::string name, bool delete_on_closee) : fd(fdd), filename(std::move(name)), delete_on_close(delete_on_closee) {
         if (fdd < 0) {
@@ -38,7 +39,12 @@ File_descriptor& File_descriptor::operator=(File_descriptor&& rhs) {
 }
 
 File_descriptor::~File_descriptor() {
-        close();
+        try {
+                close();
+        }
+        catch (std::exception const & e) {
+                std::cerr << "File_descriptor::~File_descriptor(): caught exception: " << e.what() << std::endl;
+        }
 }
 
 File_descriptor::operator int() const {
@@ -57,7 +63,7 @@ void File_descriptor::close() {
                 int const status = ::close(fd);
                 fd = -1;
                 if (status == -1) {
-                        throw std::runtime_error(std::string("pipe close() failed: ") + strerror(errno));
+                        throw std::runtime_error(std::string("File_descriptor::close() failed: ") + strerror(errno));
                 }
                 if (delete_on_close) {
                         unlink_with_exception(filename);
