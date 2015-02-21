@@ -59,15 +59,27 @@ void unlink_with_exception(std::string const & filename) {
 }
 
 void File_descriptor::close() {
-        if (fd > -1) {
-                int const status = ::close(fd);
-                fd = -1;
-                if (status == -1) {
-                        throw std::runtime_error(std::string("File_descriptor::close() failed: ") + strerror(errno));
-                }
-                if (delete_on_close) {
-                        unlink_with_exception(filename);
-                }
+        if (fd < 0) {
+                return;
+        }
+
+        int const status = ::close(fd);
+        fd = -1;
+        if (status == -1) {
+                throw std::runtime_error(std::string("File_descriptor::close() failed: ") + strerror(errno));
+        }
+        if (delete_on_close) {
+                unlink_with_exception(filename);
         }
 }
 
+void File_descriptor::delete_content() const {
+        if (fd < 0) {
+                return;
+        }
+
+        auto const status = ftruncate(fd, 0);
+        if (status < 0) {
+                throw std::runtime_error(std::string("File_descriptor::delete_content() failed: ") + strerror(errno));
+        }
+}

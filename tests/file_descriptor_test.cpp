@@ -33,6 +33,7 @@ class File_descriptor_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_fd_destructor );
         CPPUNIT_TEST( test_fd_close );
         CPPUNIT_TEST( test_fd_delete_on_close );
+        CPPUNIT_TEST( test_fd_delete_content );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {
@@ -96,6 +97,26 @@ class File_descriptor_test : public CppUnit::TestFixture {
                 fd.close();
                 CPPUNIT_ASSERT_EQUAL(-1, fcntl(fd, F_GETFD));
                 CPPUNIT_ASSERT(file_exists(filename));
+        }
+
+        void test_fd_delete_content() {
+                File_descriptor const fd{get_tmp_file("test_fd_delete_contentXXXXXX")};
+
+                {
+                        CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(8), write(fd, "testdata", 8));
+                        std::ifstream ifs(fd.filename);
+                        std::string line;
+                        CPPUNIT_ASSERT(std::getline(ifs, line));
+                        CPPUNIT_ASSERT_EQUAL(std::string("testdata"), line);
+                }
+
+                fd.delete_content();
+
+                {
+                        std::ifstream ifs(fd.filename);
+                        std::string line;
+                        CPPUNIT_ASSERT(!std::getline(ifs, line));
+                }
         }
 };
 

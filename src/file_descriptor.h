@@ -38,5 +38,7 @@ struct File_descriptor {
         operator int() const;
 
         void close();
+
+        void delete_content() const;
 };
 
