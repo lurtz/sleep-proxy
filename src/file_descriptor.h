@@ -17,6 +17,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 struct File_descriptor {
         int fd;
@@ -40,5 +41,7 @@ struct File_descriptor {
         void close();
 
         void delete_content() const;
+
+        std::vector<std::string> get_content() const;
 };
 

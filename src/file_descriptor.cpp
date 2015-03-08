@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
+#include "container_utils.h"
 
 File_descriptor::File_descriptor(const int fdd, std::string name, bool delete_on_closee) : fd(fdd), filename(std::move(name)), delete_on_close(delete_on_closee) {
         if (fdd < 0) {
@@ -74,12 +75,44 @@ void File_descriptor::close() {
 }
 
 void File_descriptor::delete_content() const {
-        if (fd < 0) {
-                return;
-        }
-
         auto const status = ftruncate(fd, 0);
         if (status < 0) {
                 throw std::runtime_error(std::string("File_descriptor::delete_content() failed: ") + strerror(errno));
         }
+
+}
+
+off_t fseek_exception(int const fildes, off_t const offset, int const whence) {
+        off_t const status = lseek(fildes, offset, whence);
+
+        if (status == -1) {
+                throw std::runtime_error(std::string("File_descriptor::fseek() failed: ") + strerror(errno));
+        }
+
+        return status;
+}
+
+std::vector<uint8_t> pread_exception(int const fildes, size_t length, off_t const offset) {
+        std::vector<uint8_t> data(length, 0);
+        ssize_t read_bytes = pread(fildes, data.data(), data.size(), offset);
+
+        if (read_bytes == -1) {
+                throw std::runtime_error(std::string("File_descriptor::pread() failed: ") + strerror(errno));
+        }
+
+        data.resize(static_cast<std::vector<uint8_t>::size_type>(read_bytes));
+        return data;
+}
+
+std::vector<std::string> File_descriptor::get_content() const {
+        off_t const current_pos = fseek_exception(fd, 0, SEEK_CUR);
+        off_t const last_pos = fseek_exception(fd, 0, SEEK_END);
+        fseek_exception(fd, current_pos, SEEK_SET);
+
+        std::vector<uint8_t> const data = pread_exception(fd, static_cast<size_t>(last_pos), 0);
+        std::vector<std::vector<uint8_t>> const splitted_data = split(data, '\n');
+
+        std::vector<std::string> lines(splitted_data.size());
+        std::transform(std::begin(splitted_data), std::end(splitted_data), std::begin(lines), [](std::vector<uint8_t> const& v){ return std::string(std::begin(v), std::end(v)); });
+        return lines;
 }

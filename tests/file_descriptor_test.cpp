@@ -34,6 +34,7 @@ class File_descriptor_test : public CppUnit::TestFixture {
         CPPUNIT_TEST( test_fd_close );
         CPPUNIT_TEST( test_fd_delete_on_close );
         CPPUNIT_TEST( test_fd_delete_content );
+        CPPUNIT_TEST( test_fd_get_content );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {
@@ -117,6 +118,26 @@ class File_descriptor_test : public CppUnit::TestFixture {
                         std::string line;
                         CPPUNIT_ASSERT(!std::getline(ifs, line));
                 }
+        }
+
+        void test_fd_get_content() {
+                File_descriptor const fd{get_tmp_file("test_fd_get_contentXXXXXX")};
+                CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(8), write(fd, "testdata", 8));
+                CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(1), write(fd, "\n", 1));
+                CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(9), write(fd, "testdata2", 9));
+
+                std::vector<std::string> lines = fd.get_content();
+
+                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), lines.size());
+                CPPUNIT_ASSERT_EQUAL(std::string("testdata"), lines.at(0));
+                CPPUNIT_ASSERT_EQUAL(std::string("testdata2"), lines.at(1));
+
+                CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(1), write(fd, "\n", 1));
+                lines = fd.get_content();
+
+                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), lines.size());
+                CPPUNIT_ASSERT_EQUAL(std::string("testdata"), lines.at(0));
+                CPPUNIT_ASSERT_EQUAL(std::string("testdata2"), lines.at(1));
         }
 };
 
