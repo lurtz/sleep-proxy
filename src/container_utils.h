@@ -20,6 +20,7 @@
 #include <string>
 #include <algorithm>
 #include <iterator>
+#include <stdexcept>
 
 template<typename T>
 T identity(const T& t) {
@@ -53,7 +54,7 @@ void check_type_and_range(iterator data, iterator end, size_t const min_size) {
 }
 
 template<typename Container>
-std::vector<Container> split_container(Container const & c, typename Container::value_type const & delimiter) {
+std::vector<Container> split(Container const & c, typename Container::value_type const & delimiter) {
         typename Container::const_iterator iter{std::begin(c)};
         std::vector<Container> results;
         while (iter != std::end(c)) {

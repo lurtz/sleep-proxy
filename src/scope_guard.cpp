@@ -20,7 +20,6 @@
 #include "log.h"
 #include "to_string.h"
 #include "ip_utils.h"
-#include "split.h"
 #include "spawn_process.h"
 #include "container_utils.h"
 #include "int_utils.h"

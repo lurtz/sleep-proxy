@@ -33,7 +33,6 @@ target_link_libraries(packet_test_utils sleep-proxy)
 
 make_test(container_tests)
 make_test(int_utils_test sleep-proxy)
-make_test(split_test sleep-proxy)
 make_test(to_string_test sleep-proxy)
 make_test(ip_utils_test sleep-proxy)
 make_test(scope_guard_test sleep-proxy)

@@ -22,7 +22,6 @@
 #include "args.h"
 #include "args_test_interface.h"
 #include "to_string.h"
-#include "split.h"
 #include "ethernet.h"
 #include "ip_utils.h"
 

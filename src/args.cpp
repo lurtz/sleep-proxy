@@ -20,7 +20,6 @@
 #include <fstream>
 #include "log.h"
 #include "ip_utils.h"
-#include "split.h"
 #include "int_utils.h"
 #include "ethernet.h"
 

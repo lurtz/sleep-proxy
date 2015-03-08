@@ -21,7 +21,6 @@
 #include <mutex>
 #include <csignal>
 #include <cstring>
-#include "split.h"
 #include "pcap_wrapper.h"
 #include "scope_guard.h"
 #include "ip_utils.h"

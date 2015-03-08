@@ -24,7 +24,8 @@ class Join_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Join_test );
         CPPUNIT_TEST( testConstructor );
         CPPUNIT_TEST( test_vector_addition );
-        CPPUNIT_TEST( test_split_container );
+        CPPUNIT_TEST( test_split );
+        CPPUNIT_TEST( test_split_string );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -51,17 +52,28 @@ class Join_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT(std::vector<int>() == std::vector<int>() + std::vector<int>());
         }
 
-        void test_split_container() {
-                std::vector<std::vector<std::string>> const empty_result = split_container(std::vector<std::string>(), "");
+        void test_split() {
+                std::vector<std::vector<std::string>> const empty_result = split(std::vector<std::string>(), "");
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), empty_result.size());
 
                 std::vector<int> const v0{1,2,3,0,1,2,3,4,0,5,6,7,8};
-                std::vector<std::vector<int>> const result = split_container(v0, 0);
+                std::vector<std::vector<int>> const result = split(v0, 0);
 
                 CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), result.size());
                 CPPUNIT_ASSERT_EQUAL((std::vector<int>{1,2,3}), result.at(0));
                 CPPUNIT_ASSERT_EQUAL((std::vector<int>{1,2,3,4}), result.at(1));
                 CPPUNIT_ASSERT_EQUAL((std::vector<int>{5,6,7,8}), result.at(2));
+        }
+
+        void test_split_string() {
+                std::vector<std::string> result0{"a","b","c"};
+                CPPUNIT_ASSERT(result0 == split(std::string("a,b,c"), ','));
+                std::vector<std::string> result1{"a,b,c"};
+                CPPUNIT_ASSERT(result1 == split(std::string("a,b,c"), ';'));
+                std::vector<std::string> result2{};
+                CPPUNIT_ASSERT(result2 == split(std::string(""), ';'));
+                std::vector<std::string> result3{"a","b","c","d"};
+                CPPUNIT_ASSERT(result3 == split(std::string("a;b;c;d"), ';'));
         }
 };
 
