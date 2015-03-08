@@ -52,3 +52,17 @@ void check_type_and_range(iterator data, iterator end, size_t const min_size) {
         }
 }
 
+template<typename Container>
+std::vector<Container> split_container(Container const & c, typename Container::value_type const & delimiter) {
+        typename Container::const_iterator iter{std::begin(c)};
+        std::vector<Container> results;
+        while (iter != std::end(c)) {
+                typename Container::const_iterator const possible_delim = std::find(iter, std::end(c), delimiter);
+                results.emplace_back(iter, possible_delim);
+                iter = possible_delim;
+                if (iter != std::end(c)) {
+                        iter++;
+                }
+        }
+        return results;
+}

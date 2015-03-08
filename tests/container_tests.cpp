@@ -14,6 +14,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "to_string.h"
 #include "main.h"
 #include <string>
 
@@ -23,6 +24,7 @@ class Join_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Join_test );
         CPPUNIT_TEST( testConstructor );
         CPPUNIT_TEST( test_vector_addition );
+        CPPUNIT_TEST( test_split_container );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -47,6 +49,19 @@ class Join_test : public CppUnit::TestFixture {
                 std::vector<int> r0{1,2,3,4,5,6};
                 CPPUNIT_ASSERT(r0 == std::move(v0) + v1);
                 CPPUNIT_ASSERT(std::vector<int>() == std::vector<int>() + std::vector<int>());
+        }
+
+        void test_split_container() {
+                std::vector<std::vector<std::string>> const empty_result = split_container(std::vector<std::string>(), "");
+                CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), empty_result.size());
+
+                std::vector<int> const v0{1,2,3,0,1,2,3,4,0,5,6,7,8};
+                std::vector<std::vector<int>> const result = split_container(v0, 0);
+
+                CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), result.size());
+                CPPUNIT_ASSERT_EQUAL((std::vector<int>{1,2,3}), result.at(0));
+                CPPUNIT_ASSERT_EQUAL((std::vector<int>{1,2,3,4}), result.at(1));
+                CPPUNIT_ASSERT_EQUAL((std::vector<int>{5,6,7,8}), result.at(2));
         }
 };
 
