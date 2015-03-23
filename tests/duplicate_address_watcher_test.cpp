@@ -17,10 +17,18 @@
 #include "main.h"
 
 #include "scope_guard.h"
+#include <atomic>
+#include "file_descriptor.h"
+#include "to_string.h"
+
+bool has_neighbour_ip(std::string const & iface, IP_address const & ip, File_descriptor const & ip_neigh_output);
+void daw_thread_main_ipv6_non_root(const std::string iface, const IP_address & ip, std::atomic_bool& loop, Pcap_wrapper& pc);
 
 class Duplicate_address_watcher_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Duplicate_address_watcher_test );
-        CPPUNIT_TEST( test_duplicate_address_watcher );
+        CPPUNIT_TEST( test_duplicate_address_watcher_ipv4 );
+        CPPUNIT_TEST( test_duplicate_address_watcher_ipv6 );
+        CPPUNIT_TEST( test_has_neighbour_ip );
         CPPUNIT_TEST_SUITE_END();
         public:
         void setUp() {}
@@ -34,7 +42,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                 }
         };
 
-        void test_duplicate_address_watcher() {
+        void test_duplicate_address_watcher_ipv4() {
                 Pcap_dummy pcap;
                 Duplicate_address_watcher daw{"eth0", parse_ip("10.0.0.1/16"), pcap};
                 CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::add));
@@ -50,6 +58,38 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT_EQUAL(std::string(""), daw2(Action::del));
                 CPPUNIT_ASSERT_EQUAL(std::string(""), daw3(Action::del));
                 CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address == pcap.get_end_reason());
+        }
+
+        void test_duplicate_address_watcher_ipv6() {
+                Pcap_dummy pcap;
+                std::atomic_bool loop{true};
+
+
+//                daw_thread_main_ipv6_non_root("wlan0", parse_ip("fe80::123/64"), loop, pcap);
+        }
+
+        void write_ip_neigh_output(std::string const & filename)
+        {
+                std::ofstream ofile(filename);
+                ofile << "2001:470:1f15:ea7::1 dev wlan0 lladdr 00:00:83:8a:20:00 router STALE\n";
+                ofile << "fe80::200:83ff:fe8a:2000 dev wlan0 lladdr 00:00:83:8a:20:00 router REACHABLE\n";
+                ofile << "192.168.1.181 dev wlan0 lladdr 00:14:38:d3:00:69 STALE\n";
+                ofile << "192.168.1.1 dev wlan0 lladdr 00:00:83:8a:20:00 REACHABLE\n";
+        }
+
+        void test_has_neighbour_ip() {
+                File_descriptor const fd{get_tmp_file("test_dad_has_neighbour_ip_XXXXXX")};
+                write_ip_neigh_output(fd.filename);
+
+                CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("2001:470:1f15:ea7::1/64"), fd));
+                CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("fe80::200:83ff:fe8a:2000/64"), fd));
+                CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("192.168.1.181/24"), fd));
+                CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("192.168.1.1/24"), fd));
+
+                CPPUNIT_ASSERT(!has_neighbour_ip("eth0", parse_ip("2001:470:1f15:ea7::1/64"), fd));
+                CPPUNIT_ASSERT(!has_neighbour_ip("wlan0", parse_ip("2001:470:1f15:ea7::1234/64"), fd));
+                CPPUNIT_ASSERT(!has_neighbour_ip("eth0", parse_ip("192.168.1.181/24"), fd));
+                CPPUNIT_ASSERT(!has_neighbour_ip("wlan0", parse_ip("192.168.2.181/24"), fd));
         }
 };
 

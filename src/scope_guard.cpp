@@ -147,23 +147,46 @@ void daw_thread_main_ipv4(const std::string iface, const IP_address ip, std::ato
         }
 }
 
-void daw_thread_main_ipv6(const std::string iface, const IP_address ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
-        // 1. block incoming duplicate address detection for ip using firewall
-        Scope_guard const bipv6ns{Block_ipv6_neighbor_solicitation{ip}};
+bool has_neighbour_ip(std::string const & iface, IP_address const & ip, File_descriptor const & ip_neigh_output) {
+        std::vector<std::string> const content = ip_neigh_output.get_content();
 
-        // 2. while(loop)
-//        // 2.1 use 'ip neigh' to watch for neighbors with the same ip
-        // 2.1 watch for neighbor solicitation using pcap, also faster
-        // 2.2 if someone uses ip
-        // 2.2.1 loop = false
-        // 2.2.2 pc.break_loop
+        for (std::string const & line : content) {
+                if (line.find(iface) == std::string::npos
+                                || line.find(ip.pure()) == std::string::npos) {
+                        continue;
+                } else {
+                        return true;
+                }
+        }
+
+        return false;
+}
+
+void daw_thread_main_ipv6_non_root(const std::string & iface, const IP_address & ip, std::atomic_bool & loop, Pcap_wrapper & pc) {
+        File_descriptor const ip_neigh_output{get_tmp_file("ip_neigh_outputXXXXXX")};
         std::string const cmd = get_path("ip") + " neigh";
         auto const cmd_split = split(cmd, ' ');
         while (loop) {
-                const pid_t pid = spawn(cmd_split, "/dev/null");
+                ip_neigh_output.delete_content();
+                const pid_t pid = spawn(cmd_split, "/dev/null", ip_neigh_output);
                 const uint8_t status = wait_until_pid_exits(pid);
+
+                if (status != 0 || has_neighbour_ip(iface, ip, ip_neigh_output)) {
+                        loop = false;
+                        pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);
+                }
         }
-        return;
+}
+
+void daw_thread_main_ipv6(const std::string iface, const IP_address ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
+        // 1. block incoming duplicate address detection for ip using firewall
+        // 2. while(loop)
+        // 2.1 use 'ip neigh' to watch for neighbors with the same ip
+        // 2.2 if someone uses ip
+        // 2.2.1 loop = false
+        // 2.2.2 pc.break_loop
+        Scope_guard const bipv6ns{Block_ipv6_neighbor_solicitation{ip}};
+        daw_thread_main_ipv6_non_root(iface, ip, loop, pc);
 }
 
 Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee, const IP_address ipp, Pcap_wrapper& pc) : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc), loop(std::make_shared<std::atomic_bool>(false)) {
