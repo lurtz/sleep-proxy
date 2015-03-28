@@ -192,12 +192,14 @@ void daw_thread_main_ipv6(const std::string iface, const IP_address ip, std::ato
 Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee, const IP_address ipp, Pcap_wrapper& pc) : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc), loop(std::make_shared<std::atomic_bool>(false)) {
 }
 
+typedef std::function<void(const std::string, const IP_address, std::atomic_bool&, Pcap_wrapper&)> Main_Function_Type;
+
 std::string Duplicate_address_watcher::operator()(const Action action) {
         // TODO this does not work for ipv6
         if (ip.family == AF_INET6)
                 return "";
 
-        std::function<void(const std::string, const IP_address, std::atomic_bool&, Pcap_wrapper&)> const main_function = ip.family == AF_INET ? daw_thread_main_ipv4 : daw_thread_main_ipv6;
+        Main_Function_Type const main_function = ip.family == AF_INET ? daw_thread_main_ipv4 : daw_thread_main_ipv6;
 
         if (Action::add == action) {
                 *loop = true;

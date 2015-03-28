@@ -20,9 +20,10 @@
 #include <atomic>
 #include "file_descriptor.h"
 #include "to_string.h"
+#include <future>
 
 bool has_neighbour_ip(std::string const & iface, IP_address const & ip, File_descriptor const & ip_neigh_output);
-void daw_thread_main_ipv6_non_root(const std::string iface, const IP_address & ip, std::atomic_bool& loop, Pcap_wrapper& pc);
+void daw_thread_main_ipv6_non_root(const std::string & iface, const IP_address & ip, std::atomic_bool & loop, Pcap_wrapper & pc);
 
 class Duplicate_address_watcher_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Duplicate_address_watcher_test );
@@ -60,12 +61,49 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                 CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address == pcap.get_end_reason());
         }
 
+        static void timeout(std::atomic_bool & loop, size_t const milliseconds) {
+                std::this_thread::sleep_for(std::chrono::milliseconds(milliseconds));
+                loop = false;
+        }
+
         void test_duplicate_address_watcher_ipv6() {
                 Pcap_dummy pcap;
                 std::atomic_bool loop{true};
 
+                // detect ip which is propably occupied by router
+                daw_thread_main_ipv6_non_root("wlan0", parse_ip("192.168.1.1/24"), loop, pcap);
 
-//                daw_thread_main_ipv6_non_root("wlan0", parse_ip("fe80::123/64"), loop, pcap);
+                CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address == pcap.get_end_reason());
+                CPPUNIT_ASSERT(!loop);
+
+                // just timeout
+                auto f = std::async(std::launch::async, timeout, std::ref(loop), 1000);
+                pcap = Pcap_dummy();
+                loop = true;
+
+                daw_thread_main_ipv6_non_root("eth0", parse_ip("192.168.3.1/24"), loop, pcap);
+
+                CPPUNIT_ASSERT(Pcap_dummy().get_end_reason() == pcap.get_end_reason());
+                CPPUNIT_ASSERT(!loop);
+
+                // detect ip which is occupied by router
+                pcap = Pcap_dummy();
+                loop = true;
+
+                daw_thread_main_ipv6_non_root("wlan0", parse_ip("2001:470:1f15:df3::1/64"), loop, pcap);
+
+                CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address == pcap.get_end_reason());
+                CPPUNIT_ASSERT(!loop);
+
+                // just timeout
+                f = std::async(std::launch::async, timeout, std::ref(loop), 1000);
+                pcap = Pcap_dummy();
+                loop = true;
+
+                daw_thread_main_ipv6_non_root("wlan0", parse_ip("2001:470:1f15:df3::DEAD/64"), loop, pcap);
+
+                CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset == pcap.get_end_reason());
+                CPPUNIT_ASSERT(!loop);
         }
 
         void write_ip_neigh_output(std::string const & filename)
