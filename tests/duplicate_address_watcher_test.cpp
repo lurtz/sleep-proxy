@@ -23,7 +23,7 @@
 #include <future>
 
 bool has_neighbour_ip(std::string const & iface, IP_address const & ip, File_descriptor const & ip_neigh_output);
-void daw_thread_main_ipv6_non_root(const std::string & iface, const IP_address & ip, std::atomic_bool & loop, Pcap_wrapper & pc);
+void daw_thread_main_non_root(const std::string & iface, const IP_address & ip, std::atomic_bool & loop, Pcap_wrapper & pc);
 
 class Duplicate_address_watcher_test : public CppUnit::TestFixture {
         CPPUNIT_TEST_SUITE( Duplicate_address_watcher_test );
@@ -47,7 +47,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                 Pcap_dummy pcap;
                 Duplicate_address_watcher daw{"eth0", parse_ip("10.0.0.1/16"), pcap};
                 CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::add));
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
                 CPPUNIT_ASSERT(Pcap_dummy().get_end_reason() == pcap.get_end_reason());
                 CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::del));
                 CPPUNIT_ASSERT(Pcap_dummy().get_end_reason() == pcap.get_end_reason());
@@ -71,7 +71,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                 std::atomic_bool loop{true};
 
                 // detect ip which is propably occupied by router
-                daw_thread_main_ipv6_non_root("wlan0", parse_ip("192.168.1.1/24"), loop, pcap);
+                daw_thread_main_non_root("wlan0", parse_ip("192.168.1.1/24"), loop, pcap);
 
                 CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address == pcap.get_end_reason());
                 CPPUNIT_ASSERT(!loop);
@@ -81,7 +81,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                 pcap = Pcap_dummy();
                 loop = true;
 
-                daw_thread_main_ipv6_non_root("eth0", parse_ip("192.168.3.1/24"), loop, pcap);
+                daw_thread_main_non_root("eth0", parse_ip("192.168.3.1/24"), loop, pcap);
 
                 CPPUNIT_ASSERT(Pcap_dummy().get_end_reason() == pcap.get_end_reason());
                 CPPUNIT_ASSERT(!loop);
@@ -90,7 +90,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                 pcap = Pcap_dummy();
                 loop = true;
 
-                daw_thread_main_ipv6_non_root("wlan0", parse_ip("2001:470:1f15:df3::1/64"), loop, pcap);
+                daw_thread_main_non_root("wlan0", parse_ip("2001:470:1f15:df3::1/64"), loop, pcap);
 
                 CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address == pcap.get_end_reason());
                 CPPUNIT_ASSERT(!loop);
@@ -100,7 +100,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                 pcap = Pcap_dummy();
                 loop = true;
 
-                daw_thread_main_ipv6_non_root("wlan0", parse_ip("2001:470:1f15:df3::DEAD/64"), loop, pcap);
+                daw_thread_main_non_root("wlan0", parse_ip("2001:470:1f15:df3::DEAD/64"), loop, pcap);
 
                 CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset == pcap.get_end_reason());
                 CPPUNIT_ASSERT(!loop);
