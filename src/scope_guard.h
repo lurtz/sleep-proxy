@@ -22,8 +22,6 @@
 #include "pcap_wrapper.h"
 #include "ip_address.h"
 
-std::string get_path(const std::string command);
-
 /** perform or reverse the modification */
 enum struct Action {
         add,
