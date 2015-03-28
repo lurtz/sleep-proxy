@@ -31,6 +31,8 @@
 #include "wol.h"
 #include "packet_parser.h"
 #include "log.h"
+#include <atomic>
+#include "duplicate_address_watcher.h"
 
 /*
  * Pretends to be a host, which has gone into standby and is startable via wake

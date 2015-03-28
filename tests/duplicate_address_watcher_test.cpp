@@ -16,7 +16,7 @@
 
 #include "main.h"
 
-#include "scope_guard.h"
+#include "duplicate_address_watcher.h"
 #include <atomic>
 #include "file_descriptor.h"
 #include "to_string.h"

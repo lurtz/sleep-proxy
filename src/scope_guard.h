@@ -19,8 +19,6 @@
 #include <functional>
 #include <algorithm>
 #include <mutex>
-#include <thread>
-#include <atomic>
 #include "pcap_wrapper.h"
 #include "ip_address.h"
 
@@ -154,16 +152,4 @@ template<typename Cont, typename T>
 Ptr_guard<Cont, T> ptr_guard(Cont& cont, std::mutex& cont_mutex, T& ref) {
         return Ptr_guard<Cont, T>{cont, cont_mutex, ref};
 }
-
-struct Duplicate_address_watcher {
-        const std::string iface;
-        const IP_address ip;
-        Pcap_wrapper& pcap;
-        std::shared_ptr<std::thread> watcher;
-        std::shared_ptr<std::atomic_bool> loop;
-
-        Duplicate_address_watcher(const std::string, const IP_address, Pcap_wrapper&);
-
-        std::string operator()(const Action action);
-};
 
