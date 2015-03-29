@@ -27,19 +27,27 @@ bool has_neighbour_ip(std::string const & iface, IP_address const & ip, File_des
                         && line.find(ip.pure()) != std::string::npos;
         };
         return std::any_of(std::begin(content), std::end(content), match_iface_and_ip);
-
 }
 
-void daw_thread_main_non_root(const std::string & iface, const IP_address & ip, std::atomic_bool & loop, Pcap_wrapper & pc) {
-        File_descriptor const ip_neigh_output{get_tmp_file("ip_neigh_outputXXXXXX")};
-        std::string const cmd = get_path("ip") + " neigh";
-        auto const cmd_split = split(cmd, ' ');
-        while (loop) {
-                ip_neigh_output.delete_content();
-                const pid_t pid = spawn(cmd_split, "/dev/null", ip_neigh_output);
-                const uint8_t status = wait_until_pid_exits(pid);
+Ip_neigh_checker::Ip_neigh_checker()
+        : ip_neigh_output{std::make_shared<File_descriptor>(get_tmp_file("ip_neigh_outputXXXXXX"))}, cmd{get_path("ip"), "neigh"} {}
 
-                if (status != 0 || has_neighbour_ip(iface, ip, ip_neigh_output)) {
+bool Ip_neigh_checker::operator()(std::string const & iface, IP_address const & ip) const {
+        ip_neigh_output->delete_content();
+        const pid_t pid = spawn(cmd, "/dev/null", *ip_neigh_output);
+        const uint8_t status = wait_until_pid_exits(pid);
+
+        return status != 0 || has_neighbour_ip(iface, ip, *ip_neigh_output);
+}
+
+void daw_thread_main_non_root(const std::string & iface, const IP_address & ip, Is_ip_occupied const & is_ip_occupied, std::atomic_bool & loop, Pcap_wrapper & pc) {
+        // 2. while(loop)
+        // 2.1 use 'ip neigh' to watch for neighbors with the same ip
+        // 2.2 if someone uses ip
+        // 2.2.1 loop = false
+        // 2.2.2 pc.break_loop
+        while (loop) {
+                if (is_ip_occupied(iface, ip)) {
                         loop = false;
                         pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);
                 } else {
@@ -48,21 +56,21 @@ void daw_thread_main_non_root(const std::string & iface, const IP_address & ip, 
         }
 }
 
-void daw_thread_main_ipv6(const std::string & iface, const IP_address & ip, std::atomic_bool& loop, Pcap_wrapper& pc) {
+void daw_thread_main_ipv6(const std::string & iface, const IP_address & ip, Is_ip_occupied const & is_ip_occupied, std::atomic_bool& loop, Pcap_wrapper& pc) {
         // 1. block incoming duplicate address detection for ip using firewall
-        // 2. while(loop)
-        // 2.1 use 'ip neigh' to watch for neighbors with the same ip
-        // 2.2 if someone uses ip
-        // 2.2.1 loop = false
-        // 2.2.2 pc.break_loop
         Scope_guard const bipv6ns{Block_ipv6_neighbor_solicitation{ip}};
-        daw_thread_main_non_root(iface, ip, loop, pc);
+        daw_thread_main_non_root(iface, ip, is_ip_occupied, loop, pc);
 }
 
-Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee, const IP_address ipp, Pcap_wrapper& pc) : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc), loop(std::make_shared<std::atomic_bool>(false)) {
+Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee, const IP_address ipp, Pcap_wrapper& pc, Is_ip_occupied const is_ip_occupiedd)
+        : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc), is_ip_occupied{std::move(is_ip_occupiedd)}, loop(std::make_shared<std::atomic_bool>(false)) {
 }
 
-typedef std::function<void(const std::string &, const IP_address &, std::atomic_bool&, Pcap_wrapper&)> Main_Function_Type;
+Duplicate_address_watcher::~Duplicate_address_watcher() {
+        stop_watcher();
+}
+
+typedef std::function<void(const std::string &, const IP_address &, Is_ip_occupied const &, std::atomic_bool&, Pcap_wrapper&)> Main_Function_Type;
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
         // TODO this does not work for ipv6
@@ -73,15 +81,19 @@ std::string Duplicate_address_watcher::operator()(const Action action) {
 
         if (Action::add == action) {
                 *loop = true;
-                watcher = std::make_shared<std::thread>(main_function, iface, ip, std::ref(*loop), std::ref(pcap));
+                watcher = std::make_shared<std::thread>(main_function, iface, ip, is_ip_occupied, std::ref(*loop), std::ref(pcap));
         }
         if (Action::del == action) {
-                *loop = false;
-                if (watcher != nullptr && watcher->joinable()) {
-                        watcher->join();
-                }
-                watcher = nullptr;
+                stop_watcher();
         }
         return "";
+}
+
+void Duplicate_address_watcher::stop_watcher() {
+        *loop = false;
+        if (watcher != nullptr && watcher->joinable()) {
+                watcher->join();
+        }
+        watcher = nullptr;
 }
 
