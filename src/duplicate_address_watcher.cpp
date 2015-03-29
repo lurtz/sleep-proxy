@@ -22,16 +22,12 @@
 bool has_neighbour_ip(std::string const & iface, IP_address const & ip, File_descriptor const & ip_neigh_output) {
         std::vector<std::string> const content = ip_neigh_output.get_content();
 
-        for (std::string const & line : content) {
-                if (line.find(iface) == std::string::npos
-                                || line.find(ip.pure()) == std::string::npos) {
-                        continue;
-                } else {
-                        return true;
-                }
-        }
+        auto const match_iface_and_ip = [&](std::string const & line) {
+                return line.find(iface) != std::string::npos
+                        && line.find(ip.pure()) != std::string::npos;
+        };
+        return std::any_of(std::begin(content), std::end(content), match_iface_and_ip);
 
-        return false;
 }
 
 void daw_thread_main_non_root(const std::string & iface, const IP_address & ip, std::atomic_bool & loop, Pcap_wrapper & pc) {
