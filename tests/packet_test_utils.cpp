@@ -74,15 +74,21 @@ std::vector<std::string> get_ip_neigh_output(File_descriptor const ip_neigh_outp
 }
 
 Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content) {
-        Iface_Ips iface_ip;
-        for (std::string const & line : ip_neigh_content) {
-                if (line.find("STALE") == std::string::npos) {
-                        std::vector<std::string> const token = split(line, ' ');
-                        std::string const ip = token.at(0);
-                        std::string const iface = token.at(2);
-                        iface_ip.emplace_back(iface, parse_ip(ip));
-                }
-        }
+        auto const is_ip_not_stale = [] (std::string const & line) {
+                return line.find("STALE") == std::string::npos;
+        };
+
+        auto const create_iface_ip = [] (std::string const & line) {
+                auto const token = split(line, ' ');
+                return std::make_tuple(token.at(2), parse_ip(token.at(0)));
+        };
+
+        std::vector<std::string> not_stale_lines;
+        std::copy_if(std::begin(ip_neigh_content), std::end(ip_neigh_content), std::back_inserter(not_stale_lines), is_ip_not_stale);
+
+        Iface_Ips iface_ip(not_stale_lines.size());
+        std::transform(std::begin(not_stale_lines), std::end(not_stale_lines), std::begin(iface_ip), create_iface_ip);
+
         return iface_ip;
 }
 
