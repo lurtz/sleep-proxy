@@ -14,7 +14,9 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-find_package (Threads)
+find_package(PCAP REQUIRED)
+find_package (Threads REQUIRED)
+
 add_library(sleep-proxy SHARED pcap_wrapper.cpp ethernet.cpp ip.cpp scope_guard.cpp ip_utils.cpp socket.cpp args.cpp to_string.cpp libsleep_proxy.cpp spawn_process.cpp int_utils.cpp wol.cpp packet_parser.cpp log.cpp ip_address.cpp file_descriptor.cpp duplicate_address_watcher.cpp)
 target_link_libraries(sleep-proxy ${PCAP_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 

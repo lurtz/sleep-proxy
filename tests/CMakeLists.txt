@@ -14,6 +14,22 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+FIND_PACKAGE(CPPUNIT)
+FIND_PACKAGE(VALGRIND)
+
+if (NOT CPPUNIT_FOUND)
+        message(STATUS "disabling tests")
+        return()
+endif (NOT CPPUNIT_FOUND)
+
+message(STATUS "enabling tests")
+
+if (VALGRIND_PROGRAM)
+        message(STATUS "enabling valgrind tests")
+endif (VALGRIND_PROGRAM)
+
+enable_testing()
+
 function(make_test name)
         add_executable(${name} ${name}.cpp)
         target_link_libraries(${name} ${CPPUNIT_LIBRARIES} ${ARGV1} ${ARGV2})
