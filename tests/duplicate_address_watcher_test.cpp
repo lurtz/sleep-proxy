@@ -169,7 +169,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
 
                 // check for ips which are not present
                 std::set<std::string> ifaces{"eth0", "eth1", "wlan0", "wlan1"};
-                std::set<IP_address, IP_address_less> ips{parse_ip("10.1.2.3"), parse_ip("192.168.2.2"), parse_ip("fe80::123"), parse_ip("dead::beef"), parse_ip("fe80::dead:beef")};
+                std::set<IP_address> ips{parse_ip("10.1.2.3"), parse_ip("192.168.2.2"), parse_ip("fe80::123"), parse_ip("dead::beef"), parse_ip("fe80::dead:beef")};
 
                 for (auto const & iface_ip : iface_ips) {
                         ifaces.insert(std::get<0>(iface_ip));

@@ -61,6 +61,10 @@ bool operator==(const ip& lhs, const ip& rhs) {
                 && lhs.source() == rhs.source();
 }
 
+bool operator<(IP_address const & lhs, IP_address const & rhs) {
+        return lhs.with_subnet() < rhs.with_subnet();
+}
+
 std::vector<std::string> get_ip_neigh_output(File_descriptor const ip_neigh_output) {
         std::vector<std::string> const cmd{get_path("ip"), "neigh"};
         pid_t const pid = spawn(cmd, "/dev/null", ip_neigh_output);
@@ -78,9 +82,5 @@ Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content) {
                 iface_ip.emplace_back(iface, parse_ip(ip));
         }
         return iface_ip;
-}
-
-bool IP_address_less::operator()(IP_address const & lhs, IP_address const & rhs) const {
-        return lhs.with_subnet() < rhs.with_subnet();
 }
 

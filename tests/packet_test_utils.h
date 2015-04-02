@@ -36,15 +36,13 @@ bool operator==(const Link_layer& lhs, const Link_layer& rhs);
 
 bool operator==(const ip& lhs, const ip& rhs);
 
+bool operator<(IP_address const & lhs, IP_address const & rhs);
+
 std::vector<std::string> get_ip_neigh_output(File_descriptor const ip_neigh_output = get_tmp_file("ip_neigh_outputXXXXXX"));
 
 typedef std::vector<std::tuple<std::string, IP_address>> Iface_Ips;
 
 Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content);
-
-struct IP_address_less {
-        bool operator()(IP_address const & lhs, IP_address const & rhs) const;
-};
 
 template<typename Container0, typename Container1>
 std::vector<std::tuple<typename Container0::value_type, typename Container1::value_type>> cartesian_product(Container0 const & c0, Container1 const & c1) {
