@@ -19,9 +19,7 @@
 #include "container_utils.h"
 #include "spawn_process.h"
 
-bool has_neighbour_ip(std::string const & iface, IP_address const & ip, File_descriptor const & ip_neigh_output) {
-        std::vector<std::string> const content = ip_neigh_output.get_content();
-
+bool has_neighbour_ip(std::string const & iface, IP_address const & ip, std::vector<std::string> const & content) {
         auto const match_iface_and_ip = [&](std::string const & line) {
                 return line.find(iface) != std::string::npos
                         && line.find(ip.pure()) != std::string::npos;
@@ -37,7 +35,7 @@ bool Ip_neigh_checker::operator()(std::string const & iface, IP_address const & 
         const pid_t pid = spawn(cmd, "/dev/null", *ip_neigh_output);
         const uint8_t status = wait_until_pid_exits(pid);
 
-        return status != 0 || has_neighbour_ip(iface, ip, *ip_neigh_output);
+        return status != 0 || has_neighbour_ip(iface, ip, ip_neigh_output->get_content());
 }
 
 void daw_thread_main_non_root(const std::string & iface, const IP_address & ip, Is_ip_occupied const & is_ip_occupied, std::atomic_bool & loop, Pcap_wrapper & pc) {

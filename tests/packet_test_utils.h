@@ -18,8 +18,13 @@
 
 #include <memory>
 #include <vector>
-#include <../src/ip.h>
-#include <../src/ethernet.h>
+#include <ip.h>
+#include <ethernet.h>
+#include <ip_address.h>
+#include <file_descriptor.h>
+#include <tuple>
+#include <to_string.h>
+#include <spawn_process.h>
 
 std::vector<uint8_t> to_binary(const std::string& hex);
 
@@ -30,4 +35,25 @@ void test_ip(const std::unique_ptr<ip>& ip, const ip::Version v, const std::stri
 bool operator==(const Link_layer& lhs, const Link_layer& rhs);
 
 bool operator==(const ip& lhs, const ip& rhs);
+
+std::vector<std::string> get_ip_neigh_output(File_descriptor const ip_neigh_output = get_tmp_file("ip_neigh_outputXXXXXX"));
+
+typedef std::vector<std::tuple<std::string, IP_address>> Iface_Ips;
+
+Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content);
+
+struct IP_address_less {
+        bool operator()(IP_address const & lhs, IP_address const & rhs) const;
+};
+
+template<typename Container0, typename Container1>
+std::vector<std::tuple<typename Container0::value_type, typename Container1::value_type>> cartesian_product(Container0 const & c0, Container1 const & c1) {
+        std::vector<std::tuple<typename Container0::value_type, typename Container1::value_type>> retVal;
+        for (auto const & c0item : c0) {
+                for (auto const & c1item : c1) {
+                        retVal.emplace_back(std::make_tuple(c0item, c1item));
+                }
+        }
+        return retVal;
+}
 

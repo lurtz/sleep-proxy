@@ -3,8 +3,8 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
-#include "../src/container_utils.h"
-#include "../src/int_utils.h"
+#include "container_utils.h"
+#include "int_utils.h"
 
 void check_range(const long long int val, const long long int lower, const long long int upper) {
         if (val < lower || val >= upper) {
@@ -59,5 +59,28 @@ bool operator==(const ip& lhs, const ip& rhs) {
                 && lhs.destination() == rhs.destination()
                 && lhs.payload_protocol() == rhs.payload_protocol()
                 && lhs.source() == rhs.source();
+}
+
+std::vector<std::string> get_ip_neigh_output(File_descriptor const ip_neigh_output) {
+        std::vector<std::string> const cmd{get_path("ip"), "neigh"};
+        pid_t const pid = spawn(cmd, "/dev/null", ip_neigh_output);
+        const uint8_t status = wait_until_pid_exits(pid);
+        CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+        return ip_neigh_output.get_content();
+}
+
+Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content) {
+        Iface_Ips iface_ip;
+        for (std::string const & line : ip_neigh_content) {
+                std::vector<std::string> const token = split(line, ' ');
+                std::string const ip = token.at(0);
+                std::string const iface = token.at(2);
+                iface_ip.emplace_back(iface, parse_ip(ip));
+        }
+        return iface_ip;
+}
+
+bool IP_address_less::operator()(IP_address const & lhs, IP_address const & rhs) const {
+        return lhs.with_subnet() < rhs.with_subnet();
 }
 

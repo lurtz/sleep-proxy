@@ -28,8 +28,8 @@
 typedef std::function<bool(std::string const &, IP_address const &)> Is_ip_occupied;
 
 struct Ip_neigh_checker {
-        std::shared_ptr<File_descriptor> ip_neigh_output;
-        std::vector<std::string> cmd;
+        std::shared_ptr<File_descriptor> const ip_neigh_output;
+        std::vector<std::string> const cmd;
 
         Ip_neigh_checker();
 
