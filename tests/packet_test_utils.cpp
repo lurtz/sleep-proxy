@@ -76,10 +76,12 @@ std::vector<std::string> get_ip_neigh_output(File_descriptor const ip_neigh_outp
 Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content) {
         Iface_Ips iface_ip;
         for (std::string const & line : ip_neigh_content) {
-                std::vector<std::string> const token = split(line, ' ');
-                std::string const ip = token.at(0);
-                std::string const iface = token.at(2);
-                iface_ip.emplace_back(iface, parse_ip(ip));
+                if (line.find("STALE") == std::string::npos) {
+                        std::vector<std::string> const token = split(line, ' ');
+                        std::string const ip = token.at(0);
+                        std::string const iface = token.at(2);
+                        iface_ip.emplace_back(iface, parse_ip(ip));
+                }
         }
         return iface_ip;
 }

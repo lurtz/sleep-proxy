@@ -22,7 +22,8 @@
 bool has_neighbour_ip(std::string const & iface, IP_address const & ip, std::vector<std::string> const & content) {
         auto const match_iface_and_ip = [&](std::string const & line) {
                 return line.find(iface) != std::string::npos
-                        && line.find(ip.pure()) != std::string::npos;
+                        && line.find(ip.pure()) != std::string::npos
+                        && line.find("STALE") == std::string::npos;
         };
         return std::any_of(std::begin(content), std::end(content), match_iface_and_ip);
 }

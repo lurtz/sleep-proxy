@@ -143,9 +143,10 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
                         "192.168.1.181 dev wlan0 lladdr 00:14:38:d3:00:69 STALE",
                         "192.168.1.1 dev wlan0 lladdr 00:00:83:8a:20:00 REACHABLE"};
 
-                CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("2001:470:1f15:ea7::1/64"), fd));
+                // present ips, check if STALE
+                CPPUNIT_ASSERT(!has_neighbour_ip("wlan0", parse_ip("2001:470:1f15:ea7::1/64"), fd));
                 CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("fe80::200:83ff:fe8a:2000/64"), fd));
-                CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("192.168.1.181/24"), fd));
+                CPPUNIT_ASSERT(!has_neighbour_ip("wlan0", parse_ip("192.168.1.181/24"), fd));
                 CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("192.168.1.1/24"), fd));
 
                 CPPUNIT_ASSERT(!has_neighbour_ip("eth0", parse_ip("2001:470:1f15:ea7::1/64"), fd));
