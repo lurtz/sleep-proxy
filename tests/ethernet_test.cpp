@@ -16,7 +16,6 @@
 
 #include "main.h"
 #include "ethernet.h"
-#include "check_range.h"
 #include "packet_test_utils.h"
 
 const std::string lcc_no_ethernet_ipv4_0_wireshark =

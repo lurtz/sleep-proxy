@@ -16,8 +16,8 @@
 
 #include "main.h"
 #include <string>
-#include "check_range.h"
 #include "ethernet.h"
+#include "packet_test_utils.h"
 #include "wol_test_interface.h"
 
 class Wol_test : public CppUnit::TestFixture {
