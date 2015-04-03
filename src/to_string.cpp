@@ -36,17 +36,3 @@ std::string test_characters(const std::string &input,
   }
   return input;
 }
-
-File_descriptor get_tmp_file(std::string const &filename) {
-  std::string const path = std::string(P_tmpdir) + '/' + filename;
-  std::vector<char> modifiable_string(path.size() + 1, '\0');
-  std::copy(std::begin(path), std::end(path), std::begin(modifiable_string));
-
-  int const raw_fd = mkstemp(modifiable_string.data());
-  if (raw_fd == -1) {
-    throw std::runtime_error(std::string("failed to create temporary file: ") +
-                             strerror(errno));
-  }
-
-  return File_descriptor{raw_fd, modifiable_string.data()};
-}

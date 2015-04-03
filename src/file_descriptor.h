@@ -45,3 +45,5 @@ struct File_descriptor {
 
   std::vector<std::string> get_content() const;
 };
+
+File_descriptor get_tmp_file(std::string const &filename);
