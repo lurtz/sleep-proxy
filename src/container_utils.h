@@ -22,48 +22,50 @@
 #include <iterator>
 #include <stdexcept>
 
-template<typename T>
-T identity(const T& t) {
-        return t;
-}
+template <typename T> T identity(const T &t) { return t; }
 
-template<typename Container, typename Func>
+template <typename Container, typename Func>
 std::string join(Container c, Func fun, std::string sep) {
-        typedef typename std::result_of<decltype(fun)(typename Container::value_type)>::type input_type;
-        std::stringstream ss;
-        std::ostream_iterator<input_type> iter(ss, sep.c_str());
-        if (std::begin(c) != std::end(c)) {
-                std::transform(std::begin(c), std::end(c)-1, iter, fun);
-                ss << fun(*(std::end(c)-1));
-        }
-        return ss.str();
+  typedef typename std::result_of<
+      decltype(fun)(typename Container::value_type)>::type input_type;
+  std::stringstream ss;
+  std::ostream_iterator<input_type> iter(ss, sep.c_str());
+  if (std::begin(c) != std::end(c)) {
+    std::transform(std::begin(c), std::end(c) - 1, iter, fun);
+    ss << fun(*(std::end(c) - 1));
+  }
+  return ss.str();
 }
 
-template<typename T, typename Alloc>
-std::vector<T, Alloc> operator+(std::vector<T, Alloc>&& lhs, const std::vector<T, Alloc>& rhs) {
-        lhs.insert(std::end(lhs), std::begin(rhs), std::end(rhs));
-        return std::move(lhs);
+template <typename T, typename Alloc>
+std::vector<T, Alloc> operator+(std::vector<T, Alloc> &&lhs,
+                                const std::vector<T, Alloc> &rhs) {
+  lhs.insert(std::end(lhs), std::begin(rhs), std::end(rhs));
+  return std::move(lhs);
 }
 
-template<typename iterator>
+template <typename iterator>
 void check_type_and_range(iterator data, iterator end, size_t const min_size) {
-        static_assert(std::is_same<typename iterator::value_type, uint8_t>::value, "container has to carry u_char or uint8_t");
-        if (data >= end || static_cast<size_t>(std::distance(data, end)) < min_size) {
-                throw std::length_error("not enough data");
-        }
+  static_assert(std::is_same<typename iterator::value_type, uint8_t>::value,
+                "container has to carry u_char or uint8_t");
+  if (data >= end || static_cast<size_t>(std::distance(data, end)) < min_size) {
+    throw std::length_error("not enough data");
+  }
 }
 
-template<typename Container>
-std::vector<Container> split(Container const & c, typename Container::value_type const & delimiter) {
-        typename Container::const_iterator iter{std::begin(c)};
-        std::vector<Container> results;
-        while (iter != std::end(c)) {
-                typename Container::const_iterator const possible_delim = std::find(iter, std::end(c), delimiter);
-                results.emplace_back(iter, possible_delim);
-                iter = possible_delim;
-                if (iter != std::end(c)) {
-                        iter++;
-                }
-        }
-        return results;
+template <typename Container>
+std::vector<Container> split(Container const &c,
+                             typename Container::value_type const &delimiter) {
+  typename Container::const_iterator iter{std::begin(c)};
+  std::vector<Container> results;
+  while (iter != std::end(c)) {
+    typename Container::const_iterator const possible_delim =
+        std::find(iter, std::end(c), delimiter);
+    results.emplace_back(iter, possible_delim);
+    iter = possible_delim;
+    if (iter != std::end(c)) {
+      iter++;
+    }
+  }
+  return results;
 }

@@ -26,29 +26,32 @@
  * Parses and checks the input of the command line arguments
  */
 struct Args {
-        /** the interface to use */
-        const std::string interface;
-        /** addresses to listen on */
-        const std::vector<IP_address> address;
-        /** ports to listen on */
-        const std::vector<uint16_t> ports;
-        /** mac of the target machine to wake up */
-        const ether_addr mac;
-        const std::string hostname;
-        const unsigned int ping_tries;
-        const bool& syslog;
+  /** the interface to use */
+  const std::string interface;
+  /** addresses to listen on */
+  const std::vector<IP_address> address;
+  /** ports to listen on */
+  const std::vector<uint16_t> ports;
+  /** mac of the target machine to wake up */
+  const ether_addr mac;
+  const std::string hostname;
+  const unsigned int ping_tries;
+  const bool &syslog;
 
-        Args();
+  Args();
 
-        Args(const std::string interface_, const std::vector<std::string> addresss_, const std::vector<std::string> ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_);
+  Args(const std::string interface_, const std::vector<std::string> addresss_,
+       const std::vector<std::string> ports_, const std::string mac_,
+       const std::string hostname_, const std::string ping_tries_);
 
-        Args(const std::string interface_, const std::string addresss_, const std::string ports_, const std::string mac_, const std::string hostname_, const std::string ping_tries_);
+  Args(const std::string interface_, const std::string addresss_,
+       const std::string ports_, const std::string mac_,
+       const std::string hostname_, const std::string ping_tries_);
 };
 
-std::vector<Args> read_commandline(const int argc, char * const argv[]);
+std::vector<Args> read_commandline(const int argc, char *const argv[]);
 
 /**
  * write args into out
  */
-std::ostream& operator<<(std::ostream& out, const Args& args);
-
+std::ostream &operator<<(std::ostream &out, const Args &args);

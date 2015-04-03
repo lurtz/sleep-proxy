@@ -26,29 +26,29 @@
 /**
  * Ethernet, IP and TCP/UDP header in one tuple
  * */
-typedef std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>> basic_headers;
+typedef std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>>
+    basic_headers;
 
 /**
  * Prints the headers to stdout
  * */
-std::ostream& operator<<(std::ostream& out, const basic_headers& headers);
+std::ostream &operator<<(std::ostream &out, const basic_headers &headers);
 
 /**
  * Extracts the Ethernet, IP and TCP/UDP headers from packet
  * */
-basic_headers get_headers(const int type, const std::vector<u_char>& packet);
+basic_headers get_headers(const int type, const std::vector<u_char> &packet);
 
 /**
  * Saves the lower 3 layers and all the data which has been intercepted
  * using pcap.
  */
 struct Catch_incoming_connection {
-        const int link_layer_type;
-        basic_headers headers;
-        std::vector<uint8_t> data;
+  const int link_layer_type;
+  basic_headers headers;
+  std::vector<uint8_t> data;
 
-        Catch_incoming_connection(const int link_layer_typee);
+  Catch_incoming_connection(const int link_layer_typee);
 
-        void operator()(const pcap_pkthdr * header, const u_char * packet);
+  void operator()(const pcap_pkthdr *header, const u_char *packet);
 };
-

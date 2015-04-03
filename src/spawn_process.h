@@ -22,45 +22,51 @@
 #include "to_string.h"
 #include "file_descriptor.h"
 
-uint8_t wait_until_pid_exits(const pid_t& pid);
+uint8_t wait_until_pid_exits(const pid_t &pid);
 
 struct IO_remap_params {
-        enum Type {PATH, FILE_DESCRIPTOR};
+  enum Type { PATH, FILE_DESCRIPTOR };
 
-        IO_remap_params(const char * p);
+  IO_remap_params(const char *p);
 
-        IO_remap_params(std::string p);
+  IO_remap_params(std::string p);
 
-        IO_remap_params(File_descriptor const & fd);
+  IO_remap_params(File_descriptor const &fd);
 
-        IO_remap_params& operator=(IO_remap_params&& rhs);
+  IO_remap_params &operator=(IO_remap_params &&rhs);
 
-        ~IO_remap_params();
+  ~IO_remap_params();
 
-        Type get_type() const;
+  Type get_type() const;
 
-        std::string const & get_path() const;
+  std::string const &get_path() const;
 
-        File_descriptor const & get_file_descriptor() const;
+  File_descriptor const &get_file_descriptor() const;
 
-        private:
-        Type type;
-        union { std::string path; File_descriptor const * file_descriptor; };
+private:
+  Type type;
+  union {
+    std::string path;
+    File_descriptor const *file_descriptor;
+  };
 };
 
-pid_t fork_exec_pipes(const std::vector<const char *>& command, IO_remap_params const & in, IO_remap_params const & out);
+pid_t fork_exec_pipes(const std::vector<const char *> &command,
+                      IO_remap_params const &in, IO_remap_params const &out);
 
-template<typename Container>
-pid_t spawn(Container&& cmd, IO_remap_params const & in = IO_remap_params(""), IO_remap_params const & out = IO_remap_params("")) {
-        static_assert(std::is_same<typename std::decay<Container>::type::value_type, std::string>::value, "container has to carry std::string");
+template <typename Container>
+pid_t spawn(Container &&cmd, IO_remap_params const &in = IO_remap_params(""),
+            IO_remap_params const &out = IO_remap_params("")) {
+  static_assert(std::is_same<typename std::decay<Container>::type::value_type,
+                             std::string>::value,
+                "container has to carry std::string");
 
-        // get char * of each string
-        std::vector<const char *> ch_ptr = get_c_string_array(cmd);
+  // get char * of each string
+  std::vector<const char *> ch_ptr = get_c_string_array(cmd);
 
-        return fork_exec_pipes(ch_ptr, in, out);
+  return fork_exec_pipes(ch_ptr, in, out);
 }
 
-bool file_exists(const std::string& filename);
+bool file_exists(const std::string &filename);
 
 std::string get_path(const std::string command);
-

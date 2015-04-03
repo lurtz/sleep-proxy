@@ -24,6 +24,12 @@ add_definitions(-std=c++11)
 INCLUDE(CompilerFlags)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VALID_FLAGS}")
 
+if ("${CMAKE_CXX_COMPILER}" MATCHES ".*clang.*")
+        message(STATUS "clang compiler found, will use clang-format")
+        set(GCF_CLANGFORMAT_STYLE "LLVM")
+        add_subdirectory(git-cmake-format)
+endif()
+
 # testing
 FIND_PACKAGE(CPPUNIT)
 if (CPPUNIT_FOUND)
@@ -33,3 +39,4 @@ endif (CPPUNIT_FOUND)
 
 # source
 add_subdirectory(src)
+

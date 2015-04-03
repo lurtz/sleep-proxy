@@ -23,46 +23,51 @@
 
 // fallback because c++11 functions are not available
 namespace fallback {
-        namespace std {
-                long long int stoll(const ::std::string&, const int base = 10);
-                unsigned long long int stoull(const ::std::string&, const int base = 10);
-        }
+namespace std {
+long long int stoll(const ::std::string &, const int base = 10);
+unsigned long long int stoull(const ::std::string &, const int base = 10);
+}
 }
 
 /** range check for signed target types */
-template<typename R, typename T, typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
-bool within_bounds(const T& val) noexcept {
-        return std::numeric_limits<R>::lowest() <= val && val <= std::numeric_limits<R>::max();
+template <typename R, typename T,
+          typename std::enable_if<std::is_signed<T>::value>::type * = nullptr>
+bool within_bounds(const T &val) noexcept {
+  return std::numeric_limits<R>::lowest() <= val &&
+         val <= std::numeric_limits<R>::max();
 }
 
 /** range check for unsigned target types */
-template<typename R, typename T, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
-bool within_bounds(const T& val) noexcept {
-        return val <= std::numeric_limits<R>::max();
+template <typename R, typename T,
+          typename std::enable_if<std::is_unsigned<T>::value>::type * = nullptr>
+bool within_bounds(const T &val) noexcept {
+  return val <= std::numeric_limits<R>::max();
 }
 
 /** convert to signed types */
-template<typename T, typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
-long long int str_to_integral_helper(const std::string& string) {
-        return fallback::std::stoll(string);
+template <typename T,
+          typename std::enable_if<std::is_signed<T>::value>::type * = nullptr>
+long long int str_to_integral_helper(const std::string &string) {
+  return fallback::std::stoll(string);
 }
 
 /** convert to unsigned types */
-template<typename T, typename std::enable_if<std::is_unsigned<T>::value>::type* = nullptr>
-unsigned long long int str_to_integral_helper(const std::string& string) {
-        return fallback::std::stoull(string);
+template <typename T,
+          typename std::enable_if<std::is_unsigned<T>::value>::type * = nullptr>
+unsigned long long int str_to_integral_helper(const std::string &string) {
+  return fallback::std::stoull(string);
 }
 
 /** converts string to any integral type */
-template<typename T>
-T str_to_integral(const std::string& string) {
-        auto value = str_to_integral_helper<T>(string);
-        if (!within_bounds<T>(value)) {
-                std::string mess = "value " + to_string(value) + " not in range " + to_string(std::numeric_limits<T>::lowest()) + ".." + to_string(std::numeric_limits<T>::max());
-                throw std::out_of_range(mess);
-        }
-        return static_cast<T>(value);
+template <typename T> T str_to_integral(const std::string &string) {
+  auto value = str_to_integral_helper<T>(string);
+  if (!within_bounds<T>(value)) {
+    std::string mess = "value " + to_string(value) + " not in range " +
+                       to_string(std::numeric_limits<T>::lowest()) + ".." +
+                       to_string(std::numeric_limits<T>::max());
+    throw std::out_of_range(mess);
+  }
+  return static_cast<T>(value);
 }
 
 std::string one_byte_to_two_hex_chars(const uint8_t b) noexcept;
-

@@ -17,4 +17,4 @@
 #include <vector>
 #include <netinet/ether.h>
 
-std::vector<uint8_t> create_wol_udp_payload(const ether_addr& mac);
+std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac);

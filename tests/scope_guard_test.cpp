@@ -20,186 +20,248 @@
 #include "spawn_process.h"
 
 class Scope_guard_test : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE( Scope_guard_test );
-        CPPUNIT_TEST( test_scope_guard );
-        CPPUNIT_TEST( test_temp_ip );
-        CPPUNIT_TEST( test_drop_port );
-        CPPUNIT_TEST( test_reject_tp );
-        CPPUNIT_TEST( test_block_icmp );
-        CPPUNIT_TEST( test_block_ipv6_neighbor_solicitation_link_local );
-        CPPUNIT_TEST( test_block_ipv6_neighbor_solicitation_global_address );
-        CPPUNIT_TEST( test_take_action );
-        CPPUNIT_TEST( test_take_action_failed_command );
-        CPPUNIT_TEST( test_take_action_non_existing_command );
-        CPPUNIT_TEST_SUITE_END();
-        public:
-        void setUp() {}
+  CPPUNIT_TEST_SUITE(Scope_guard_test);
+  CPPUNIT_TEST(test_scope_guard);
+  CPPUNIT_TEST(test_temp_ip);
+  CPPUNIT_TEST(test_drop_port);
+  CPPUNIT_TEST(test_reject_tp);
+  CPPUNIT_TEST(test_block_icmp);
+  CPPUNIT_TEST(test_block_ipv6_neighbor_solicitation_link_local);
+  CPPUNIT_TEST(test_block_ipv6_neighbor_solicitation_global_address);
+  CPPUNIT_TEST(test_take_action);
+  CPPUNIT_TEST(test_take_action_failed_command);
+  CPPUNIT_TEST(test_take_action_non_existing_command);
+  CPPUNIT_TEST_SUITE_END();
 
-        void tearDown() {}
+public:
+  void setUp() {}
 
-        void test_scope_guard() {
-                std::mutex ints_mutex;
-                std::vector<int *> ints;
-                int x = 123;
-                {
-                        Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
-                        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
-                        CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
-                        CPPUNIT_ASSERT_EQUAL(x, *ints.at(0));
-                        CPPUNIT_ASSERT_EQUAL(123, x);
-                }
-                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
-                CPPUNIT_ASSERT_EQUAL(123, x);
-                {
-                        Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
-                        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
-                        CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
-                        CPPUNIT_ASSERT_EQUAL(123, x);
-                        sg.free();
-                        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
-                        CPPUNIT_ASSERT_EQUAL(123, x);
-                        sg.free();
-                        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
-                        CPPUNIT_ASSERT_EQUAL(123, x);
-                }
-                CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
-                CPPUNIT_ASSERT_EQUAL(123, x);
-                {
-                        Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
-                        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
-                        CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
-                        CPPUNIT_ASSERT_EQUAL(123, x);
-                        x = 42;
-                        CPPUNIT_ASSERT_EQUAL(x, *ints.at(0));
-                        int y = 21;
-                        Scope_guard sg2{ptr_guard(ints, ints_mutex, y)};
-                        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), ints.size());
-                        CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
-                        CPPUNIT_ASSERT_EQUAL(&y, ints.at(1));
-                        CPPUNIT_ASSERT_EQUAL(21, y);
-                        sg.free();
-                        CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
-                        CPPUNIT_ASSERT_EQUAL(&y, ints.at(0));
-                }
-        }
+  void tearDown() {}
 
-        void test_temp_ip() {
-                IP_address ip = parse_ip("10.0.0.1/16");
-                std::string iface{"eth0"};
-                Temp_ip ti{iface, ip};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr add " + ip.with_subnet() + " dev " + iface), ti(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr del " + ip.with_subnet() + " dev " + iface), ti(Action::del));
+  void test_scope_guard() {
+    std::mutex ints_mutex;
+    std::vector<int *> ints;
+    int x = 123;
+    {
+      Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
+      CPPUNIT_ASSERT_EQUAL(x, *ints.at(0));
+      CPPUNIT_ASSERT_EQUAL(123, x);
+    }
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
+    CPPUNIT_ASSERT_EQUAL(123, x);
+    {
+      Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
+      CPPUNIT_ASSERT_EQUAL(123, x);
+      sg.free();
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
+      CPPUNIT_ASSERT_EQUAL(123, x);
+      sg.free();
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
+      CPPUNIT_ASSERT_EQUAL(123, x);
+    }
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
+    CPPUNIT_ASSERT_EQUAL(123, x);
+    {
+      Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
+      CPPUNIT_ASSERT_EQUAL(123, x);
+      x = 42;
+      CPPUNIT_ASSERT_EQUAL(x, *ints.at(0));
+      int y = 21;
+      Scope_guard sg2{ptr_guard(ints, ints_mutex, y)};
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
+      CPPUNIT_ASSERT_EQUAL(&y, ints.at(1));
+      CPPUNIT_ASSERT_EQUAL(21, y);
+      sg.free();
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&y, ints.at(0));
+    }
+  }
 
-                iface = "even more randomness";
-                Temp_ip ti2{iface, ip};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr add " + ip.with_subnet() + " dev " + iface), ti2(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip addr del " + ip.with_subnet() + " dev " + iface), ti2(Action::del));
-        }
+  void test_temp_ip() {
+    IP_address ip = parse_ip("10.0.0.1/16");
+    std::string iface{"eth0"};
+    Temp_ip ti{iface, ip};
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("/sbin/ip addr add " + ip.with_subnet() + " dev " + iface),
+        ti(Action::add));
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("/sbin/ip addr del " + ip.with_subnet() + " dev " + iface),
+        ti(Action::del));
 
-        void test_drop_port() {
-                IP_address ip = parse_ip("10.0.0.1/16");
-                uint16_t port{1234};
-                Drop_port op{ip, port};
-                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op(Action::add));
-                CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -D INPUT -d " + ip.pure() + " -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op(Action::del));
+    iface = "even more randomness";
+    Temp_ip ti2{iface, ip};
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("/sbin/ip addr add " + ip.with_subnet() + " dev " + iface),
+        ti2(Action::add));
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("/sbin/ip addr del " + ip.with_subnet() + " dev " + iface),
+        ti2(Action::del));
+  }
 
-                ip = parse_ip("fe80::affe");
-                port = 666;
-                Drop_port op2{ip, port};
-                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op2(Action::add));
-                CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -D INPUT -d " + ip.pure() + " -p tcp --syn --dport " + std::to_string(port) + " -j DROP", op2(Action::del));
-        }
+  void test_drop_port() {
+    IP_address ip = parse_ip("10.0.0.1/16");
+    uint16_t port{1234};
+    Drop_port op{ip, port};
+    CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -I INPUT -d " + ip.pure() +
+                             " -p tcp --syn --dport " + std::to_string(port) +
+                             " -j DROP",
+                         op(Action::add));
+    CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -D INPUT -d " + ip.pure() +
+                             " -p tcp --syn --dport " + std::to_string(port) +
+                             " -j DROP",
+                         op(Action::del));
 
-        void test_reject_tp() {
-                IP_address ip = parse_ip("10.0.0.1/16");
+    ip = parse_ip("fe80::affe");
+    port = 666;
+    Drop_port op2{ip, port};
+    CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -I INPUT -d " + ip.pure() +
+                             " -p tcp --syn --dport " + std::to_string(port) +
+                             " -j DROP",
+                         op2(Action::add));
+    CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -D INPUT -d " + ip.pure() +
+                             " -p tcp --syn --dport " + std::to_string(port) +
+                             " -j DROP",
+                         op2(Action::del));
+  }
 
-                Reject_tp rt{ip, Reject_tp::TP::UDP};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I INPUT -d " + ip.pure() + " -p udp -j REJECT"), rt(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D INPUT -d " + ip.pure() + " -p udp -j REJECT"), rt(Action::del));
+  void test_reject_tp() {
+    IP_address ip = parse_ip("10.0.0.1/16");
 
-                ip = parse_ip("10.0.0.1/16");
-                Reject_tp rt2{ip, Reject_tp::TP::TCP};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I INPUT -d " + ip.pure() + " -p tcp -j REJECT"), rt2(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D INPUT -d " + ip.pure() + " -p tcp -j REJECT"), rt2(Action::del));
+    Reject_tp rt{ip, Reject_tp::TP::UDP};
+    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I INPUT -d " +
+                                     ip.pure() + " -p udp -j REJECT"),
+                         rt(Action::add));
+    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D INPUT -d " +
+                                     ip.pure() + " -p udp -j REJECT"),
+                         rt(Action::del));
 
-                ip = parse_ip("2001::dead:affe/16");
-                Reject_tp rt3{ip, Reject_tp::TP::TCP};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I INPUT -d " + ip.pure() + " -p tcp -j REJECT"), rt3(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D INPUT -d " + ip.pure() + " -p tcp -j REJECT"), rt3(Action::del));
-        }
+    ip = parse_ip("10.0.0.1/16");
+    Reject_tp rt2{ip, Reject_tp::TP::TCP};
+    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I INPUT -d " +
+                                     ip.pure() + " -p tcp -j REJECT"),
+                         rt2(Action::add));
+    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D INPUT -d " +
+                                     ip.pure() + " -p tcp -j REJECT"),
+                         rt2(Action::del));
 
-        void test_block_icmp() {
-                IP_address ip = parse_ip("10.0.0.1/16");
+    ip = parse_ip("2001::dead:affe/16");
+    Reject_tp rt3{ip, Reject_tp::TP::TCP};
+    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I INPUT -d " +
+                                     ip.pure() + " -p tcp -j REJECT"),
+                         rt3(Action::add));
+    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D INPUT -d " +
+                                     ip.pure() + " -p tcp -j REJECT"),
+                         rt3(Action::del));
+  }
 
-                Block_icmp bi{ip};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -I OUTPUT -d 10.0.0.1 -p icmp --icmp-type destination-unreachable -j DROP"), bi(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables -w -D OUTPUT -d 10.0.0.1 -p icmp --icmp-type destination-unreachable -j DROP"), bi(Action::del));
+  void test_block_icmp() {
+    IP_address ip = parse_ip("10.0.0.1/16");
 
-                ip = parse_ip("fe80::affe:affe");
-                Block_icmp bi2{ip};
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -I OUTPUT -d fe80::affe:affe -p icmpv6 --icmpv6-type destination-unreachable -j DROP"), bi2(Action::add));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip6tables -w -D OUTPUT -d fe80::affe:affe -p icmpv6 --icmpv6-type destination-unreachable -j DROP"), bi2(Action::del));
-        }
+    Block_icmp bi{ip};
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("/sbin/iptables -w -I OUTPUT -d 10.0.0.1 -p icmp "
+                    "--icmp-type destination-unreachable -j DROP"),
+        bi(Action::add));
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("/sbin/iptables -w -D OUTPUT -d 10.0.0.1 -p icmp "
+                    "--icmp-type destination-unreachable -j DROP"),
+        bi(Action::del));
 
-        std::string block_ipv6_neighbor_solicitation_cmd(std::string const & action, std::string const & rule) {
-                std::string const binary{"/sbin/ip6tables -w -"};
-                std::string const options{" INPUT -s :: -p icmpv6 --icmpv6-type neighbour-solicitation -m u32 --u32 "};
-                std::string const jump{" -j DROP"};
-                return binary + action + options + rule + jump;
-        }
+    ip = parse_ip("fe80::affe:affe");
+    Block_icmp bi2{ip};
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("/sbin/ip6tables -w -I OUTPUT -d fe80::affe:affe -p icmpv6 "
+                    "--icmpv6-type destination-unreachable -j DROP"),
+        bi2(Action::add));
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("/sbin/ip6tables -w -D OUTPUT -d fe80::affe:affe -p icmpv6 "
+                    "--icmpv6-type destination-unreachable -j DROP"),
+        bi2(Action::del));
+  }
 
-        void test_block_ipv6_neighbor_solicitation_link_local() {
-                Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("fe80::123")};
+  std::string block_ipv6_neighbor_solicitation_cmd(std::string const &action,
+                                                   std::string const &rule) {
+    std::string const binary{"/sbin/ip6tables -w -"};
+    std::string const options{" INPUT -s :: -p icmpv6 --icmpv6-type "
+                              "neighbour-solicitation -m u32 --u32 "};
+    std::string const jump{" -j DROP"};
+    return binary + action + options + rule + jump;
+  }
 
-                std::string const rule{"48=0xfe && 49=0x80 && 50=0x00 && 51=0x00 && 52=0x00 && 53=0x00 && 54=0x00 && 55=0x00 && 56=0x00 && 57=0x00 && 58=0x00 && 59=0x00 && 60=0x00 && 61=0x00 && 62=0x01 && 63=0x23"};
-                std::string const expected_insert{block_ipv6_neighbor_solicitation_cmd("I", rule)};
-                std::string const expected_delete{block_ipv6_neighbor_solicitation_cmd("D", rule)};
+  void test_block_ipv6_neighbor_solicitation_link_local() {
+    Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("fe80::123")};
 
-                CPPUNIT_ASSERT_EQUAL(expected_insert, bipv6ns(Action::add));
-                CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
-        }
+    std::string const rule{"48=0xfe && 49=0x80 && 50=0x00 && 51=0x00 && "
+                           "52=0x00 && 53=0x00 && 54=0x00 && 55=0x00 && "
+                           "56=0x00 && 57=0x00 && 58=0x00 && 59=0x00 && "
+                           "60=0x00 && 61=0x00 && 62=0x01 && 63=0x23"};
+    std::string const expected_insert{
+        block_ipv6_neighbor_solicitation_cmd("I", rule)};
+    std::string const expected_delete{
+        block_ipv6_neighbor_solicitation_cmd("D", rule)};
 
-        void test_block_ipv6_neighbor_solicitation_global_address() {
-                Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("2a00:1450:4005:800::1004")};
+    CPPUNIT_ASSERT_EQUAL(expected_insert, bipv6ns(Action::add));
+    CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
+  }
 
-                std::string const rule{"48=0x2a && 49=0x00 && 50=0x14 && 51=0x50 && 52=0x40 && 53=0x05 && 54=0x08 && 55=0x00 && 56=0x00 && 57=0x00 && 58=0x00 && 59=0x00 && 60=0x00 && 61=0x00 && 62=0x10 && 63=0x04"};
-                std::string const expected_insert{block_ipv6_neighbor_solicitation_cmd("I", rule)};
-                std::string const expected_delete{block_ipv6_neighbor_solicitation_cmd("D", rule)};
+  void test_block_ipv6_neighbor_solicitation_global_address() {
+    Block_ipv6_neighbor_solicitation const bipv6ns{
+        parse_ip("2a00:1450:4005:800::1004")};
 
-                CPPUNIT_ASSERT_EQUAL(expected_insert, bipv6ns(Action::add));
-                CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
-        }
+    std::string const rule{"48=0x2a && 49=0x00 && 50=0x14 && 51=0x50 && "
+                           "52=0x40 && 53=0x05 && 54=0x08 && 55=0x00 && "
+                           "56=0x00 && 57=0x00 && 58=0x00 && 59=0x00 && "
+                           "60=0x00 && 61=0x00 && 62=0x10 && 63=0x04"};
+    std::string const expected_insert{
+        block_ipv6_neighbor_solicitation_cmd("I", rule)};
+    std::string const expected_delete{
+        block_ipv6_neighbor_solicitation_cmd("D", rule)};
 
-        struct Take_action_function {
-                const std::string filename;
-                std::string operator()(const Action a) {
-                        const std::map<Action, std::string> amap{{Action::add, "touch"}, {Action::del, "rm"}};
-                        return get_path(amap.at(a)) + " " + filename;
-                }
-        };
+    CPPUNIT_ASSERT_EQUAL(expected_insert, bipv6ns(Action::add));
+    CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
+  }
 
-        void test_take_action() {
-              const std::string filename{"/tmp/take_action_test_testfile"};
-              CPPUNIT_ASSERT(!file_exists(filename));
-              {
-                      Scope_guard sg{Take_action_function{filename}};
-                      CPPUNIT_ASSERT(file_exists(filename));
-              }
-              CPPUNIT_ASSERT(!file_exists(filename));
-        }
+  struct Take_action_function {
+    const std::string filename;
+    std::string operator()(const Action a) {
+      const std::map<Action, std::string> amap{{Action::add, "touch"},
+                                               {Action::del, "rm"}};
+      return get_path(amap.at(a)) + " " + filename;
+    }
+  };
 
-        std::string exception_causing_function(const Action&) {
-                return get_path("false");
-        }
+  void test_take_action() {
+    const std::string filename{"/tmp/take_action_test_testfile"};
+    CPPUNIT_ASSERT(!file_exists(filename));
+    {
+      Scope_guard sg{Take_action_function{filename}};
+      CPPUNIT_ASSERT(file_exists(filename));
+    }
+    CPPUNIT_ASSERT(!file_exists(filename));
+  }
 
-        void test_take_action_failed_command() {
-              CPPUNIT_ASSERT_THROW(Scope_guard{[](const Action&){return get_path("false");}}, std::runtime_error);
-        }
+  std::string exception_causing_function(const Action &) {
+    return get_path("false");
+  }
 
-        void test_take_action_non_existing_command() {
-              CPPUNIT_ASSERT_THROW(Scope_guard{[](const Action&){return "falsefalsefalsefalse";}}, std::runtime_error);
-        }
+  void test_take_action_failed_command() {
+    CPPUNIT_ASSERT_THROW(
+        Scope_guard{[](const Action &) { return get_path("false"); }},
+        std::runtime_error);
+  }
+
+  void test_take_action_non_existing_command() {
+    CPPUNIT_ASSERT_THROW(
+        Scope_guard{[](const Action &) { return "falsefalsefalsefalse"; }},
+        std::runtime_error);
+  }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Scope_guard_test );
-
+CPPUNIT_TEST_SUITE_REGISTRATION(Scope_guard_test);

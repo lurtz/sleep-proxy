@@ -20,27 +20,33 @@
 #include <cerrno>
 #include <cstring>
 
-bool contains_only_valid_characters(const std::string& input, const std::string& valid_chars) {
-        const bool b = std::all_of(std::begin(input), std::end(input), [&] (char ch) { return valid_chars.find(ch) != std::string::npos; });
-        return b;
+bool contains_only_valid_characters(const std::string &input,
+                                    const std::string &valid_chars) {
+  const bool b = std::all_of(std::begin(input), std::end(input), [&](char ch) {
+    return valid_chars.find(ch) != std::string::npos;
+  });
+  return b;
 }
 
-std::string test_characters(const std::string& input, const std::string& valid_chars, std::string error_message) {
-        if (!contains_only_valid_characters(input, valid_chars)) {
-                throw std::runtime_error(error_message);
-        }
-        return input;
+std::string test_characters(const std::string &input,
+                            const std::string &valid_chars,
+                            std::string error_message) {
+  if (!contains_only_valid_characters(input, valid_chars)) {
+    throw std::runtime_error(error_message);
+  }
+  return input;
 }
 
-File_descriptor get_tmp_file(std::string const & filename) {
-        std::string const path = std::string(P_tmpdir) + '/' + filename;
-        std::vector<char> modifiable_string(path.size() + 1, '\0');
-        std::copy(std::begin(path), std::end(path), std::begin(modifiable_string));
+File_descriptor get_tmp_file(std::string const &filename) {
+  std::string const path = std::string(P_tmpdir) + '/' + filename;
+  std::vector<char> modifiable_string(path.size() + 1, '\0');
+  std::copy(std::begin(path), std::end(path), std::begin(modifiable_string));
 
-        int const raw_fd = mkstemp(modifiable_string.data());
-        if (raw_fd == -1) {
-                throw std::runtime_error(std::string("failed to create temporary file: ") + strerror(errno));
-        }
+  int const raw_fd = mkstemp(modifiable_string.data());
+  if (raw_fd == -1) {
+    throw std::runtime_error(std::string("failed to create temporary file: ") +
+                             strerror(errno));
+  }
 
-        return File_descriptor{raw_fd, modifiable_string.data()};
+  return File_descriptor{raw_fd, modifiable_string.data()};
 }

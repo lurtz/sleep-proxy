@@ -24,113 +24,143 @@
 
 #include "packet_test_utils.h"
 
-const std::string ethernet_ipv4_tcp_wireshark = "00000000000000000000000008004500003c88d040004006b3e97f0000017f000001";
+const std::string ethernet_ipv4_tcp_wireshark =
+    "00000000000000000000000008004500003c88d040004006b3e97f0000017f000001";
 
-const std::string ethernet_ipv6_tcp_wireshark = "00000000000000000000000086dd60000000002806400000000000000000000000000000000100000000000000000000000000000001";
+const std::string ethernet_ipv6_tcp_wireshark =
+    "00000000000000000000000086dd6000000000280640000000000000000000000000000000"
+    "0100000000000000000000000000000001";
 
-const std::string lcc_ipv4_udp_wireshark = "000000010006000000000000000008004500003e057f40004011372e7f0000017f000001";
+const std::string lcc_ipv4_udp_wireshark =
+    "000000010006000000000000000008004500003e057f40004011372e7f0000017f000001";
 
-const std::string lcc_ipv6_tcp_wireshark = "000000010006000000000000000086dd60000000001406400000000000000000000000000000000100000000000000000000000000000001";
+const std::string lcc_ipv6_tcp_wireshark =
+    "000000010006000000000000000086dd600000000014064000000000000000000000000000"
+    "00000100000000000000000000000000000001";
 
 // src 192.168.1.155 dst 79.143.179.211 UDP 164
-const std::string lcc_vlan_ipv4_udp_wireshark = "000000010006e8de2755a17100008100000108004500009000004000401174b7c0a8019b4f8fb3d3";
+const std::string lcc_vlan_ipv4_udp_wireshark = "000000010006e8de2755a171000081"
+                                                "000001080045000090000040004011"
+                                                "74b7c0a8019b4f8fb3d3";
 
 class Packet_parser_test : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE( Packet_parser_test );
-        CPPUNIT_TEST( test_parse_ethernet_ipv4_tcp );
-        CPPUNIT_TEST( test_parse_ethernet_ipv6_tcp );
-        CPPUNIT_TEST( test_parse_ethernet_ipv4_tcp_too_short );
-        CPPUNIT_TEST( test_parse_ethernet_ipv6_tcp_too_short );
-        CPPUNIT_TEST( test_parse_lcc_ipv4_udp );
-        CPPUNIT_TEST( test_parse_lcc_ipv6_tcp );
-        CPPUNIT_TEST( test_parse_lcc_ipv4_udp_too_short );
-        CPPUNIT_TEST( test_parse_lcc_ipv6_tcp_too_short );
-        CPPUNIT_TEST( test_parse_lcc_vlan_ipv4_udp );
-        CPPUNIT_TEST( test_parse_lcc_vlan_ipv4_udp_too_short );
-        CPPUNIT_TEST( test_catch_incoming_connection );
-        CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(Packet_parser_test);
+  CPPUNIT_TEST(test_parse_ethernet_ipv4_tcp);
+  CPPUNIT_TEST(test_parse_ethernet_ipv6_tcp);
+  CPPUNIT_TEST(test_parse_ethernet_ipv4_tcp_too_short);
+  CPPUNIT_TEST(test_parse_ethernet_ipv6_tcp_too_short);
+  CPPUNIT_TEST(test_parse_lcc_ipv4_udp);
+  CPPUNIT_TEST(test_parse_lcc_ipv6_tcp);
+  CPPUNIT_TEST(test_parse_lcc_ipv4_udp_too_short);
+  CPPUNIT_TEST(test_parse_lcc_ipv6_tcp_too_short);
+  CPPUNIT_TEST(test_parse_lcc_vlan_ipv4_udp);
+  CPPUNIT_TEST(test_parse_lcc_vlan_ipv4_udp_too_short);
+  CPPUNIT_TEST(test_catch_incoming_connection);
+  CPPUNIT_TEST_SUITE_END();
 
-        const std::vector<uint8_t> ethernet_ipv4_tcp = to_binary(ethernet_ipv4_tcp_wireshark);
-        const std::vector<uint8_t> ethernet_ipv6_tcp = to_binary(ethernet_ipv6_tcp_wireshark);
-        const std::vector<uint8_t> lcc_ipv4_udp = to_binary(lcc_ipv4_udp_wireshark);
-        const std::vector<uint8_t> lcc_ipv6_tcp = to_binary(lcc_ipv6_tcp_wireshark);
-        const std::vector<uint8_t> lcc_vlan_ipv4_udp = to_binary(lcc_vlan_ipv4_udp_wireshark);
-        public:
-        void test_parse_ethernet_ipv4_tcp() {
-                auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
+  const std::vector<uint8_t> ethernet_ipv4_tcp =
+      to_binary(ethernet_ipv4_tcp_wireshark);
+  const std::vector<uint8_t> ethernet_ipv6_tcp =
+      to_binary(ethernet_ipv6_tcp_wireshark);
+  const std::vector<uint8_t> lcc_ipv4_udp = to_binary(lcc_ipv4_udp_wireshark);
+  const std::vector<uint8_t> lcc_ipv6_tcp = to_binary(lcc_ipv6_tcp_wireshark);
+  const std::vector<uint8_t> lcc_vlan_ipv4_udp =
+      to_binary(lcc_vlan_ipv4_udp_wireshark);
 
-                auto& ll = std::get<0>(headers);
-                test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv4, "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
+public:
+  void test_parse_ethernet_ipv4_tcp() {
+    auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
 
-                test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32", 20, ip::TCP);
-        }
+    auto &ll = std::get<0>(headers);
+    test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv4,
+            "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
 
-        void test_parse_ethernet_ipv6_tcp() {
-                auto headers = get_headers(DLT_EN10MB, ethernet_ipv6_tcp);
+    test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32", 20,
+            ip::TCP);
+  }
 
-                auto& ll = std::get<0>(headers);
-                test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv6, "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
+  void test_parse_ethernet_ipv6_tcp() {
+    auto headers = get_headers(DLT_EN10MB, ethernet_ipv6_tcp);
 
-                test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128", 40, ip::TCP);
-        }
+    auto &ll = std::get<0>(headers);
+    test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv6,
+            "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
 
-        void test_parse_ethernet_ipv4_tcp_too_short() {
-                std::vector<uint8_t> ethernet_ipv4_tcp_short(std::begin(ethernet_ipv4_tcp), std::end(ethernet_ipv4_tcp)-1);
-                CPPUNIT_ASSERT_THROW(get_headers(DLT_EN10MB, ethernet_ipv4_tcp_short), std::length_error);
-        }
+    test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128", 40, ip::TCP);
+  }
 
-        void test_parse_ethernet_ipv6_tcp_too_short() {
-                std::vector<uint8_t> ethernet_ipv6_tcp_short(std::begin(ethernet_ipv6_tcp), std::end(ethernet_ipv6_tcp)-1);
-                CPPUNIT_ASSERT_THROW(get_headers(DLT_EN10MB, ethernet_ipv6_tcp_short), std::length_error);
-        }
+  void test_parse_ethernet_ipv4_tcp_too_short() {
+    std::vector<uint8_t> ethernet_ipv4_tcp_short(
+        std::begin(ethernet_ipv4_tcp), std::end(ethernet_ipv4_tcp) - 1);
+    CPPUNIT_ASSERT_THROW(get_headers(DLT_EN10MB, ethernet_ipv4_tcp_short),
+                         std::length_error);
+  }
 
-        void test_parse_lcc_ipv4_udp() {
-                auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv4_udp);
-                auto& ll = std::get<0>(headers);
-                test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv4, "Linux cooked capture: src: 0:0:0:0:0:0");
-                test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32", 20, ip::UDP);
-        }
+  void test_parse_ethernet_ipv6_tcp_too_short() {
+    std::vector<uint8_t> ethernet_ipv6_tcp_short(
+        std::begin(ethernet_ipv6_tcp), std::end(ethernet_ipv6_tcp) - 1);
+    CPPUNIT_ASSERT_THROW(get_headers(DLT_EN10MB, ethernet_ipv6_tcp_short),
+                         std::length_error);
+  }
 
-        void test_parse_lcc_ipv6_tcp() {
-                auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp);
-                auto& ll = std::get<0>(headers);
-                test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv6, "Linux cooked capture: src: 0:0:0:0:0:0");
-                test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128", 40, ip::TCP);
-        }
+  void test_parse_lcc_ipv4_udp() {
+    auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv4_udp);
+    auto &ll = std::get<0>(headers);
+    test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv4,
+            "Linux cooked capture: src: 0:0:0:0:0:0");
+    test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32", 20,
+            ip::UDP);
+  }
 
-        void test_parse_lcc_ipv4_udp_too_short() {
-                std::vector<uint8_t> lcc_ipv4_udp_short(std::begin(lcc_ipv4_udp), std::end(lcc_ipv4_udp)-1);
-                CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_ipv4_udp_short), std::length_error);
-        }
+  void test_parse_lcc_ipv6_tcp() {
+    auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp);
+    auto &ll = std::get<0>(headers);
+    test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv6,
+            "Linux cooked capture: src: 0:0:0:0:0:0");
+    test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128", 40, ip::TCP);
+  }
 
-        void test_parse_lcc_ipv6_tcp_too_short() {
-                std::vector<uint8_t> lcc_ipv6_tcp_short(std::begin(lcc_ipv6_tcp), std::end(lcc_ipv6_tcp)-1);
-                CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp_short), std::length_error);
-        }
+  void test_parse_lcc_ipv4_udp_too_short() {
+    std::vector<uint8_t> lcc_ipv4_udp_short(std::begin(lcc_ipv4_udp),
+                                            std::end(lcc_ipv4_udp) - 1);
+    CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_ipv4_udp_short),
+                         std::length_error);
+  }
 
-        void test_parse_lcc_vlan_ipv4_udp() {
-                auto headers = get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp);
-                auto& ll = std::get<0>(headers);
-                test_ll(ll, 16, "e8:de:27:55:a1:71", static_cast<ip::Version>(ETHERTYPE_VLAN), "Linux cooked capture: src: e8:de:27:55:a1:71");
-                test_ip(std::get<1>(headers), ip::ipv4, "192.168.1.155/32", "79.143.179.211/32", 20, ip::UDP);
-        }
+  void test_parse_lcc_ipv6_tcp_too_short() {
+    std::vector<uint8_t> lcc_ipv6_tcp_short(std::begin(lcc_ipv6_tcp),
+                                            std::end(lcc_ipv6_tcp) - 1);
+    CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp_short),
+                         std::length_error);
+  }
 
-        void test_parse_lcc_vlan_ipv4_udp_too_short() {
-                std::vector<uint8_t> lcc_vlan_ipv4_udp_short(std::begin(lcc_vlan_ipv4_udp), std::end(lcc_vlan_ipv4_udp)-1);
-                CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp_short), std::length_error);
-        }
+  void test_parse_lcc_vlan_ipv4_udp() {
+    auto headers = get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp);
+    auto &ll = std::get<0>(headers);
+    test_ll(ll, 16, "e8:de:27:55:a1:71",
+            static_cast<ip::Version>(ETHERTYPE_VLAN),
+            "Linux cooked capture: src: e8:de:27:55:a1:71");
+    test_ip(std::get<1>(headers), ip::ipv4, "192.168.1.155/32",
+            "79.143.179.211/32", 20, ip::UDP);
+  }
 
-        void test_catch_incoming_connection() {
-                auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
-                Catch_incoming_connection cic(DLT_EN10MB);
-                pcap_pkthdr hdr;
-                hdr.len = static_cast<bpf_u_int32>(ethernet_ipv4_tcp.size());
-                cic(&hdr, ethernet_ipv4_tcp.data());
-                CPPUNIT_ASSERT(ethernet_ipv4_tcp == cic.data);
-                CPPUNIT_ASSERT_EQUAL(*std::get<0>(headers), *std::get<0>(cic.headers));
-                CPPUNIT_ASSERT_EQUAL(*std::get<1>(headers), *std::get<1>(cic.headers));
-        }
+  void test_parse_lcc_vlan_ipv4_udp_too_short() {
+    std::vector<uint8_t> lcc_vlan_ipv4_udp_short(
+        std::begin(lcc_vlan_ipv4_udp), std::end(lcc_vlan_ipv4_udp) - 1);
+    CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp_short),
+                         std::length_error);
+  }
+
+  void test_catch_incoming_connection() {
+    auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
+    Catch_incoming_connection cic(DLT_EN10MB);
+    pcap_pkthdr hdr;
+    hdr.len = static_cast<bpf_u_int32>(ethernet_ipv4_tcp.size());
+    cic(&hdr, ethernet_ipv4_tcp.data());
+    CPPUNIT_ASSERT(ethernet_ipv4_tcp == cic.data);
+    CPPUNIT_ASSERT_EQUAL(*std::get<0>(headers), *std::get<0>(cic.headers));
+    CPPUNIT_ASSERT_EQUAL(*std::get<1>(headers), *std::get<1>(cic.headers));
+  }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Packet_parser_test );
-
+CPPUNIT_TEST_SUITE_REGISTRATION(Packet_parser_test);

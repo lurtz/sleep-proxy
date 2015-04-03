@@ -23,46 +23,50 @@
 #include "container_utils.h"
 
 class Ip_utils_test : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE( Ip_utils_test );
-        CPPUNIT_TEST( test_validate_iface );
-        CPPUNIT_TEST( test_validate_mac );
-        CPPUNIT_TEST( test_parse_items );
-        CPPUNIT_TEST_SUITE_END();
-        public:
-        void setUp() {}
+  CPPUNIT_TEST_SUITE(Ip_utils_test);
+  CPPUNIT_TEST(test_validate_iface);
+  CPPUNIT_TEST(test_validate_mac);
+  CPPUNIT_TEST(test_parse_items);
+  CPPUNIT_TEST_SUITE_END();
 
-        void tearDown() {}
+public:
+  void setUp() {}
 
-        void test_validate_iface() {
-                CPPUNIT_ASSERT_EQUAL(std::string("eth0"), validate_iface("eth0"));
-                CPPUNIT_ASSERT_EQUAL(std::string("wlan1"), validate_iface("wlan1"));
-                CPPUNIT_ASSERT_EQUAL(std::string("br2"), validate_iface("br2"));
-                CPPUNIT_ASSERT_EQUAL(std::string("eth0.0"), validate_iface("eth0.0"));
-                CPPUNIT_ASSERT_THROW(validate_iface("eth0;"), std::runtime_error);
-                CPPUNIT_ASSERT_EQUAL(std::string("lo"), validate_iface("lo"));
-                CPPUNIT_ASSERT_THROW(validate_iface("lo\""), std::runtime_error);
-                CPPUNIT_ASSERT_EQUAL(std::string(""), validate_iface(""));
+  void tearDown() {}
 
-        }
+  void test_validate_iface() {
+    CPPUNIT_ASSERT_EQUAL(std::string("eth0"), validate_iface("eth0"));
+    CPPUNIT_ASSERT_EQUAL(std::string("wlan1"), validate_iface("wlan1"));
+    CPPUNIT_ASSERT_EQUAL(std::string("br2"), validate_iface("br2"));
+    CPPUNIT_ASSERT_EQUAL(std::string("eth0.0"), validate_iface("eth0.0"));
+    CPPUNIT_ASSERT_THROW(validate_iface("eth0;"), std::runtime_error);
+    CPPUNIT_ASSERT_EQUAL(std::string("lo"), validate_iface("lo"));
+    CPPUNIT_ASSERT_THROW(validate_iface("lo\""), std::runtime_error);
+    CPPUNIT_ASSERT_EQUAL(std::string(""), validate_iface(""));
+  }
 
-        void test_validate_mac() {
-                CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:ab"), validate_mac("01:23:45:67:89:AB"));
-                CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:ab"), validate_mac("01:23:45:67:89:ab"));
-                CPPUNIT_ASSERT_THROW(validate_mac("lo\""), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89:AAB"), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89"), std::runtime_error);
-                CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89:"), std::runtime_error);
-        }
+  void test_validate_mac() {
+    CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:ab"),
+                         validate_mac("01:23:45:67:89:AB"));
+    CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:ab"),
+                         validate_mac("01:23:45:67:89:ab"));
+    CPPUNIT_ASSERT_THROW(validate_mac("lo\""), std::runtime_error);
+    CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89:AAB"),
+                         std::runtime_error);
+    CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89"), std::runtime_error);
+    CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89:"), std::runtime_error);
+  }
 
-        void test_parse_items() {
-                std::vector<std::string> strings{"1","2","3","4"};
-                std::vector<int> ints{1,2,3,4};
-                CPPUNIT_ASSERT(ints == parse_items(split(std::string("1,2,3,4"), ','), str_to_integral<int>));
-                CPPUNIT_ASSERT(ints == parse_items(strings, str_to_integral<int>));
-                CPPUNIT_ASSERT(strings == parse_items(strings, identity<std::string>));
-                CPPUNIT_ASSERT(std::vector<int>() == parse_items(std::vector<std::string>(), str_to_integral<int>));
-        }
+  void test_parse_items() {
+    std::vector<std::string> strings{"1", "2", "3", "4"};
+    std::vector<int> ints{1, 2, 3, 4};
+    CPPUNIT_ASSERT(ints == parse_items(split(std::string("1,2,3,4"), ','),
+                                       str_to_integral<int>));
+    CPPUNIT_ASSERT(ints == parse_items(strings, str_to_integral<int>));
+    CPPUNIT_ASSERT(strings == parse_items(strings, identity<std::string>));
+    CPPUNIT_ASSERT(std::vector<int>() == parse_items(std::vector<std::string>(),
+                                                     str_to_integral<int>));
+  }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Ip_utils_test );
-
+CPPUNIT_TEST_SUITE_REGISTRATION(Ip_utils_test);

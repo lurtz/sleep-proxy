@@ -18,29 +18,27 @@
 #include "log.h"
 
 class Log_test : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE( Log_test );
-        CPPUNIT_TEST( test_log_string );
-        CPPUNIT_TEST( test_log_fmt );
-        CPPUNIT_TEST_SUITE_END();
+  CPPUNIT_TEST_SUITE(Log_test);
+  CPPUNIT_TEST(test_log_string);
+  CPPUNIT_TEST(test_log_fmt);
+  CPPUNIT_TEST_SUITE_END();
 
-        public:
-        void setUp() {
-                setup_log("Log_test", 0, LOG_USER);
-        }
-        void tearDown() {}
-        void test_log_string() {
-                log_string(LOG_DEBUG, "test_log_string()");
-                log_string(LOG_NOTICE, "test_log_string()");
-                log_string(LOG_ERR, "test_log_string()");
-                log_string(LOG_ALERT, "test_log_string()");
-        }
-        void test_log_fmt() {
-                syslog(LOG_DEBUG, "bla %d, %f", 42, 3.14);
-                log(LOG_DEBUG, "bla %d, %f", 42, 3.14);
-                log(LOG_NOTICE, "bla %d, %f", 42, 3.14);
-                log(LOG_ERR, "bla %d, %f", 42, 3.14);
-                log(LOG_ALERT, "bla %d, %f", 42, 3.14);
-        }
+public:
+  void setUp() { setup_log("Log_test", 0, LOG_USER); }
+  void tearDown() {}
+  void test_log_string() {
+    log_string(LOG_DEBUG, "test_log_string()");
+    log_string(LOG_NOTICE, "test_log_string()");
+    log_string(LOG_ERR, "test_log_string()");
+    log_string(LOG_ALERT, "test_log_string()");
+  }
+  void test_log_fmt() {
+    syslog(LOG_DEBUG, "bla %d, %f", 42, 3.14);
+    log(LOG_DEBUG, "bla %d, %f", 42, 3.14);
+    log(LOG_NOTICE, "bla %d, %f", 42, 3.14);
+    log(LOG_ERR, "bla %d, %f", 42, 3.14);
+    log(LOG_ALERT, "bla %d, %f", 42, 3.14);
+  }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Log_test );
+CPPUNIT_TEST_SUITE_REGISTRATION(Log_test);

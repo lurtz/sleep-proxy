@@ -20,28 +20,28 @@
 #include <vector>
 
 struct File_descriptor {
-        int fd;
-        std::string filename;
-        bool delete_on_close;
+  int fd;
+  std::string filename;
+  bool delete_on_close;
 
-        File_descriptor(const int fdd, std::string name, bool delete_on_closee = true);
+  File_descriptor(const int fdd, std::string name,
+                  bool delete_on_closee = true);
 
-        File_descriptor(File_descriptor&& rhs);
+  File_descriptor(File_descriptor &&rhs);
 
-        File_descriptor& operator=(File_descriptor&& rhs);
+  File_descriptor &operator=(File_descriptor &&rhs);
 
-        File_descriptor(const File_descriptor&) = delete;
+  File_descriptor(const File_descriptor &) = delete;
 
-        File_descriptor& operator=(const File_descriptor&) = delete;
+  File_descriptor &operator=(const File_descriptor &) = delete;
 
-        ~File_descriptor();
+  ~File_descriptor();
 
-        operator int() const;
+  operator int() const;
 
-        void close();
+  void close();
 
-        void delete_content() const;
+  void delete_content() const;
 
-        std::vector<std::string> get_content() const;
+  std::vector<std::string> get_content() const;
 };
-

@@ -24,112 +24,125 @@
 #include "container_utils.h"
 #include "int_utils.h"
 
-Scope_guard::Scope_guard() : freed{true}, aquire_release{} {
+Scope_guard::Scope_guard() : freed{true}, aquire_release{} {}
+
+Scope_guard::Scope_guard(
+    std::function<std::string(const Action)> &&aquire_release_arg)
+    : freed{false}, aquire_release(std::move(aquire_release_arg)) {
+  take_action(Action::add);
 }
 
-Scope_guard::Scope_guard(std::function<std::string(const Action)>&& aquire_release_arg) : freed{false}, aquire_release(std::move(aquire_release_arg)) {
-        take_action(Action::add);
+Scope_guard::Scope_guard(Scope_guard &&rhs)
+    : freed{std::move(rhs.freed)},
+      aquire_release(std::move(rhs.aquire_release)) {
+  rhs.freed = true;
 }
 
-Scope_guard::Scope_guard(Scope_guard&& rhs) : freed{std::move(rhs.freed)}, aquire_release(std::move(rhs.aquire_release)) {
-        rhs.freed = true;
-}
-
-Scope_guard::~Scope_guard() {
-        free();
-}
+Scope_guard::~Scope_guard() { free(); }
 
 void Scope_guard::free() {
-        if (!freed) {
-                take_action(Action::del);
-                freed = true;
-        }
+  if (!freed) {
+    take_action(Action::del);
+    freed = true;
+  }
 }
 
 void Scope_guard::take_action(const Action a) const {
-        std::string cmd = aquire_release(a);
-        if (cmd.size() > 0 ) {
-                log_string(LOG_INFO, cmd);
-                pid_t pid = spawn(split(cmd, ' '), "/dev/null");
-                uint8_t status = wait_until_pid_exits(pid);
-                if (status != 0) {
-                        throw std::runtime_error("command failed: " + cmd);
-                }
-        }
+  std::string cmd = aquire_release(a);
+  if (cmd.size() > 0) {
+    log_string(LOG_INFO, cmd);
+    pid_t pid = spawn(split(cmd, ' '), "/dev/null");
+    uint8_t status = wait_until_pid_exits(pid);
+    if (status != 0) {
+      throw std::runtime_error("command failed: " + cmd);
+    }
+  }
 }
 
 std::string Temp_ip::operator()(const Action action) const {
-        const std::string saction{action == Action::add ? "add" : "del"};
-        return get_path("ip") + " addr " + saction + " " + ip.with_subnet() + " dev " + iface;
+  const std::string saction{action == Action::add ? "add" : "del"};
+  return get_path("ip") + " addr " + saction + " " + ip.with_subnet() +
+         " dev " + iface;
 }
 
 /**
  * ipv4 and ipv6 have different iptables commands. return the one matching
  * the version of ip
  */
-std::string get_iptables_cmd(const IP_address& ip) {
-        std::string const iptcmd{ip.family == AF_INET ? "iptables" : "ip6tables"};
-        return get_path(iptcmd);
+std::string get_iptables_cmd(const IP_address &ip) {
+  std::string const iptcmd{ip.family == AF_INET ? "iptables" : "ip6tables"};
+  return get_path(iptcmd);
 }
 
-std::string iptables_action(const Action& action) {
-        return action == Action::add ? "I" : "D";
+std::string iptables_action(const Action &action) {
+  return action == Action::add ? "I" : "D";
 }
 
 std::string Drop_port::operator()(const Action action) const {
-        const std::string saction{iptables_action(action)};
-        const std::string iptcmd = get_iptables_cmd(ip);
-        const std::string pip = ip.pure();
-        return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p tcp --syn --dport " + to_string(port) + " -j DROP";
+  const std::string saction{iptables_action(action)};
+  const std::string iptcmd = get_iptables_cmd(ip);
+  const std::string pip = ip.pure();
+  return iptcmd + " -w -" + saction + " INPUT -d " + pip +
+         " -p tcp --syn --dport " + to_string(port) + " -j DROP";
 }
 
 std::string Reject_tp::operator()(const Action action) const {
-        const std::string saction{iptables_action(action)};
-        const std::string stp{tcp_udp == TP::TCP ? "tcp" : "udp"};
-        const std::string iptcmd = get_iptables_cmd(ip);
-        const std::string pip = ip.pure();
-        return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p " + stp + " -j REJECT";
+  const std::string saction{iptables_action(action)};
+  const std::string stp{tcp_udp == TP::TCP ? "tcp" : "udp"};
+  const std::string iptcmd = get_iptables_cmd(ip);
+  const std::string pip = ip.pure();
+  return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p " + stp +
+         " -j REJECT";
 }
 
 /**
  * in iptables the icmp parameter is differenct for IPv4 and IPv6. return
  * the correct one according to the ip version
  */
-std::string get_icmp_version(const IP_address& ip) {
-        return ip.family == AF_INET ? "icmp" : "icmpv6";
+std::string get_icmp_version(const IP_address &ip) {
+  return ip.family == AF_INET ? "icmp" : "icmpv6";
 }
 
 std::string Block_icmp::operator()(const Action action) const {
-        const std::string saction{iptables_action(action)};
-        const std::string iptcmd = get_iptables_cmd(ip);
-        const std::string icmpv = get_icmp_version(ip);
-        return iptcmd + " -w -" + saction + " OUTPUT -d " + ip.pure() + " -p " + icmpv + " --" + icmpv + "-type destination-unreachable -j DROP";
+  const std::string saction{iptables_action(action)};
+  const std::string iptcmd = get_iptables_cmd(ip);
+  const std::string icmpv = get_icmp_version(ip);
+  return iptcmd + " -w -" + saction + " OUTPUT -d " + ip.pure() + " -p " +
+         icmpv + " --" + icmpv + "-type destination-unreachable -j DROP";
 }
 
-std::string ipv6_to_u32_rule(IP_address const & ip) {
-        if (ip.family != AF_INET6 ) {
-                throw std::runtime_error("cannot convert ipv4 address into u32 ip6tables rule");
-        }
+std::string ipv6_to_u32_rule(IP_address const &ip) {
+  if (ip.family != AF_INET6) {
+    throw std::runtime_error(
+        "cannot convert ipv4 address into u32 ip6tables rule");
+  }
 
-        // from fe80::123
-        // to   -m u32 --u32 48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123
+  // from fe80::123
+  // to   -m u32 --u32 48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123
 
-        uint8_t pos = 48;
-        auto const address_byte_to_rule = [&](uint8_t ipv6_byte) { return to_string(static_cast<uint32_t>(pos++)) + "=0x" + one_byte_to_two_hex_chars(ipv6_byte); };
-        std::vector<uint8_t> const ipv6_address{std::begin(ip.address.ipv6.s6_addr), std::end(ip.address.ipv6.s6_addr)};
-        std::string const rule = join(ipv6_address, address_byte_to_rule, " && ");
+  uint8_t pos = 48;
+  auto const address_byte_to_rule = [&](uint8_t ipv6_byte) {
+    return to_string(static_cast<uint32_t>(pos++)) + "=0x" +
+           one_byte_to_two_hex_chars(ipv6_byte);
+  };
+  std::vector<uint8_t> const ipv6_address{std::begin(ip.address.ipv6.s6_addr),
+                                          std::end(ip.address.ipv6.s6_addr)};
+  std::string const rule = join(ipv6_address, address_byte_to_rule, " && ");
 
-        return " -m u32 --u32 " + rule;
+  return " -m u32 --u32 " + rule;
 }
 
-std::string Block_ipv6_neighbor_solicitation::operator()(const Action action) const {
-        const std::string saction{iptables_action(action)};
-        const std::string iptcmd{get_iptables_cmd(ip)};
-        const std::string ip_rule{ipv6_to_u32_rule(ip)};
+std::string Block_ipv6_neighbor_solicitation::
+operator()(const Action action) const {
+  const std::string saction{iptables_action(action)};
+  const std::string iptcmd{get_iptables_cmd(ip)};
+  const std::string ip_rule{ipv6_to_u32_rule(ip)};
 
-        // blocks neighbor solicitation for fe80::123
-        // ip6tables -I INPUT -s :: -p icmpv6 --icmpv6-type neighbour-solicitation -m u32 --u32 "48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123" -j DROP
-        // we also need to match the ipv6 address using u32 ip6tables modul
-        return iptcmd + " -w -" + saction + " INPUT -s :: -p icmpv6 --icmpv6-type neighbour-solicitation" + ip_rule + " -j DROP";
+  // blocks neighbor solicitation for fe80::123
+  // ip6tables -I INPUT -s :: -p icmpv6 --icmpv6-type neighbour-solicitation -m
+  // u32 --u32 "48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123" -j DROP
+  // we also need to match the ipv6 address using u32 ip6tables modul
+  return iptcmd + " -w -" + saction +
+         " INPUT -s :: -p icmpv6 --icmpv6-type neighbour-solicitation" +
+         ip_rule + " -j DROP";
 }
-

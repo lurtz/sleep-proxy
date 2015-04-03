@@ -21,101 +21,101 @@
 #include "spawn_process.h"
 
 class Spawn_process_test : public CppUnit::TestFixture {
-        CPPUNIT_TEST_SUITE( Spawn_process_test );
-        CPPUNIT_TEST( test_fork_exec );
-        CPPUNIT_TEST( test_direct_output_to_file );
-        CPPUNIT_TEST( test_direct_output_to_tmp_file );
-        CPPUNIT_TEST( test_file_exists );
-        CPPUNIT_TEST( test_get_path );
-        CPPUNIT_TEST_SUITE_END();
-        public:
-        void setUp() {}
+  CPPUNIT_TEST_SUITE(Spawn_process_test);
+  CPPUNIT_TEST(test_fork_exec);
+  CPPUNIT_TEST(test_direct_output_to_file);
+  CPPUNIT_TEST(test_direct_output_to_tmp_file);
+  CPPUNIT_TEST(test_file_exists);
+  CPPUNIT_TEST(test_get_path);
+  CPPUNIT_TEST_SUITE_END();
 
-        void tearDown() {}
+public:
+  void setUp() {}
 
-        void test_without_exceptions() const {
-                std::vector<std::string> const cmd{"/bin/echo", "pspawn_test()"};
-                pid_t pid = spawn(cmd);
-                uint8_t status = wait_until_pid_exits(pid);
-                CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+  void tearDown() {}
 
-                std::vector<std::string> const cmd3{"/bin/ping", "aa"};
-                pid = spawn(cmd3);
-                status = wait_until_pid_exits(pid);
-                CPPUNIT_ASSERT(0 != status);
+  void test_without_exceptions() const {
+    std::vector<std::string> const cmd{"/bin/echo", "pspawn_test()"};
+    pid_t pid = spawn(cmd);
+    uint8_t status = wait_until_pid_exits(pid);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
 
-                std::vector<std::string> const cmd4{"/sbin/fdisk", "/dev/sda", "bla"};
-                pid = spawn(cmd4);
-                status = wait_until_pid_exits(pid);
-                CPPUNIT_ASSERT(0 != status);
+    std::vector<std::string> const cmd3{"/bin/ping", "aa"};
+    pid = spawn(cmd3);
+    status = wait_until_pid_exits(pid);
+    CPPUNIT_ASSERT(0 != status);
 
-                std::vector<std::string> const cmd5{"/bin/ping6", "-c3", "localhost"};
-                pid = spawn(cmd5);
-                status = wait_until_pid_exits(pid);
-                CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-        }
+    std::vector<std::string> const cmd4{"/sbin/fdisk", "/dev/sda", "bla"};
+    pid = spawn(cmd4);
+    status = wait_until_pid_exits(pid);
+    CPPUNIT_ASSERT(0 != status);
 
-        void test_with_exceptions() const {
-                std::vector<std::string> cmd1{"/bin/whereAmI", "pspawn_test()"};
-                CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
+    std::vector<std::string> const cmd5{"/bin/ping6", "-c3", "localhost"};
+    pid = spawn(cmd5);
+    status = wait_until_pid_exits(pid);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+  }
 
-                std::vector<std::string> cmd2{"/sbin/fdisk", "/dev/sda"};
-                CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
-        }
+  void test_with_exceptions() const {
+    std::vector<std::string> cmd1{"/bin/whereAmI", "pspawn_test()"};
+    CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
 
-        void test_fork_exec() {
-                test_without_exceptions();
-                test_with_exceptions();
-        }
+    std::vector<std::string> cmd2{"/sbin/fdisk", "/dev/sda"};
+    CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
+  }
 
-        void test_direct_output_to_file() {
-                std::string const filename{"/tmp/blublub"};
-                CPPUNIT_ASSERT(!file_exists(filename));
+  void test_fork_exec() {
+    test_without_exceptions();
+    test_with_exceptions();
+  }
 
-                std::vector<std::string> const cmd{get_path("ip"), "neigh"};
-                pid_t pid = spawn(cmd, "/dev/null", filename);
-                uint8_t status = wait_until_pid_exits(pid);
-                CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-                CPPUNIT_ASSERT(file_exists("/tmp/blublub"));
+  void test_direct_output_to_file() {
+    std::string const filename{"/tmp/blublub"};
+    CPPUNIT_ASSERT(!file_exists(filename));
 
-                std::vector<std::string> const clean{get_path("rm"), filename};
-                pid = spawn(clean);
-                status = wait_until_pid_exits(pid);
-                CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-                CPPUNIT_ASSERT(!file_exists("/tmp/blublub"));
-        }
+    std::vector<std::string> const cmd{get_path("ip"), "neigh"};
+    pid_t pid = spawn(cmd, "/dev/null", filename);
+    uint8_t status = wait_until_pid_exits(pid);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+    CPPUNIT_ASSERT(file_exists("/tmp/blublub"));
 
-        void test_direct_output_to_tmp_file() {
-                File_descriptor fd = get_tmp_file("test_tmp_name_XXXXXX");
+    std::vector<std::string> const clean{get_path("rm"), filename};
+    pid = spawn(clean);
+    status = wait_until_pid_exits(pid);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+    CPPUNIT_ASSERT(!file_exists("/tmp/blublub"));
+  }
 
-                std::vector<std::string> const cmd{get_path("echo"), "blabla"};
-                pid_t const pid = spawn(cmd, "/dev/null", fd);
-                uint8_t const status = wait_until_pid_exits(pid);
-                CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-                CPPUNIT_ASSERT(file_exists(fd.filename));
+  void test_direct_output_to_tmp_file() {
+    File_descriptor fd = get_tmp_file("test_tmp_name_XXXXXX");
 
-                std::ifstream read_file(fd.filename);
-                CPPUNIT_ASSERT(read_file);
-                std::string line;
-                CPPUNIT_ASSERT(std::getline(read_file, line));
-                CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
-                CPPUNIT_ASSERT(!std::getline(read_file, line));
-        }
+    std::vector<std::string> const cmd{get_path("echo"), "blabla"};
+    pid_t const pid = spawn(cmd, "/dev/null", fd);
+    uint8_t const status = wait_until_pid_exits(pid);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+    CPPUNIT_ASSERT(file_exists(fd.filename));
 
-        void test_file_exists() {
-                CPPUNIT_ASSERT(file_exists("/dev"));
-                CPPUNIT_ASSERT(file_exists("/dev/null"));
-                CPPUNIT_ASSERT(file_exists("/etc/fstab"));
-                CPPUNIT_ASSERT(!file_exists("/dev/nullfdasfdsafdsafdsa"));
-        }
+    std::ifstream read_file(fd.filename);
+    CPPUNIT_ASSERT(read_file);
+    std::string line;
+    CPPUNIT_ASSERT(std::getline(read_file, line));
+    CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
+    CPPUNIT_ASSERT(!std::getline(read_file, line));
+  }
 
-        void test_get_path() {
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip"), get_path("ip"));
-                CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables"), get_path("iptables"));
-                CPPUNIT_ASSERT_EQUAL(std::string("/bin/sh"), get_path("sh"));
-                CPPUNIT_ASSERT_EQUAL(std::string("/usr/bin/make"), get_path("make"));
-        }
+  void test_file_exists() {
+    CPPUNIT_ASSERT(file_exists("/dev"));
+    CPPUNIT_ASSERT(file_exists("/dev/null"));
+    CPPUNIT_ASSERT(file_exists("/etc/fstab"));
+    CPPUNIT_ASSERT(!file_exists("/dev/nullfdasfdsafdsafdsa"));
+  }
+
+  void test_get_path() {
+    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip"), get_path("ip"));
+    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables"), get_path("iptables"));
+    CPPUNIT_ASSERT_EQUAL(std::string("/bin/sh"), get_path("sh"));
+    CPPUNIT_ASSERT_EQUAL(std::string("/usr/bin/make"), get_path("make"));
+  }
 };
 
-CPPUNIT_TEST_SUITE_REGISTRATION( Spawn_process_test );
-
+CPPUNIT_TEST_SUITE_REGISTRATION(Spawn_process_test);

@@ -51,65 +51,66 @@ std::vector<Pcap_wrapper *> pcaps;
 std::atomic_bool signaled{false};
 
 void signal_handler(int) {
-        signaled = true;
-        std::lock_guard<std::mutex> lock(pcaps_mutex);
-        for (auto& pc : pcaps) {
-                pc->break_loop(Pcap_wrapper::Loop_end_reason::signal);
-        }
+  signaled = true;
+  std::lock_guard<std::mutex> lock(pcaps_mutex);
+  for (auto &pc : pcaps) {
+    pc->break_loop(Pcap_wrapper::Loop_end_reason::signal);
+  }
 }
 
-void set_signal(const int signum, const struct sigaction& sa) {
-        if (sigaction(signum, &sa, nullptr) != 0) {
-                throw std::runtime_error(std::string("sigaction() failed: ") + strerror(errno));
-        }
+void set_signal(const int signum, const struct sigaction &sa) {
+  if (sigaction(signum, &sa, nullptr) != 0) {
+    throw std::runtime_error(std::string("sigaction() failed: ") +
+                             strerror(errno));
+  }
 }
 
 void setup_signals() {
-        struct sigaction sa;
-        memset(&sa, 0, sizeof(struct sigaction));
-        sa.sa_handler = signal_handler;
-        set_signal(SIGTERM, sa);
-        set_signal(SIGINT, sa);
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(struct sigaction));
+  sa.sa_handler = signal_handler;
+  set_signal(SIGTERM, sa);
+  set_signal(SIGINT, sa);
 }
 
-bool is_signaled() {
-        return signaled;
-}
+bool is_signaled() { return signaled; }
 
-void reset_signaled() {
-        signaled = false;
-}
+void reset_signaled() { signaled = false; }
 
-Duplicate_address_exception::Duplicate_address_exception(const std::string& mess) : message("one of these ips is owned by another machine: " + mess) {}
+Duplicate_address_exception::Duplicate_address_exception(
+    const std::string &mess)
+    : message("one of these ips is owned by another machine: " + mess) {}
 
-const char * Duplicate_address_exception::what() const noexcept {
-        return message.c_str();
+const char *Duplicate_address_exception::what() const noexcept {
+  return message.c_str();
 }
 
 /**
  * Adds from args the IPs to the machine and setups the firewall
  */
-std::vector<Scope_guard> setup_firewall_and_ips(const Args& args) {
-        std::vector<Scope_guard> guards;
-        for (auto& ip : args.address) {
-                // setup firewall first, some services might respond
-                // reject any incoming connection, except the ones to the
-                // ports specified
-                guards.emplace_back(Reject_tp{ip, Reject_tp::TP::TCP});
-                guards.emplace_back(Reject_tp{ip, Reject_tp::TP::UDP});
-                for (auto& port : args.ports) {
-                        guards.emplace_back(Drop_port{ip, port});
-                }
-                guards.emplace_back(Temp_ip{args.interface, ip});
-        }
-        return guards;
+std::vector<Scope_guard> setup_firewall_and_ips(const Args &args) {
+  std::vector<Scope_guard> guards;
+  for (auto &ip : args.address) {
+    // setup firewall first, some services might respond
+    // reject any incoming connection, except the ones to the
+    // ports specified
+    guards.emplace_back(Reject_tp{ip, Reject_tp::TP::TCP});
+    guards.emplace_back(Reject_tp{ip, Reject_tp::TP::UDP});
+    for (auto &port : args.ports) {
+      guards.emplace_back(Drop_port{ip, port});
+    }
+    guards.emplace_back(Temp_ip{args.interface, ip});
+  }
+  return guards;
 }
 
-std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address>& ips, const std::vector<uint16_t>& ports) {
-        std::string bpf = "tcp[tcpflags] == tcp-syn";
-        bpf += " and dst host (" + join(ips, get_pure_ip, " or ") + ")";
-        bpf += " and dst port (" + join(ports, identity<uint16_t>, " or ") + ")";
-        return bpf;
+std::string
+rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
+                                const std::vector<uint16_t> &ports) {
+  std::string bpf = "tcp[tcpflags] == tcp-syn";
+  bpf += " and dst host (" + join(ips, get_pure_ip, " or ") + ")";
+  bpf += " and dst port (" + join(ports, identity<uint16_t>, " or ") + ")";
+  return bpf;
 }
 
 /**
@@ -117,110 +118,120 @@ std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address>& ips, 
  * any of the given ports in Args is received. Returns the data, the IP
  * source of the received packet and the destination IP
  */
-std::tuple<std::vector<uint8_t>, IP_address, IP_address> wait_and_listen(const Args& args) {
-        Pcap_wrapper pc("any");
+std::tuple<std::vector<uint8_t>, IP_address, IP_address>
+wait_and_listen(const Args &args) {
+  Pcap_wrapper pc("any");
 
-        // guards to handle signals and address duplication
-        std::vector<Scope_guard> guards;
-        guards.emplace_back(ptr_guard(pcaps, pcaps_mutex, pc));
-        for (const auto& ip : args.address) {
-                guards.emplace_back(Duplicate_address_watcher{args.interface, ip, pc});
-        }
+  // guards to handle signals and address duplication
+  std::vector<Scope_guard> guards;
+  guards.emplace_back(ptr_guard(pcaps, pcaps_mutex, pc));
+  for (const auto &ip : args.address) {
+    guards.emplace_back(Duplicate_address_watcher{args.interface, ip, pc});
+  }
 
-        const std::string bpf = rule_to_listen_on_ips_and_ports(args.address, args.ports);
-        log_string(LOG_INFO, "Listening with filter: " + bpf);
-        pc.set_filter(bpf);
+  const std::string bpf =
+      rule_to_listen_on_ips_and_ports(args.address, args.ports);
+  log_string(LOG_INFO, "Listening with filter: " + bpf);
+  pc.set_filter(bpf);
 
-        Catch_incoming_connection catcher(pc.get_datalink());
-        const Pcap_wrapper::Loop_end_reason ler = pc.loop(1, std::ref(catcher));
+  Catch_incoming_connection catcher(pc.get_datalink());
+  const Pcap_wrapper::Loop_end_reason ler = pc.loop(1, std::ref(catcher));
 
-        // check if address duplication got something
-        switch (ler) {
-                case Pcap_wrapper::Loop_end_reason::duplicate_address:
-                        throw Duplicate_address_exception(to_string(args.address));
-                        break;
-                case Pcap_wrapper::Loop_end_reason::signal:
-                        throw std::runtime_error("received signal while capturing with pcap");
-                        break;
-                case Pcap_wrapper::Loop_end_reason::unset:
-                        log_string(LOG_ERR, "no reason given why pcap has been stopped");
-                        break;
-                default:
-                        break;
-        }
+  // check if address duplication got something
+  switch (ler) {
+  case Pcap_wrapper::Loop_end_reason::duplicate_address:
+    throw Duplicate_address_exception(to_string(args.address));
+    break;
+  case Pcap_wrapper::Loop_end_reason::signal:
+    throw std::runtime_error("received signal while capturing with pcap");
+    break;
+  case Pcap_wrapper::Loop_end_reason::unset:
+    log_string(LOG_ERR, "no reason given why pcap has been stopped");
+    break;
+  default:
+    break;
+  }
 
-        if (std::get<1>(catcher.headers) == nullptr) {
-                throw std::runtime_error("got nothing while catching with pcap");
-        }
-        log_string(LOG_INFO, catcher.headers);
-        return std::make_tuple(catcher.data, std::get<1>(catcher.headers)->source(), std::get<1>(catcher.headers)->destination());
+  if (std::get<1>(catcher.headers) == nullptr) {
+    throw std::runtime_error("got nothing while catching with pcap");
+  }
+  log_string(LOG_INFO, catcher.headers);
+  return std::make_tuple(catcher.data, std::get<1>(catcher.headers)->source(),
+                         std::get<1>(catcher.headers)->destination());
 }
 
-std::string get_ping_cmd(const IP_address& ip) {
-        std::string const pingcmd = ip.family == AF_INET ? "ping" : "ping6";
-        return get_path(pingcmd);
+std::string get_ping_cmd(const IP_address &ip) {
+  std::string const pingcmd = ip.family == AF_INET ? "ping" : "ping6";
+  return get_path(pingcmd);
 }
 
-std::string get_bindable_ip(const std::string& iface, const std::string& ip) {
-        if (ip.find("fe80") == 0) {
-                return ip + '%' + iface;
-        } else {
-                return ip;
-        }
+std::string get_bindable_ip(const std::string &iface, const std::string &ip) {
+  if (ip.find("fe80") == 0) {
+    return ip + '%' + iface;
+  } else {
+    return ip;
+  }
 }
 
-bool ping_and_wait(const std::string& iface, const IP_address& ip, const unsigned int tries) {
-        const std::string ipcmd = get_ping_cmd(ip);
-        const std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip.pure())};
-        uint8_t ret_val = 1;
-        for (unsigned int i = 0; i < tries && !is_signaled() && ret_val != 0; i++) {
-                const pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
-                ret_val = wait_until_pid_exits(pid);
-        }
-        log(LOG_ERR, "failed to ping ip %s after %d ping attempts", ip.pure().c_str(), tries);
-        return ret_val == 0;
+bool ping_and_wait(const std::string &iface, const IP_address &ip,
+                   const unsigned int tries) {
+  const std::string ipcmd = get_ping_cmd(ip);
+  const std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip.pure())};
+  uint8_t ret_val = 1;
+  for (unsigned int i = 0; i < tries && !is_signaled() && ret_val != 0; i++) {
+    const pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
+    ret_val = wait_until_pid_exits(pid);
+  }
+  log(LOG_ERR, "failed to ping ip %s after %d ping attempts", ip.pure().c_str(),
+      tries);
+  return ret_val == 0;
 }
 
-void replay_data(const std::string& iface, const int type, const std::vector<uint8_t>& data, const ether_addr& target_mac) {
-        log_string(LOG_INFO, "replaing SYN packet");
-        basic_headers headers = get_headers(type, data);
-        const std::unique_ptr<Link_layer>& ll = std::get<0>(headers);
-        if (ll == nullptr)
-                return;
-        const uint16_t payload_type = std::get<1>(headers)->version();
-        auto data_iter = std::begin(data);
-        std::advance(data_iter, ll->header_length());
-        const std::vector<uint8_t> payload =
-                create_ethernet_header(target_mac, ll->source(), payload_type)
-                + std::vector<uint8_t>(data_iter, std::end(data));
-        Pcap_wrapper pc(iface);
-        pc.inject(payload);
+void replay_data(const std::string &iface, const int type,
+                 const std::vector<uint8_t> &data,
+                 const ether_addr &target_mac) {
+  log_string(LOG_INFO, "replaing SYN packet");
+  basic_headers headers = get_headers(type, data);
+  const std::unique_ptr<Link_layer> &ll = std::get<0>(headers);
+  if (ll == nullptr)
+    return;
+  const uint16_t payload_type = std::get<1>(headers)->version();
+  auto data_iter = std::begin(data);
+  std::advance(data_iter, ll->header_length());
+  const std::vector<uint8_t> payload =
+      create_ethernet_header(target_mac, ll->source(), payload_type) +
+      std::vector<uint8_t>(data_iter, std::end(data));
+  Pcap_wrapper pc(iface);
+  pc.inject(payload);
 }
 
 /**
  * Puts everything together. Sets up firewall and IPs. Waits for an incoming
  * SYN packet and wakes the sleeping host via WOL
  */
-bool emulate_host(const Args& args) {
-        // setup firewall rules and add IPs to the interface
-        std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
-        // wait until upon an incoming connection
-        const auto data_source_destination = wait_and_listen(args);
-        log_string(LOG_INFO, "got something");
-        // block icmp messages to the source IP, e.g. not tell him that his
-        // destination IP is gone for a short while
-        const Scope_guard block_icmp(Block_icmp{std::get<1>(data_source_destination)});
-        // release_locks()
-        locks.clear();
-        // wake the sleeping server
-        wol_ethernet(args.interface, args.mac);
-        // wait until server responds and release ICMP rules
-        log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination).pure());
-        const bool wake_success = ping_and_wait(args.interface, std::get<2>(data_source_destination), args.ping_tries);
-        const std::string status = wake_success ? " succeeded" : " failed";
-        log_string(LOG_NOTICE, "waking " + args.hostname + " with mac " + binary_to_mac(args.mac) + status);
-        // replay SYN packet
-        replay_data(args.interface, DLT_LINUX_SLL, std::get<0>(data_source_destination), args.mac);
-        return wake_success;
+bool emulate_host(const Args &args) {
+  // setup firewall rules and add IPs to the interface
+  std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
+  // wait until upon an incoming connection
+  const auto data_source_destination = wait_and_listen(args);
+  log_string(LOG_INFO, "got something");
+  // block icmp messages to the source IP, e.g. not tell him that his
+  // destination IP is gone for a short while
+  const Scope_guard block_icmp(
+      Block_icmp{std::get<1>(data_source_destination)});
+  // release_locks()
+  locks.clear();
+  // wake the sleeping server
+  wol_ethernet(args.interface, args.mac);
+  // wait until server responds and release ICMP rules
+  log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination).pure());
+  const bool wake_success = ping_and_wait(
+      args.interface, std::get<2>(data_source_destination), args.ping_tries);
+  const std::string status = wake_success ? " succeeded" : " failed";
+  log_string(LOG_NOTICE, "waking " + args.hostname + " with mac " +
+                             binary_to_mac(args.mac) + status);
+  // replay SYN packet
+  replay_data(args.interface, DLT_LINUX_SLL,
+              std::get<0>(data_source_destination), args.mac);
+  return wake_success;
 }
-

@@ -25,31 +25,33 @@
 #include "scope_guard.h"
 #include "file_descriptor.h"
 
-typedef std::function<bool(std::string const &, IP_address const &)> Is_ip_occupied;
+typedef std::function<bool(std::string const &, IP_address const &)>
+    Is_ip_occupied;
 
 struct Ip_neigh_checker {
-        std::shared_ptr<File_descriptor> const ip_neigh_output;
-        std::vector<std::string> const cmd;
+  std::shared_ptr<File_descriptor> const ip_neigh_output;
+  std::vector<std::string> const cmd;
 
-        Ip_neigh_checker();
+  Ip_neigh_checker();
 
-        bool operator()(std::string const & iface, IP_address const & ip) const;
+  bool operator()(std::string const &iface, IP_address const &ip) const;
 };
 
 struct Duplicate_address_watcher {
-        const std::string iface;
-        const IP_address ip;
-        Pcap_wrapper& pcap;
-        const Is_ip_occupied is_ip_occupied;
-        std::shared_ptr<std::thread> watcher;
-        std::shared_ptr<std::atomic_bool> loop;
+  const std::string iface;
+  const IP_address ip;
+  Pcap_wrapper &pcap;
+  const Is_ip_occupied is_ip_occupied;
+  std::shared_ptr<std::thread> watcher;
+  std::shared_ptr<std::atomic_bool> loop;
 
-        Duplicate_address_watcher(const std::string, const IP_address, Pcap_wrapper&, Is_ip_occupied const is_ip_occupiedd = Ip_neigh_checker());
+  Duplicate_address_watcher(
+      const std::string, const IP_address, Pcap_wrapper &,
+      Is_ip_occupied const is_ip_occupiedd = Ip_neigh_checker());
 
-        ~Duplicate_address_watcher();
+  ~Duplicate_address_watcher();
 
-        std::string operator()(const Action action);
+  std::string operator()(const Action action);
 
-        void stop_watcher();
+  void stop_watcher();
 };
-
