@@ -162,7 +162,7 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
       {"hostname", required_argument, nullptr, 'n'},
       {"ping_tries", required_argument, nullptr, 't'},
       {"syslog", no_argument, nullptr, 's'},
-      {0, 0, nullptr, 0}};
+      {nullptr, 0, nullptr, 0}};
   int option_index = 0;
   int c = -1;
   std::string interface = def_iface;
