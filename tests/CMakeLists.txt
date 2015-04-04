@@ -24,7 +24,6 @@ endif (VALGRIND_PROGRAM)
 
 enable_testing()
 
-
 # valgrind --leak-check=yes --show-leak-kinds=definite --gen-suppressions=yes --demangle=no --suppressions=../tests/valgrind.supp tests/spawn_process_test
 
 function(make_test name)
@@ -39,8 +38,8 @@ endfunction(make_test)
 
 include_directories("${PROJECT_SOURCE_DIR}/src")
 
-file(COPY "${PROJECT_SOURCE_DIR}/tests/watchhosts" DESTINATION "${PROJECT_BINARY_DIR}/tests")
-file(COPY "${PROJECT_SOURCE_DIR}/tests/watchhosts-empty" DESTINATION "${PROJECT_BINARY_DIR}/tests")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/watchhosts" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/watchhosts-empty" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(packet_test_utils SHARED packet_test_utils.cpp)
 target_link_libraries(packet_test_utils sleep-proxy)
