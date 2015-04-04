@@ -20,6 +20,7 @@
 #include <stdexcept>
 #include <cstring>
 #include <iostream>
+#include <cerrno>
 #include "container_utils.h"
 
 File_descriptor::File_descriptor(const int fdd, std::string name,
