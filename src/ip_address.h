@@ -27,8 +27,12 @@ struct IP_address {
     in6_addr ipv6;
   } address;
   uint8_t subnet;
+
   std::string pure() const;
+
   std::string with_subnet() const;
+
+  bool operator==(const IP_address &rhs) const;
 };
 
 IP_address parse_ip(const std::string &ip);
@@ -36,5 +40,3 @@ IP_address parse_ip(const std::string &ip);
 std::string get_pure_ip(const IP_address &ip);
 
 std::ostream &operator<<(std::ostream &out, const IP_address &ipa);
-
-bool operator==(const IP_address &lhs, const IP_address &rhs);

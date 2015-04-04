@@ -30,6 +30,13 @@ std::string IP_address::with_subnet() const {
   return pure() + "/" + to_string(static_cast<int>(subnet));
 }
 
+bool IP_address::operator==(const IP_address &rhs) const {
+  bool equal = family == rhs.family;
+  equal &= subnet == rhs.subnet;
+  equal &= pure() == rhs.pure();
+  return equal;
+}
+
 int get_af(const std::string &ip) {
   in6_addr ipv6;
   if (inet_pton(AF_INET, ip.c_str(), &ipv6) == 1) {
@@ -90,11 +97,4 @@ std::string get_pure_ip(const IP_address &ip) { return ip.pure(); }
 std::ostream &operator<<(std::ostream &out, const IP_address &ipa) {
   out << ipa.with_subnet();
   return out;
-}
-
-bool operator==(const IP_address &lhs, const IP_address &rhs) {
-  bool equal = lhs.family == rhs.family;
-  equal &= lhs.subnet == rhs.subnet;
-  equal &= lhs.pure() == rhs.pure();
-  return equal;
 }
