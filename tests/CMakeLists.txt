@@ -24,13 +24,16 @@ endif (VALGRIND_PROGRAM)
 
 enable_testing()
 
+
+# valgrind --leak-check=yes --show-leak-kinds=definite --gen-suppressions=yes --demangle=no --suppressions=../tests/valgrind.supp tests/spawn_process_test
+
 function(make_test name)
         message(STATUS "adding test: " ${name})
         add_executable(${name} ${name}.cpp)
         target_link_libraries(${name} ${CPPUNIT_LIBRARIES} ${ARGV1} ${ARGV2})
         add_test(${name} ${name})
         if (VALGRIND_PROGRAM)
-                add_test(${name}-valgrind ${VALGRIND_PROGRAM} --error-exitcode=9001 ./${name})
+                add_test(${name}-valgrind ${VALGRIND_PROGRAM} --leak-check=yes --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp --error-exitcode=9001 ./${name})
         endif (VALGRIND_PROGRAM)
 endfunction(make_test)
 

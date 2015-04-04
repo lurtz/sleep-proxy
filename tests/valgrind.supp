@@ -1,0 +1,26 @@
+# suppress false positives from valgrind
+
+{
+   IO_remap_params::IO_remap_params(char const * str) causes false positive
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   fun:_ZNSs12_S_constructIPKcEEPcT_S3_RKSaIcESt20forward_iterator_tag
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN15IO_remap_paramsC1EPKc
+   ...
+}
+
+{
+   spawn_process_test std::string const filename{"/tmp/blublub"}; causes false positive
+   Memcheck:Leak
+   match-leak-kinds: definite
+   ...
+   fun:_ZNSs4_Rep9_S_createEmmRKSaIcE
+   fun:_ZNSs12_S_constructIPKcEEPcT_S3_RKSaIcESt20forward_iterator_tag
+   fun:_ZNSsC1EPKcRKSaIcE
+   fun:_ZN18Spawn_process_test26test_direct_output_to_fileEv
+   ...
+}
+
