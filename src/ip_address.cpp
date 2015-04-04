@@ -27,7 +27,7 @@ std::string IP_address::pure() const {
 }
 
 std::string IP_address::with_subnet() const {
-  return pure() + "/" + to_string(subnet);
+  return pure() + "/" + to_string(static_cast<int>(subnet));
 }
 
 int get_af(const std::string &ip) {

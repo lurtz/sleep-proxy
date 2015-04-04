@@ -35,7 +35,8 @@ public:
     CPPUNIT_ASSERT_EQUAL(family, ipa.family);
     CPPUNIT_ASSERT_EQUAL(ip, ipa.pure());
     CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(subnet), ipa.subnet);
-    CPPUNIT_ASSERT_EQUAL(ip + "/" + to_string(subnet), ipa.with_subnet());
+    CPPUNIT_ASSERT_EQUAL(ip + "/" + to_string(static_cast<int>(subnet)),
+                         ipa.with_subnet());
   }
 
   void test_parse_ip() {
