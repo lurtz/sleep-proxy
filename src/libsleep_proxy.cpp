@@ -182,8 +182,10 @@ bool ping_and_wait(const std::string &iface, const IP_address &ip,
     const pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
     ret_val = wait_until_pid_exits(pid);
   }
-  log(LOG_ERR, "failed to ping ip %s after %d ping attempts", ip.pure().c_str(),
-      tries);
+  if (ret_val != 0) {
+    log(LOG_ERR, "failed to ping ip %s after %d ping attempts",
+        ip.pure().c_str(), tries);
+  }
   return ret_val == 0;
 }
 
