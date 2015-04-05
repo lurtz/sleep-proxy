@@ -54,11 +54,13 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
   // 2.2.1 loop = false
   // 2.2.2 pc.break_loop
   while (loop) {
+    log(LOG_DEBUG, "try to see if ip %s is taken by another host",
+        ip.with_subnet().c_str());
     if (is_ip_occupied(iface, ip)) {
       loop = false;
       pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);
     } else {
-      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
   }
 }
