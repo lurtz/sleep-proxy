@@ -56,6 +56,8 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
   // 2.2 if someone uses ip
   // 2.2.1 loop = false
   // 2.2.2 pc.break_loop
+  log(LOG_INFO, "daw_thread_main_non_root: loop is %d",
+      static_cast<bool>(loop));
   while (loop) {
     log(LOG_INFO, "try to see if ip %s is taken by another host",
         ip.with_subnet().c_str());
@@ -90,8 +92,7 @@ typedef std::function<void(const std::string &, const IP_address &,
                            Pcap_wrapper &)> Main_Function_Type;
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
-  log(LOG_INFO, "starting Duplicate_address_watcher for IP %s",
-      ip.with_subnet().c_str());
+  log(LOG_INFO, "Duplicate_address_watcher()");
   // TODO this does not work for ipv6
   if (ip.family == AF_INET6)
     return "";
@@ -100,12 +101,16 @@ std::string Duplicate_address_watcher::operator()(const Action action) {
       ip.family == AF_INET ? daw_thread_main_non_root : daw_thread_main_ipv6;
 
   if (Action::add == action) {
+    log(LOG_INFO, "starting Duplicate_address_watcher for IP %s",
+        ip.with_subnet().c_str());
     *loop = true;
     watcher =
         std::make_shared<std::thread>(main_function, iface, ip, is_ip_occupied,
                                       std::ref(*loop), std::ref(pcap));
   }
   if (Action::del == action) {
+    log(LOG_INFO, "stopping Duplicate_address_watcher for IP %s",
+        ip.with_subnet().c_str());
     stop_watcher();
   }
   return "";
