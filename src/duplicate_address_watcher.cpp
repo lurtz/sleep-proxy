@@ -41,6 +41,9 @@ bool Ip_neigh_checker::operator()(std::string const &iface,
   const pid_t pid = spawn(cmd, "/dev/null", *ip_neigh_output);
   const uint8_t status = wait_until_pid_exits(pid);
 
+  log(LOG_INFO, "read %d lines from ip neigh",
+      ip_neigh_output->get_content().size());
+
   return status != 0 ||
          has_neighbour_ip(iface, ip, ip_neigh_output->get_content());
 }
@@ -54,7 +57,7 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
   // 2.2.1 loop = false
   // 2.2.2 pc.break_loop
   while (loop) {
-    log(LOG_DEBUG, "try to see if ip %s is taken by another host",
+    log(LOG_INFO, "try to see if ip %s is taken by another host",
         ip.with_subnet().c_str());
     if (is_ip_occupied(iface, ip)) {
       loop = false;
@@ -87,6 +90,8 @@ typedef std::function<void(const std::string &, const IP_address &,
                            Pcap_wrapper &)> Main_Function_Type;
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
+  log(LOG_INFO, "starting Duplicate_address_watcher for IP %s",
+      ip.with_subnet().c_str());
   // TODO this does not work for ipv6
   if (ip.family == AF_INET6)
     return "";
