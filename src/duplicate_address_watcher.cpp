@@ -41,7 +41,7 @@ bool Ip_neigh_checker::operator()(std::string const &iface,
   const pid_t pid = spawn(cmd, "/dev/null", *ip_neigh_output);
   const uint8_t status = wait_until_pid_exits(pid);
 
-  log(LOG_INFO, "read %d lines from ip neigh",
+  log(LOG_DEBUG, "read %d lines from ip neigh",
       ip_neigh_output->get_content().size());
 
   return status != 0 ||
@@ -56,11 +56,10 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
   // 2.2 if someone uses ip
   // 2.2.1 loop = false
   // 2.2.2 pc.break_loop
-  log(LOG_INFO, "daw_thread_main_non_root: loop is %d",
-      static_cast<bool>(loop));
+  log(LOG_DEBUG, "daw_thread_main_non_root: iface = %s, ip = %s, loop = %d",
+      iface.c_str(), ip.with_subnet().c_str(), static_cast<bool>(loop));
+
   while (loop) {
-    log(LOG_INFO, "try to see if ip %s is taken by another host",
-        ip.with_subnet().c_str());
     if (is_ip_occupied(iface, ip)) {
       loop = false;
       pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);
@@ -85,14 +84,17 @@ Duplicate_address_watcher::Duplicate_address_watcher(
       is_ip_occupied{std::move(is_ip_occupiedd)},
       loop(std::make_shared<std::atomic_bool>(false)) {}
 
-Duplicate_address_watcher::~Duplicate_address_watcher() { stop_watcher(); }
+Duplicate_address_watcher::~Duplicate_address_watcher() {
+  if (loop.use_count() == 1) {
+    stop_watcher();
+  }
+}
 
 typedef std::function<void(const std::string &, const IP_address &,
                            Is_ip_occupied const &, std::atomic_bool &,
                            Pcap_wrapper &)> Main_Function_Type;
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
-  log(LOG_INFO, "Duplicate_address_watcher()");
   // TODO this does not work for ipv6
   if (ip.family == AF_INET6)
     return "";
