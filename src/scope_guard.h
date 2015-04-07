@@ -30,11 +30,14 @@ enum struct Action { add, del };
  * reverse this modification.
  */
 struct Scope_guard {
+public:
+  typedef std::function<std::string(const Action)> Aquire_release;
+
 private:
   /** if the consumed resource or modification is freed */
   bool freed;
   /** function to take or release */
-  const std::function<std::string(const Action)> aquire_release;
+  const Aquire_release aquire_release;
 
 public:
   /**
@@ -46,7 +49,7 @@ public:
    * consume the resource or perform modification using
    * aquire_release_arg
    */
-  Scope_guard(std::function<std::string(const Action)> &&aquire_release_arg);
+  Scope_guard(Aquire_release &&aquire_release_arg);
 
   /**
    * Move constructor

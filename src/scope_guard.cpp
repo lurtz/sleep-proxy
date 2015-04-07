@@ -26,8 +26,7 @@
 
 Scope_guard::Scope_guard() : freed{true}, aquire_release{} {}
 
-Scope_guard::Scope_guard(
-    std::function<std::string(const Action)> &&aquire_release_arg)
+Scope_guard::Scope_guard(Aquire_release &&aquire_release_arg)
     : freed{false}, aquire_release(std::move(aquire_release_arg)) {
   take_action(Action::add);
 }
