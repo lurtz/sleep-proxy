@@ -54,6 +54,13 @@ struct Is_ip_occupied_dummy {
   }
 };
 
+struct Throwing_ip_occupied_dummy {
+  bool operator()(std::string const &, IP_address const &) const {
+    throw std::runtime_error("throwing ip occupied dummy throws");
+    return false;
+  }
+};
+
 class Duplicate_address_watcher_test : public CppUnit::TestFixture {
 
   Is_ip_occupied_dummy const ip_checker{
@@ -70,6 +77,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv4_ip_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv6_ip_not_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv6_ip_taken);
+  CPPUNIT_TEST(test_duplicate_address_watcher_receives_exception_in_thread);
   CPPUNIT_TEST(test_has_neighbour_ip);
   CPPUNIT_TEST(test_ip_neigh_checker);
   CPPUNIT_TEST_SUITE_END();
@@ -177,6 +185,19 @@ public:
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset ==
                    pcap.get_end_reason());
     CPPUNIT_ASSERT(!loop);
+  }
+
+  void test_duplicate_address_watcher_receives_exception_in_thread() {
+    Duplicate_address_watcher daw{"wlan0", parse_ip("192.168.1.1/24"), pcap,
+                                  Throwing_ip_occupied_dummy()};
+    CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset ==
+                   pcap.get_end_reason());
+    CPPUNIT_ASSERT(!*daw.loop);
+    { daw(Action::add); }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::signal ==
+                   pcap.get_end_reason());
+    CPPUNIT_ASSERT(!*daw.loop);
   }
 
   void test_has_neighbour_ip() {

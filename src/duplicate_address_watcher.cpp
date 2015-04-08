@@ -56,16 +56,22 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
   // 2.2 if someone uses ip
   // 2.2.1 loop = false
   // 2.2.2 pc.break_loop
-  log(LOG_DEBUG, "daw_thread_main_non_root: iface = %s, ip = %s, loop = %d",
-      iface.c_str(), ip.with_subnet().c_str(), static_cast<bool>(loop));
+  try {
+    log(LOG_DEBUG, "daw_thread_main_non_root: iface = %s, ip = %s, loop = %d",
+        iface.c_str(), ip.with_subnet().c_str(), static_cast<bool>(loop));
 
-  while (loop) {
-    if (is_ip_occupied(iface, ip)) {
-      loop = false;
-      pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);
-    } else {
-      std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    while (loop) {
+      if (is_ip_occupied(iface, ip)) {
+        loop = false;
+        pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);
+      } else {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+      }
     }
+  } catch (std::exception const &e) {
+    log(LOG_INFO, "daw_thread_main_non_root got exception: %s", e.what());
+    loop = false;
+    pc.break_loop(Pcap_wrapper::Loop_end_reason::signal);
   }
 }
 
@@ -73,8 +79,14 @@ void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
                           Is_ip_occupied const &is_ip_occupied,
                           std::atomic_bool &loop, Pcap_wrapper &pc) {
   // 1. block incoming duplicate address detection for ip using firewall
-  Scope_guard const bipv6ns{Block_ipv6_neighbor_solicitation{ip}};
-  daw_thread_main_non_root(iface, ip, is_ip_occupied, loop, pc);
+  try {
+    Scope_guard const bipv6ns{Block_ipv6_neighbor_solicitation{ip}};
+    daw_thread_main_non_root(iface, ip, is_ip_occupied, loop, pc);
+  } catch (std::exception const &e) {
+    log(LOG_INFO, "daw_thread_main_ipv6 got exception: %s", e.what());
+    loop = false;
+    pc.break_loop(Pcap_wrapper::Loop_end_reason::signal);
+  }
 }
 
 Duplicate_address_watcher::Duplicate_address_watcher(
