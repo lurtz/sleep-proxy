@@ -44,9 +44,6 @@ bool Ip_neigh_checker::operator()(std::string const &iface,
   const pid_t pid = spawn(cmd, "/dev/null", *ip_neigh_output);
   const uint8_t status = wait_until_pid_exits(pid);
 
-  log(LOG_DEBUG, "read %d lines from ip neigh",
-      ip_neigh_output->get_content().size());
-
   return status != 0 ||
          has_neighbour_ip(iface, ip, ip_neigh_output->get_content());
 }
