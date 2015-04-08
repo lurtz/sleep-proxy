@@ -18,7 +18,9 @@
 #include "ethernet.h"
 #include "packet_test_utils.h"
 
-const std::string lcc_no_ethernet_ipv4_0_wireshark =
+const std::string lcc_not_supported_ipv4_0_wireshark =
+    "00000305000600000000000000000800";
+const std::string lcc_loopback_ipv4_0_wireshark =
     "00000304000600000000000000000800";
 const std::string ethernet_ipv4_0_wireshark = "0000000000000000000000000800";
 const std::string ethernet_ipv4_1_wireshark = "1102330455060a0b0c0d0e0f0800";
@@ -33,7 +35,8 @@ const std::string vlan_ipv6_wireshark = "000186dd";
 
 class Ethernet_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Ethernet_test);
-  CPPUNIT_TEST(test_parse_lcc_no_ethernet);
+  CPPUNIT_TEST(test_parse_lcc_not_supported);
+  CPPUNIT_TEST(test_parse_lcc_loopback);
   CPPUNIT_TEST(test_parse_lcc_ipv4);
   CPPUNIT_TEST(test_parse_lcc_ipv4_too_short);
   CPPUNIT_TEST(test_parse_lcc_ipv4_1);
@@ -55,8 +58,10 @@ class Ethernet_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_non_supported_protocol);
   CPPUNIT_TEST_SUITE_END();
 
-  const std::vector<uint8_t> lcc_no_ethernet =
-      to_binary(lcc_no_ethernet_ipv4_0_wireshark);
+  const std::vector<uint8_t> lcc_not_supported =
+      to_binary(lcc_not_supported_ipv4_0_wireshark);
+  const std::vector<uint8_t> lcc_loopback =
+      to_binary(lcc_loopback_ipv4_0_wireshark);
   const std::vector<uint8_t> lcc_ipv4_0 = to_binary(lcc_ipv4_0_wireshark);
   const std::vector<uint8_t> lcc_ipv4_1 = to_binary(lcc_ipv4_1_wireshark);
   const std::vector<uint8_t> lcc_ipv4_2 = to_binary(lcc_ipv4_2_wireshark);
@@ -72,11 +77,18 @@ class Ethernet_test : public CppUnit::TestFixture {
   const std::vector<uint8_t> vlan_ipv6 = to_binary(vlan_ipv6_wireshark);
 
 public:
-  void test_parse_lcc_no_ethernet() {
+  void test_parse_lcc_not_supported() {
     CPPUNIT_ASSERT_THROW(parse_link_layer(DLT_LINUX_SLL,
-                                          std::begin(lcc_no_ethernet),
-                                          std::end(lcc_no_ethernet)),
+                                          std::begin(lcc_not_supported),
+                                          std::end(lcc_not_supported)),
                          std::runtime_error);
+  }
+
+  void test_parse_lcc_loopback() {
+    auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_loopback),
+                               std::end(lcc_loopback));
+    test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv4,
+            "Linux cooked capture: src: 0:0:0:0:0:0");
   }
 
   void test_parse_lcc_ipv4() {
