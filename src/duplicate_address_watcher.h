@@ -30,9 +30,14 @@ typedef std::function<bool(std::string const &, IP_address const &)>
 
 struct Ip_neigh_checker {
   std::shared_ptr<File_descriptor> const ip_neigh_output;
-  std::vector<std::string> const cmd;
+  std::vector<std::string> const cmd_ipv4;
+  std::vector<std::string> const cmd_ipv6;
 
   Ip_neigh_checker();
+
+  bool is_ipv4_present(std::string const &iface, IP_address const &ip) const;
+
+  bool is_ipv6_present(std::string const &iface, IP_address const &ip) const;
 
   bool operator()(std::string const &iface, IP_address const &ip) const;
 };

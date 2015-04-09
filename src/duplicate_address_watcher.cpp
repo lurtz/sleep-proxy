@@ -21,6 +21,7 @@
 
 bool has_neighbour_ip(std::string const &iface, IP_address const &ip,
                       std::vector<std::string> const &content) {
+  // TODO in ipv6 devices can also be DELAY and STALE, while still present
   auto const match_iface_and_ip = [&](std::string const &line) {
     return line.find(iface) != std::string::npos &&
            line.find(ip.pure()) != std::string::npos &&
@@ -36,16 +37,36 @@ bool has_neighbour_ip(std::string const &iface, IP_address const &ip,
 Ip_neigh_checker::Ip_neigh_checker()
     : ip_neigh_output{std::make_shared<File_descriptor>(
           get_tmp_file("ip_neigh_outputXXXXXX"))},
-      cmd{get_path("ip"), "neigh"} {}
+      cmd_ipv4(split(get_path("arping") + " -q -D -c 1 -I", ' ')),
+      cmd_ipv6{get_path("ip"), "neigh"} {}
 
-bool Ip_neigh_checker::operator()(std::string const &iface,
-                                  IP_address const &ip) const {
+bool Ip_neigh_checker::is_ipv4_present(std::string const &iface,
+                                       IP_address const &ip) const {
+  auto cmd_ipv4_tmp = cmd_ipv4;
+  cmd_ipv4_tmp.push_back(iface);
+  cmd_ipv4_tmp.push_back(ip.pure());
+  const pid_t pid = spawn(cmd_ipv4_tmp, "/dev/null");
+  const uint8_t status = wait_until_pid_exits(pid);
+  return status == 1;
+}
+
+bool Ip_neigh_checker::is_ipv6_present(std::string const &iface,
+                                       IP_address const &ip) const {
   ip_neigh_output->delete_content();
-  const pid_t pid = spawn(cmd, "/dev/null", *ip_neigh_output);
+  const pid_t pid = spawn(cmd_ipv6, "/dev/null", *ip_neigh_output);
   const uint8_t status = wait_until_pid_exits(pid);
 
   return status != 0 ||
          has_neighbour_ip(iface, ip, ip_neigh_output->get_content());
+}
+
+bool Ip_neigh_checker::operator()(std::string const &iface,
+                                  IP_address const &ip) const {
+  if (ip.family == AF_INET) {
+    return is_ipv4_present(iface, ip);
+  } else {
+    return is_ipv6_present(iface, ip);
+  }
 }
 
 void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,

@@ -83,7 +83,10 @@ std::vector<std::string> get_ip_neigh_output() {
 
 Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content) {
   auto const is_ip_not_stale = [](std::string const &line) {
-    return line.find("STALE") == std::string::npos;
+    return line.find("STALE") == std::string::npos &&
+           line.find("DELAY") == std::string::npos &&
+           line.find("PROBE") == std::string::npos &&
+           line.find("FAILED") == std::string::npos;
   };
 
   auto const create_iface_ip = [](std::string const &line) {
