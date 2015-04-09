@@ -67,7 +67,7 @@ std::unique_ptr<Link_layer> parse_linux_cooked_capture(iterator data,
   if (device_type != ARPHRD_ETHER && device_type != ARPHRD_LOOPBACK) {
     throw std::runtime_error(
         "Linux_cooked_capture only supports ethernet or loopback, got: " +
-        to_string(device_type) + "(look in net/if_arp.h for value)");
+        to_string(device_type) + " (look in net/if_arp.h for value)");
   }
   std::advance(data, 2);
   uint16_t const ll_address_length =

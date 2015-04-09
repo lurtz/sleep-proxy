@@ -72,6 +72,14 @@ void Catch_incoming_connection::operator()(const pcap_pkthdr *header,
     log_string(LOG_ERR, "header or packet are nullptr");
     return;
   }
-  data = std::vector<uint8_t>(packet, packet + header->len);
-  headers = get_headers(link_layer_type, data);
+  try {
+    data = std::vector<uint8_t>(packet, packet + header->len);
+    headers = get_headers(link_layer_type, data);
+  } catch (std::exception const &e) {
+    log_string(LOG_ERR,
+               std::string("Catch_incoming_connection caught an exception: ") +
+                   e.what());
+    data = std::vector<uint8_t>();
+    headers = basic_headers();
+  }
 }
