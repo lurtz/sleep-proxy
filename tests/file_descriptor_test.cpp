@@ -23,6 +23,7 @@
 #include "file_descriptor.h"
 #include "to_string.h"
 #include "spawn_process.h"
+#include <container_utils.h>
 
 class File_descriptor_test : public CppUnit::TestFixture {
   std::string const filename = "fdclosetestfile";
@@ -104,6 +105,7 @@ public:
   void test_fd_delete_content() {
     File_descriptor const fd{get_tmp_file("test_fd_delete_contentXXXXXX")};
 
+    // write some stuff and check that it is present
     {
       CPPUNIT_ASSERT_EQUAL(static_cast<ssize_t>(8), write(fd, "testdata", 8));
       std::ifstream ifs(fd.filename);
@@ -114,9 +116,31 @@ public:
 
     fd.delete_content();
 
+    // check that everything is deleted
+    {
+      std::ifstream ifs(fd.filename,
+                        std::ifstream::ate | std::ifstream::binary);
+      CPPUNIT_ASSERT(0 == ifs.tellg());
+    }
+
+    // writing to file descriptor again
+    for (uint8_t i = 0; i < 3; i++) {
+      auto const pid =
+          spawn(split(std::string(get_path("echo") + " blabla"), ' '),
+                "/dev/null", fd);
+      auto const status = wait_until_pid_exits(pid);
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+    }
+
     {
       std::ifstream ifs(fd.filename);
       std::string line;
+      CPPUNIT_ASSERT(std::getline(ifs, line));
+      CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
+      CPPUNIT_ASSERT(std::getline(ifs, line));
+      CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
+      CPPUNIT_ASSERT(std::getline(ifs, line));
+      CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
       CPPUNIT_ASSERT(!std::getline(ifs, line));
     }
   }

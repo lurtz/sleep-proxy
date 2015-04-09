@@ -78,15 +78,6 @@ void File_descriptor::close() {
   }
 }
 
-void File_descriptor::delete_content() const {
-  auto const status = ftruncate(fd, 0);
-  if (status < 0) {
-    throw std::runtime_error(
-        std::string("File_descriptor::delete_content() failed: ") +
-        strerror(errno));
-  }
-}
-
 off_t fseek_exception(int const fildes, off_t const offset, int const whence) {
   off_t const status = lseek(fildes, offset, whence);
 
@@ -96,6 +87,16 @@ off_t fseek_exception(int const fildes, off_t const offset, int const whence) {
   }
 
   return status;
+}
+
+void File_descriptor::delete_content() const {
+  auto const status = ftruncate(fd, 0);
+  fseek_exception(fd, 0, SEEK_SET);
+  if (status < 0) {
+    throw std::runtime_error(
+        std::string("File_descriptor::delete_content() failed: ") +
+        strerror(errno));
+  }
 }
 
 std::vector<uint8_t> pread_exception(int const fildes, size_t length,
