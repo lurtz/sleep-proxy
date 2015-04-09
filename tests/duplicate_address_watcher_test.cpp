@@ -26,8 +26,6 @@
 #include "container_utils.h"
 #include "packet_test_utils.h"
 
-bool has_neighbour_ip(std::string const &iface, IP_address const &ip,
-                      std::vector<std::string> const &content);
 void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
                               Is_ip_occupied const &is_ip_occupied,
                               std::atomic_bool &loop, Pcap_wrapper &pc);
@@ -78,7 +76,6 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv6_ip_not_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv6_ip_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_receives_exception_in_thread);
-  CPPUNIT_TEST(test_has_neighbour_ip);
   CPPUNIT_TEST(test_ip_neigh_checker);
   CPPUNIT_TEST_SUITE_END();
 
@@ -200,40 +197,6 @@ public:
     CPPUNIT_ASSERT(!*daw.loop);
   }
 
-  void test_has_neighbour_ip() {
-    std::vector<std::string> const fd{
-        "2001:470:1f15:ea7::1 dev wlan0 lladdr 00:00:83:8a:20:00 router STALE",
-        "fe80::200:83ff:fe8a:2000 dev wlan0 lladdr 00:00:83:8a:20:00 router "
-        "REACHABLE",
-        "192.168.1.112 dev br-lan  FAILED", "192.168.1.111 dev br-lan  PROBE",
-        "192.168.1.110 dev br-lan  DELAY",
-        "192.168.1.181 dev wlan0 lladdr 00:14:38:d3:00:69 STALE",
-        "192.168.1.1 dev wlan0 lladdr 00:00:83:8a:20:00 REACHABLE"};
-
-    // present ips, check if STALE/FAILED
-    CPPUNIT_ASSERT(
-        !has_neighbour_ip("wlan0", parse_ip("2001:470:1f15:ea7::1/64"), fd));
-    CPPUNIT_ASSERT(
-        has_neighbour_ip("wlan0", parse_ip("fe80::200:83ff:fe8a:2000/64"), fd));
-    CPPUNIT_ASSERT(
-        !has_neighbour_ip("br-lan", parse_ip("192.168.1.112/24"), fd));
-    CPPUNIT_ASSERT(
-        !has_neighbour_ip("br-lan", parse_ip("192.168.1.111/24"), fd));
-    CPPUNIT_ASSERT(
-        !has_neighbour_ip("br-lan", parse_ip("192.168.1.110/24"), fd));
-    CPPUNIT_ASSERT(
-        !has_neighbour_ip("wlan0", parse_ip("192.168.1.181/24"), fd));
-    CPPUNIT_ASSERT(has_neighbour_ip("wlan0", parse_ip("192.168.1.1/24"), fd));
-
-    CPPUNIT_ASSERT(
-        !has_neighbour_ip("eth0", parse_ip("2001:470:1f15:ea7::1/64"), fd));
-    CPPUNIT_ASSERT(
-        !has_neighbour_ip("wlan0", parse_ip("2001:470:1f15:ea7::1234/64"), fd));
-    CPPUNIT_ASSERT(!has_neighbour_ip("eth0", parse_ip("192.168.1.181/24"), fd));
-    CPPUNIT_ASSERT(
-        !has_neighbour_ip("wlan0", parse_ip("192.168.2.181/24"), fd));
-  }
-
   void test_ip_neigh_checker() {
     std::vector<std::string> const ip_neigh_content = get_ip_neigh_output();
     Iface_Ips const iface_ips = get_iface_ips(ip_neigh_content);
@@ -244,7 +207,10 @@ public:
 
     // check for ips which are currently present
     for (auto const &iface_ip : iface_ips) {
-      CPPUNIT_ASSERT(checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
+      // TODO without root privileges ipv6 is not testable
+      if (std::get<1>(iface_ip).family == AF_INET) {
+        CPPUNIT_ASSERT(checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
+      }
     }
 
     // check for ips which are not present
@@ -273,7 +239,10 @@ public:
               << std::endl;
 
     for (auto const &iface_ip : not_present_ips) {
-      CPPUNIT_ASSERT(!checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
+      // TODO without root privileges ipv6 is not testable
+      if (std::get<1>(iface_ip).family == AF_INET) {
+        CPPUNIT_ASSERT(!checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
+      }
     }
   }
 };

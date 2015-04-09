@@ -19,26 +19,11 @@
 #include "container_utils.h"
 #include "spawn_process.h"
 
-bool has_neighbour_ip(std::string const &iface, IP_address const &ip,
-                      std::vector<std::string> const &content) {
-  // TODO in ipv6 devices can also be DELAY and STALE, while still present
-  auto const match_iface_and_ip = [&](std::string const &line) {
-    return line.find(iface) != std::string::npos &&
-           line.find(ip.pure()) != std::string::npos &&
-           line.find("STALE") == std::string::npos &&
-           line.find("DELAY") == std::string::npos &&
-           line.find("PROBE") == std::string::npos &&
-           line.find("FAILED") == std::string::npos;
-  };
-  return std::any_of(std::begin(content), std::end(content),
-                     match_iface_and_ip);
-}
-
 Ip_neigh_checker::Ip_neigh_checker()
-    : ip_neigh_output{std::make_shared<File_descriptor>(
-          get_tmp_file("ip_neigh_outputXXXXXX"))},
-      cmd_ipv4(split(get_path("arping") + " -q -D -c 1 -I", ' ')),
-      cmd_ipv6{get_path("ip"), "neigh"} {}
+    : ndisc6_output{std::make_shared<File_descriptor>(
+          get_tmp_file("ndisc6_outputXXXXXX"))},
+      cmd_ipv4{get_path("arping"), "-q", "-D", "-c", "1", "-I"},
+      cmd_ipv6{get_path("ndisc6"), "-q", "-n", "-m"} {}
 
 bool Ip_neigh_checker::is_ipv4_present(std::string const &iface,
                                        IP_address const &ip) const {
@@ -47,17 +32,27 @@ bool Ip_neigh_checker::is_ipv4_present(std::string const &iface,
   cmd_ipv4_tmp.push_back(ip.pure());
   const pid_t pid = spawn(cmd_ipv4_tmp, "/dev/null");
   const uint8_t status = wait_until_pid_exits(pid);
+  // if arping detects duplicate address, it returns 1
   return status == 1;
 }
 
 bool Ip_neigh_checker::is_ipv6_present(std::string const &iface,
                                        IP_address const &ip) const {
-  ip_neigh_output->delete_content();
-  const pid_t pid = spawn(cmd_ipv6, "/dev/null", *ip_neigh_output);
+  // when multiple nodes have the same ipv6 address
+  // lutz@barcas:~/workspace/sleep-proxy$ ndisc6 -q -n -m fe80::123 wlan0
+  // A0:88:B4:CF:50:94
+  // 22:4E:7F:6F:78:F1
+  auto cmd_ipv6_tmp = cmd_ipv6;
+  cmd_ipv6_tmp.push_back(ip.pure());
+  cmd_ipv6_tmp.push_back(iface);
+
+  ndisc6_output->delete_content();
+  const pid_t pid = spawn(cmd_ipv6_tmp, "/dev/null", *ndisc6_output);
   const uint8_t status = wait_until_pid_exits(pid);
 
-  return status != 0 ||
-         has_neighbour_ip(iface, ip, ip_neigh_output->get_content());
+  // if there are more than one line, there must be another host
+  // one line is this programm/node
+  return status != 0 || ndisc6_output->get_content().size() > 1;
 }
 
 bool Ip_neigh_checker::operator()(std::string const &iface,

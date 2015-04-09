@@ -77,6 +77,8 @@ public:
   }
 
   void ioctl(const unsigned long, ifreq &) const;
+
   int get_ifindex(const std::string &iface) const;
+
   ether_addr get_hwaddr(const std::string &) const;
 };
