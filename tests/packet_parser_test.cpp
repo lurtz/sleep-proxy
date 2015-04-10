@@ -31,6 +31,9 @@ const std::string ethernet_ipv6_tcp_wireshark =
     "00000000000000000000000086dd6000000000280640000000000000000000000000000000"
     "0100000000000000000000000000000001";
 
+const std::string lcc_unknown_udp_wireshark =
+    "000001010006000000000000000008004500003e057f40004011372e7f0000017f000001";
+
 const std::string lcc_ipv4_udp_wireshark =
     "000000010006000000000000000008004500003e057f40004011372e7f0000017f000001";
 
@@ -56,12 +59,15 @@ class Packet_parser_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_parse_lcc_vlan_ipv4_udp);
   CPPUNIT_TEST(test_parse_lcc_vlan_ipv4_udp_too_short);
   CPPUNIT_TEST(test_catch_incoming_connection);
+  CPPUNIT_TEST(test_catch_incoming_connection_unknown_lcc_protocol);
   CPPUNIT_TEST_SUITE_END();
 
   const std::vector<uint8_t> ethernet_ipv4_tcp =
       to_binary(ethernet_ipv4_tcp_wireshark);
   const std::vector<uint8_t> ethernet_ipv6_tcp =
       to_binary(ethernet_ipv6_tcp_wireshark);
+  const std::vector<uint8_t> lcc_unknown_udp =
+      to_binary(lcc_unknown_udp_wireshark);
   const std::vector<uint8_t> lcc_ipv4_udp = to_binary(lcc_ipv4_udp_wireshark);
   const std::vector<uint8_t> lcc_ipv6_tcp = to_binary(lcc_ipv6_tcp_wireshark);
   const std::vector<uint8_t> lcc_vlan_ipv4_udp =
@@ -160,6 +166,15 @@ public:
     CPPUNIT_ASSERT(ethernet_ipv4_tcp == cic.data);
     CPPUNIT_ASSERT_EQUAL(*std::get<0>(headers), *std::get<0>(cic.headers));
     CPPUNIT_ASSERT_EQUAL(*std::get<1>(headers), *std::get<1>(cic.headers));
+  }
+
+  void test_catch_incoming_connection_unknown_lcc_protocol() {
+    Catch_incoming_connection cic(DLT_LINUX_SLL);
+    pcap_pkthdr hdr;
+    hdr.len = static_cast<bpf_u_int32>(lcc_unknown_udp.size());
+    cic(&hdr, lcc_unknown_udp.data());
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), cic.data.size());
+    CPPUNIT_ASSERT_EQUAL(basic_headers(), cic.headers);
   }
 };
 
