@@ -18,6 +18,32 @@
 #include "log.h"
 #include "container_utils.h"
 #include "spawn_process.h"
+#include <cctype>
+
+std::string get_mac(std::string const &iface) {
+  auto cmd = split(get_path("ip") + " a show dev " + iface, ' ');
+  auto fd = get_tmp_file("ip_a_show_dev_outputXXXXXX");
+  pid_t const pid = spawn(cmd, "/dev/null", fd);
+  uint8_t const status = wait_until_pid_exits(pid);
+  auto const line = fd.get_content().at(1);
+  auto const splitted_line = split(line, ' ');
+  return splitted_line.at(5);
+}
+
+bool contains_mac_different_from_given(std::string mac,
+                                       std::vector<std::string> const &lines) {
+  auto const transform_to_upper = [](std::string tmp) {
+    std::transform(std::begin(tmp), std::end(tmp), std::begin(tmp), ::toupper);
+    return tmp;
+  };
+
+  auto const macs_are_not_equal =
+      [&](std::string const &line) { return transform_to_upper(line) != mac; };
+
+  mac = transform_to_upper(mac);
+
+  return std::any_of(std::begin(lines), std::end(lines), macs_are_not_equal);
+}
 
 Ip_neigh_checker::Ip_neigh_checker()
     : ndisc6_output{std::make_shared<File_descriptor>(
@@ -42,6 +68,10 @@ bool Ip_neigh_checker::is_ipv6_present(std::string const &iface,
   // lutz@barcas:~/workspace/sleep-proxy$ ndisc6 -q -n -m fe80::123 wlan0
   // A0:88:B4:CF:50:94
   // 22:4E:7F:6F:78:F1
+  // ...
+  // openwrt handles this differently, and outputs only foreign MACs with an
+  // error code. to be able to do tests, I have to check the output if there
+  // are foreign macs in it
   auto cmd_ipv6_tmp = cmd_ipv6;
   cmd_ipv6_tmp.push_back(ip.pure());
   cmd_ipv6_tmp.push_back(iface);

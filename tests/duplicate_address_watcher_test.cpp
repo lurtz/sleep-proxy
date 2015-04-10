@@ -26,6 +26,11 @@
 #include "container_utils.h"
 #include "packet_test_utils.h"
 
+std::string get_mac(std::string const &iface);
+
+bool contains_mac_different_from_given(std::string mac,
+                                       std::vector<std::string> const &lines);
+
 void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
                               Is_ip_occupied const &is_ip_occupied,
                               std::atomic_bool &loop, Pcap_wrapper &pc);
@@ -77,6 +82,8 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv6_ip_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_receives_exception_in_thread);
   CPPUNIT_TEST(test_ip_neigh_checker);
+  CPPUNIT_TEST(test_contains_mac_different_from_given);
+  CPPUNIT_TEST(test_get_mac);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -244,6 +251,41 @@ public:
         CPPUNIT_ASSERT(!checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
       }
     }
+  }
+
+  void test_contains_mac_different_from_given() {
+    std::string const mac0 = "aA:bB:cc:DD:Ee:Ff";
+    std::string const mac00 = "aa:bb:cc:dd:ee:ff";
+    std::string const mac01 = "AA:BB:CC:DD:EE:FF";
+    std::string const mac1 = "11:22:33:44:aa:bb";
+    std::string const mac2 = "bb:bb:44:66:99:a3";
+
+    CPPUNIT_ASSERT(!contains_mac_different_from_given(
+                       mac0, std::vector<std::string>{mac0}));
+    CPPUNIT_ASSERT(!contains_mac_different_from_given(
+                       mac00, std::vector<std::string>{mac0}));
+    CPPUNIT_ASSERT(!contains_mac_different_from_given(
+                       mac01, std::vector<std::string>{mac0}));
+    CPPUNIT_ASSERT(!contains_mac_different_from_given(
+                       mac0, std::vector<std::string>{mac0, mac00, mac01}));
+    CPPUNIT_ASSERT(!contains_mac_different_from_given(
+                       mac1, std::vector<std::string>{mac1}));
+    CPPUNIT_ASSERT(contains_mac_different_from_given(
+        mac1, std::vector<std::string>{mac0}));
+    CPPUNIT_ASSERT(contains_mac_different_from_given(
+        mac1, std::vector<std::string>{mac0, mac1}));
+    CPPUNIT_ASSERT(!contains_mac_different_from_given(
+                       mac2, std::vector<std::string>{mac2}));
+    CPPUNIT_ASSERT(contains_mac_different_from_given(
+        mac2, std::vector<std::string>{mac0}));
+    CPPUNIT_ASSERT(contains_mac_different_from_given(
+        mac2, std::vector<std::string>{mac0, mac1}));
+    CPPUNIT_ASSERT(contains_mac_different_from_given(
+        mac2, std::vector<std::string>{mac0, mac1, mac2}));
+  }
+
+  void test_get_mac() {
+    CPPUNIT_ASSERT_EQUAL(std::string("00:00:00:00:00:00"), get_mac("lo"));
   }
 };
 
