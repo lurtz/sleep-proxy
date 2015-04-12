@@ -25,6 +25,10 @@ std::string get_mac(std::string const &iface) {
   auto fd = get_tmp_file("ip_a_show_dev_outputXXXXXX");
   pid_t const pid = spawn(cmd, "/dev/null", fd);
   uint8_t const status = wait_until_pid_exits(pid);
+  if (status != 0) {
+    throw std::runtime_error(std::string("get_mac(): ip a show dev ") + iface +
+                             " did not succeed");
+  }
   auto const line = fd.get_content().at(1);
   auto const splitted_line = split(line, ' ');
   return splitted_line.at(5);
@@ -45,8 +49,9 @@ bool contains_mac_different_from_given(std::string mac,
   return std::any_of(std::begin(lines), std::end(lines), macs_are_not_equal);
 }
 
-Ip_neigh_checker::Ip_neigh_checker()
-    : ndisc6_output{std::make_shared<File_descriptor>(
+Ip_neigh_checker::Ip_neigh_checker(std::string mac)
+    : this_nodes_mac{std::move(mac)},
+      ndisc6_output{std::make_shared<File_descriptor>(
           get_tmp_file("ndisc6_outputXXXXXX"))},
       cmd_ipv4{get_path("arping"), "-q", "-D", "-c", "1", "-I"},
       cmd_ipv6{get_path("ndisc6"), "-q", "-n", "-m"} {}
@@ -82,7 +87,8 @@ bool Ip_neigh_checker::is_ipv6_present(std::string const &iface,
 
   // if there are more than one line, there must be another host
   // one line is this programm/node
-  return status != 0 || ndisc6_output->get_content().size() > 1;
+  return contains_mac_different_from_given(this_nodes_mac,
+                                           ndisc6_output->get_content());
 }
 
 bool Ip_neigh_checker::operator()(std::string const &iface,
@@ -134,6 +140,13 @@ void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
     pc.break_loop(Pcap_wrapper::Loop_end_reason::signal);
   }
 }
+
+Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee,
+                                                     const IP_address ipp,
+                                                     Pcap_wrapper &pc)
+    : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc),
+      is_ip_occupied{Ip_neigh_checker{get_mac(iface)}},
+      loop(std::make_shared<std::atomic_bool>(false)) {}
 
 Duplicate_address_watcher::Duplicate_address_watcher(
     const std::string ifacee, const IP_address ipp, Pcap_wrapper &pc,

@@ -26,8 +26,6 @@
 #include "container_utils.h"
 #include "packet_test_utils.h"
 
-std::string get_mac(std::string const &iface);
-
 bool contains_mac_different_from_given(std::string mac,
                                        std::vector<std::string> const &lines);
 
@@ -210,14 +208,10 @@ public:
 
     std::cout << "iface_ips.size() = " << iface_ips.size() << std::endl;
 
-    Ip_neigh_checker const checker;
-
     // check for ips which are currently present
     for (auto const &iface_ip : iface_ips) {
-      // TODO without root privileges ipv6 is not testable
-      if (std::get<1>(iface_ip).family == AF_INET) {
-        CPPUNIT_ASSERT(checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
-      }
+      Ip_neigh_checker const checker{get_mac(std::get<0>(iface_ip))};
+      CPPUNIT_ASSERT(checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
     }
 
     // check for ips which are not present
@@ -246,10 +240,14 @@ public:
               << std::endl;
 
     for (auto const &iface_ip : not_present_ips) {
-      // TODO without root privileges ipv6 is not testable
-      if (std::get<1>(iface_ip).family == AF_INET) {
-        CPPUNIT_ASSERT(!checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
+      std::string tmp_mac;
+      try {
+        tmp_mac = get_mac(std::get<0>(iface_ip));
+      } catch (std::exception const &e) {
+        tmp_mac = "de:ad:be:ef:af:fe";
       }
+      Ip_neigh_checker const checker{tmp_mac};
+      CPPUNIT_ASSERT(!checker(std::get<0>(iface_ip), std::get<1>(iface_ip)));
     }
   }
 
