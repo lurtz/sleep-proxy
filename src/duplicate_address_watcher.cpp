@@ -83,7 +83,7 @@ bool Ip_neigh_checker::is_ipv6_present(std::string const &iface,
 
   ndisc6_output->delete_content();
   const pid_t pid = spawn(cmd_ipv6_tmp, "/dev/null", *ndisc6_output);
-  const uint8_t status = wait_until_pid_exits(pid);
+  wait_until_pid_exits(pid);
 
   // if there are more than one line, there must be another host
   // one line is this programm/node
