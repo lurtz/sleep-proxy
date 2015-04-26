@@ -58,4 +58,5 @@ bool file_exists(const std::string &filename);
 
 File_descriptor get_tmp_file(std::string const &filename);
 
-std::tuple<File_descriptor, File_descriptor> get_self_pipes();
+std::tuple<File_descriptor, File_descriptor>
+get_self_pipes(bool const close_on_exec = true);

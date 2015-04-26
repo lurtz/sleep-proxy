@@ -30,9 +30,19 @@ File_descriptor::File_descriptor(char const *str)
     : File_descriptor(std::string(str)) {}
 
 File_descriptor::File_descriptor(std::string name)
-    : File_descriptor(open(name.c_str(), O_CREAT | O_RDWR,
-                           S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH),
-                      name, !file_exists(name)) {}
+    : filename{std::move(name)}, delete_on_close{!file_exists(filename)} {
+  if (!filename.empty()) {
+    fd = open(filename.c_str(), O_CREAT | O_RDWR,
+              S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if (-1 == fd) {
+      throw std::runtime_error(std::string("File_descriptor::open() failed: ") +
+                               strerror(errno));
+    }
+  } else {
+    fd = -1;
+    delete_on_close = false;
+  }
+}
 
 File_descriptor::File_descriptor(const int fdd, std::string name,
                                  bool delete_on_closee)
@@ -201,15 +211,19 @@ File_descriptor get_tmp_file(std::string const &filename) {
   return File_descriptor{raw_fd, modifiable_string.data()};
 }
 
-std::tuple<File_descriptor, File_descriptor> get_self_pipes() {
+std::tuple<File_descriptor, File_descriptor>
+get_self_pipes(bool const close_on_exec) {
   int pipefds[2];
   if (pipe(pipefds)) {
     throw std::runtime_error(std::string("pipe() failed: ") + strerror(errno));
   }
   File_descriptor p0{pipefds[0], "selfpipe0", false};
   File_descriptor p1{pipefds[1], "selfpipe1", false};
-  if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC)) {
-    throw std::runtime_error(std::string("fcntl() failed: ") + strerror(errno));
+  if (close_on_exec) {
+    if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC)) {
+      throw std::runtime_error(std::string("fcntl() failed: ") +
+                               strerror(errno));
+    }
   }
 
   return std::make_tuple(std::move(p0), std::move(p1));

@@ -113,14 +113,14 @@ public:
   }
 
   void test_direct_output_to_self_pipes() {
-    /*
-    auto self_pipes = get_self_pipes();
-    std::vector<std::string> const cmd{get_path("echo"), "blablabla"};
-    pid_t const pid = spawn(cmd, "/dev/null", std::get<0>(self_pipes));
+    auto const self_pipes = get_self_pipes(false);
+    std::vector<std::string> const cmd{get_path("echo"), "blablabla12"};
+    pid_t const pid = spawn(cmd, "/dev/null", std::get<1>(self_pipes));
     uint8_t const status = wait_until_pid_exits(pid);
-    CPPUNIT_ASSERT_EQUAL(std::string("blablabla"),
-                         std::get<1>(self_pipes).get_content().at(0));
-    */
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
+    auto const content = std::get<0>(self_pipes).read();
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), content.size());
+    CPPUNIT_ASSERT_EQUAL(std::string("blablabla12"), content.at(0));
   }
 };
 

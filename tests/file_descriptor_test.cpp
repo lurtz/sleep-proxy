@@ -19,13 +19,42 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "file_descriptor.h"
 #include "to_string.h"
 #include "spawn_process.h"
 #include <container_utils.h>
 
-void remap_file_descriptor(File_descriptor const &fd, FILE *const stream);
+int duplicate_file_descriptors(int const from, int const to);
+int get_fd_from_stream(FILE *const stream);
+
+int dup_exception(int const fd) {
+  auto const new_fd = dup(fd);
+  if (new_fd == -1) {
+    throw std::runtime_error(std::string() + strerror(errno));
+  }
+  return new_fd;
+}
+
+struct Tmp_fd_remap {
+  int const m_previous_fd;
+  int const m_to_fd;
+
+  Tmp_fd_remap(int const from_fd, int const to_fd)
+      : m_previous_fd{dup_exception(to_fd)}, m_to_fd{to_fd} {
+    duplicate_file_descriptors(from_fd, m_to_fd);
+  }
+
+  ~Tmp_fd_remap() {
+    try {
+      duplicate_file_descriptors(m_previous_fd, m_to_fd);
+    } catch (std::exception const &e) {
+      std::cout << "Tmp_fd_remap::~Tmp_fd_remap() caught exception: "
+                << e.what() << std::endl;
+    }
+  }
+};
 
 class File_descriptor_test : public CppUnit::TestFixture {
   std::string const filename = "fdclosetestfile";
@@ -44,6 +73,7 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_get_self_pipes);
   CPPUNIT_TEST(test_fd_read_file);
   CPPUNIT_TEST(test_fd_read_from_self_pipe);
+  CPPUNIT_TEST(test_fd_self_pipe_without_close_on_exec);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -70,6 +100,11 @@ public:
   }
 
   void test_fd_constructor_open() {
+    {
+      File_descriptor fd("");
+      CPPUNIT_ASSERT(0 > fd.fd);
+      CPPUNIT_ASSERT(!fd.delete_on_close);
+    }
     { File_descriptor fd("/dev/null"); }
     File_descriptor fd1(filename);
     std::ofstream ofs(filename);
@@ -197,12 +232,16 @@ public:
   }
 
   void test_fd_self_pipes_as_stdout() {
-    //    auto self_pipes = get_self_pipes();
-    //    remap_file_descriptor(std::get<0>(self_pipes), stdout);
-    //    printf("blabla");
-    //    std::cout << "blabla" << std::endl;
-    //    auto lines = std::get<1>(self_pipes).get_content();
-    //    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), lines.size());
+    auto self_pipes = get_self_pipes();
+    {
+      Tmp_fd_remap const fd_remap{std::get<1>(self_pipes),
+                                  get_fd_from_stream(stdout)};
+      printf("blabla");
+      std::cout << "rumsbums" << std::endl;
+    }
+    auto lines = std::get<0>(self_pipes).read();
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), lines.size());
+    CPPUNIT_ASSERT_EQUAL(std::string("blablarumsbums"), lines.at(0));
   }
 
   void test_get_self_pipes() {
@@ -255,6 +294,19 @@ public:
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), data.size());
     CPPUNIT_ASSERT_EQUAL(std::string("testdata"), data.at(0));
     CPPUNIT_ASSERT_EQUAL(std::string("testdata2"), data.at(1));
+  }
+
+  void test_fd_self_pipe_without_close_on_exec() {
+    {
+      auto const out_in = get_self_pipes();
+      int const mode = fcntl(std::get<1>(out_in), F_GETFD);
+      CPPUNIT_ASSERT(mode & FD_CLOEXEC);
+    }
+    {
+      auto const out_in = get_self_pipes(false);
+      int const mode = fcntl(std::get<1>(out_in), F_GETFD);
+      CPPUNIT_ASSERT(!(mode & FD_CLOEXEC));
+    }
   }
 };
 
