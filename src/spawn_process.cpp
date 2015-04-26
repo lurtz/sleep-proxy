@@ -23,7 +23,6 @@
 #include <cstdlib>
 #include <cerrno>
 #include <tuple>
-#include <sys/stat.h>
 #include <stdexcept>
 
 uint8_t wait_until_pid_exits(const pid_t &pid) {
@@ -83,20 +82,6 @@ File_descriptor const &IO_remap_params::get_file_descriptor() const {
     throw std::runtime_error("file descriptor is null");
   }
   return *file_descriptor;
-}
-
-std::tuple<File_descriptor, File_descriptor> get_self_pipes() {
-  int pipefds[2];
-  if (pipe(pipefds)) {
-    throw std::runtime_error(std::string("pipe() failed: ") + strerror(errno));
-  }
-  File_descriptor p0{pipefds[0], "selfpipe0", false};
-  File_descriptor p1{pipefds[1], "selfpipe1", false};
-  if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC)) {
-    throw std::runtime_error(std::string("fcntl() failed: ") + strerror(errno));
-  }
-
-  return std::make_tuple(std::move(p0), std::move(p1));
 }
 
 void freopen_with_exception(const std::string &path, const std::string &mode,
@@ -187,14 +172,6 @@ pid_t fork_exec_pipes(const std::vector<const char *> &command,
   }
   }
   return child;
-}
-
-bool file_exists(const std::string &filename) {
-  struct stat stats;
-  const auto errno_save = errno;
-  bool ret_val = stat(filename.c_str(), &stats) == 0;
-  errno = errno_save;
-  return ret_val;
 }
 
 const std::array<std::string, 4> paths{

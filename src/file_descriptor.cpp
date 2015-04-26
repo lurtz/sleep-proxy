@@ -21,7 +21,18 @@
 #include <cstring>
 #include <iostream>
 #include <cerrno>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <poll.h>
 #include "container_utils.h"
+
+File_descriptor::File_descriptor(char const *str)
+    : File_descriptor(std::string(str)) {}
+
+File_descriptor::File_descriptor(std::string name)
+    : File_descriptor(open(name.c_str(), O_CREAT | O_RDWR,
+                           S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH),
+                      name, !file_exists(name)) {}
 
 File_descriptor::File_descriptor(const int fdd, std::string name,
                                  bool delete_on_closee)
@@ -58,7 +69,7 @@ void unlink_with_exception(std::string const &filename) {
   int const status = unlink(filename.c_str());
   if (status) {
     throw std::runtime_error(std::string("unlinking file ") + filename +
-                             "failed: " + strerror(errno));
+                             " failed: " + strerror(errno));
   }
 }
 
@@ -113,6 +124,19 @@ std::vector<uint8_t> pread_exception(int const fildes, size_t length,
   return data;
 }
 
+auto const byte_vector_to_string = [](std::vector<uint8_t> const &v) {
+  return std::string(std::begin(v), std::end(v));
+};
+
+std::vector<std::string>
+byte_vector_to_strings(std::vector<uint8_t> const &data) {
+  std::vector<std::vector<uint8_t>> const splitted_data = split(data, '\n');
+  std::vector<std::string> lines(splitted_data.size());
+  std::transform(std::begin(splitted_data), std::end(splitted_data),
+                 std::begin(lines), byte_vector_to_string);
+  return lines;
+}
+
 std::vector<std::string> File_descriptor::get_content() const {
   off_t const current_pos = fseek_exception(fd, 0, SEEK_CUR);
   off_t const last_pos = fseek_exception(fd, 0, SEEK_END);
@@ -120,14 +144,47 @@ std::vector<std::string> File_descriptor::get_content() const {
 
   std::vector<uint8_t> const data =
       pread_exception(fd, static_cast<size_t>(last_pos), 0);
-  std::vector<std::vector<uint8_t>> const splitted_data = split(data, '\n');
+  return byte_vector_to_strings(data);
+}
 
-  std::vector<std::string> lines(splitted_data.size());
-  std::transform(std::begin(splitted_data), std::end(splitted_data),
-                 std::begin(lines), [](std::vector<uint8_t> const &v) {
-    return std::string(std::begin(v), std::end(v));
-  });
-  return lines;
+bool is_data_ready_to_read(int const fd) {
+  pollfd fds{fd, POLLIN, 0};
+
+  int retval = poll(&fds, 1, 0);
+
+  if (-1 == retval) {
+    throw std::runtime_error(std::string("File_descriptor::poll() failed: ") +
+                             strerror(errno));
+  }
+
+  return retval != 0;
+}
+
+std::vector<std::string> File_descriptor::read() const {
+  std::vector<uint8_t> complete_data;
+
+  ssize_t read_bytes{-1};
+  while (is_data_ready_to_read(fd) && read_bytes != 0) {
+    std::vector<uint8_t> data(100);
+    read_bytes = ::read(fd, data.data(), data.size());
+    if (read_bytes == -1) {
+      throw std::runtime_error(std::string("File_descriptor::read() failed: ") +
+                               strerror(errno));
+    }
+    data.resize(static_cast<size_t>(read_bytes));
+    complete_data.insert(std::end(complete_data), std::begin(data),
+                         std::end(data));
+  }
+
+  return byte_vector_to_strings(complete_data);
+}
+
+bool file_exists(const std::string &filename) {
+  struct stat stats;
+  const auto errno_save = errno;
+  bool ret_val = stat(filename.c_str(), &stats) == 0;
+  errno = errno_save;
+  return ret_val;
 }
 
 File_descriptor get_tmp_file(std::string const &filename) {
@@ -142,4 +199,18 @@ File_descriptor get_tmp_file(std::string const &filename) {
   }
 
   return File_descriptor{raw_fd, modifiable_string.data()};
+}
+
+std::tuple<File_descriptor, File_descriptor> get_self_pipes() {
+  int pipefds[2];
+  if (pipe(pipefds)) {
+    throw std::runtime_error(std::string("pipe() failed: ") + strerror(errno));
+  }
+  File_descriptor p0{pipefds[0], "selfpipe0", false};
+  File_descriptor p1{pipefds[1], "selfpipe1", false};
+  if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC)) {
+    throw std::runtime_error(std::string("fcntl() failed: ") + strerror(errno));
+  }
+
+  return std::make_tuple(std::move(p0), std::move(p1));
 }

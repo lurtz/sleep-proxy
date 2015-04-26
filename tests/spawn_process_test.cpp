@@ -17,6 +17,8 @@
 #include "main.h"
 #include <string>
 #include <thread>
+#include <unistd.h>
+#include <string.h>
 
 #include "spawn_process.h"
 
@@ -25,8 +27,8 @@ class Spawn_process_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_fork_exec);
   CPPUNIT_TEST(test_direct_output_to_file);
   CPPUNIT_TEST(test_direct_output_to_tmp_file);
-  CPPUNIT_TEST(test_file_exists);
   CPPUNIT_TEST(test_get_path);
+  CPPUNIT_TEST(test_direct_output_to_self_pipes);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -103,18 +105,22 @@ public:
     CPPUNIT_ASSERT(!std::getline(read_file, line));
   }
 
-  void test_file_exists() {
-    CPPUNIT_ASSERT(file_exists("/dev"));
-    CPPUNIT_ASSERT(file_exists("/dev/null"));
-    CPPUNIT_ASSERT(file_exists("/etc/fstab"));
-    CPPUNIT_ASSERT(!file_exists("/dev/nullfdasfdsafdsafdsa"));
-  }
-
   void test_get_path() {
     CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip"), get_path("ip"));
     CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables"), get_path("iptables"));
     CPPUNIT_ASSERT_EQUAL(std::string("/bin/sh"), get_path("sh"));
     CPPUNIT_ASSERT_EQUAL(std::string("/usr/bin/make"), get_path("make"));
+  }
+
+  void test_direct_output_to_self_pipes() {
+    /*
+    auto self_pipes = get_self_pipes();
+    std::vector<std::string> const cmd{get_path("echo"), "blablabla"};
+    pid_t const pid = spawn(cmd, "/dev/null", std::get<0>(self_pipes));
+    uint8_t const status = wait_until_pid_exits(pid);
+    CPPUNIT_ASSERT_EQUAL(std::string("blablabla"),
+                         std::get<1>(self_pipes).get_content().at(0));
+    */
   }
 };
 

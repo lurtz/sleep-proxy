@@ -18,11 +18,16 @@
 
 #include <string>
 #include <vector>
+#include <tuple>
 
 struct File_descriptor {
   int fd;
   std::string filename;
   bool delete_on_close;
+
+  File_descriptor(char const *str);
+
+  File_descriptor(std::string name);
 
   File_descriptor(const int fdd, std::string name,
                   bool delete_on_closee = true);
@@ -43,7 +48,14 @@ struct File_descriptor {
 
   void delete_content() const;
 
+  // should be replaced by read
   std::vector<std::string> get_content() const;
+
+  std::vector<std::string> read() const;
 };
 
+bool file_exists(const std::string &filename);
+
 File_descriptor get_tmp_file(std::string const &filename);
+
+std::tuple<File_descriptor, File_descriptor> get_self_pipes();

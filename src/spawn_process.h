@@ -67,6 +67,4 @@ pid_t spawn(Container &&cmd, IO_remap_params const &in = IO_remap_params(""),
   return fork_exec_pipes(ch_ptr, in, out);
 }
 
-bool file_exists(const std::string &filename);
-
 std::string get_path(const std::string command);
