@@ -3,6 +3,7 @@
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string.h>
 #include "container_utils.h"
 #include "int_utils.h"
 
@@ -72,13 +73,27 @@ bool operator<(IP_address const &lhs, IP_address const &rhs) {
   return lhs.with_subnet() < rhs.with_subnet();
 }
 
+File_descriptor get_tmp_file(std::string const &filename) {
+  std::string const path = std::string(P_tmpdir) + '/' + filename;
+  std::vector<char> modifiable_string(path.size() + 1, '\0');
+  std::copy(std::begin(path), std::end(path), std::begin(modifiable_string));
+
+  int const raw_fd = mkstemp(modifiable_string.data());
+  if (raw_fd == -1) {
+    throw std::runtime_error(std::string("failed to create temporary file: ") +
+                             strerror(errno));
+  }
+
+  return File_descriptor{raw_fd, modifiable_string.data()};
+}
+
 std::vector<std::string> get_ip_neigh_output() {
-  File_descriptor const ip_neigh_output = get_tmp_file("ip_neigh_outputXXXXXX");
+  auto const out_in = get_self_pipes(false);
   std::vector<std::string> const cmd{get_path("ip"), "neigh"};
-  pid_t const pid = spawn(cmd, "/dev/null", ip_neigh_output);
+  pid_t const pid = spawn(cmd, "/dev/null", std::get<1>(out_in));
   const uint8_t status = wait_until_pid_exits(pid);
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-  return ip_neigh_output.get_content();
+  return std::get<0>(out_in).read();
 }
 
 Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content) {

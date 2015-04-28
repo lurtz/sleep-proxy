@@ -46,17 +46,10 @@ struct File_descriptor {
 
   void close();
 
-  void delete_content() const;
-
-  // should be replaced by read
-  std::vector<std::string> get_content() const;
-
   std::vector<std::string> read() const;
 };
 
 bool file_exists(const std::string &filename);
-
-File_descriptor get_tmp_file(std::string const &filename);
 
 std::tuple<File_descriptor, File_descriptor>
 get_self_pipes(bool const close_on_exec = true);

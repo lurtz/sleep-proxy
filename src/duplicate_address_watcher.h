@@ -32,7 +32,6 @@ typedef std::function<bool(std::string const &, IP_address const &)>
 
 struct Ip_neigh_checker {
   std::string const this_nodes_mac;
-  std::shared_ptr<File_descriptor> const ndisc6_output;
   std::vector<std::string> const cmd_ipv4;
   std::vector<std::string> const cmd_ipv6;
 

@@ -21,15 +21,16 @@
 #include <cctype>
 
 std::string get_mac(std::string const &iface) {
-  auto cmd = split(get_path("ip") + " a show dev " + iface, ' ');
-  auto fd = get_tmp_file("ip_a_show_dev_outputXXXXXX");
-  pid_t const pid = spawn(cmd, "/dev/null", fd);
+  auto const cmd = split(get_path("ip") + " a show dev " + iface, ' ');
+  auto const out_in = get_self_pipes(false);
+  pid_t const pid = spawn(cmd, "/dev/null", std::get<1>(out_in));
   uint8_t const status = wait_until_pid_exits(pid);
   if (status != 0) {
     throw std::runtime_error(std::string("get_mac(): ip a show dev ") + iface +
                              " did not succeed");
   }
-  auto const line = fd.get_content().at(1);
+  auto const lines = std::get<0>(out_in).read();
+  auto const line = lines.at(1);
   auto const splitted_line = split(line, ' ');
   return splitted_line.at(5);
 }
@@ -51,8 +52,6 @@ bool contains_mac_different_from_given(std::string mac,
 
 Ip_neigh_checker::Ip_neigh_checker(std::string mac)
     : this_nodes_mac{std::move(mac)},
-      ndisc6_output{std::make_shared<File_descriptor>(
-          get_tmp_file("ndisc6_outputXXXXXX"))},
       cmd_ipv4{get_path("arping"), "-q", "-D", "-c", "1", "-I"},
       cmd_ipv6{get_path("ndisc6"), "-q", "-n", "-m"} {}
 
@@ -81,14 +80,15 @@ bool Ip_neigh_checker::is_ipv6_present(std::string const &iface,
   cmd_ipv6_tmp.push_back(ip.pure());
   cmd_ipv6_tmp.push_back(iface);
 
-  ndisc6_output->delete_content();
-  const pid_t pid = spawn(cmd_ipv6_tmp, "/dev/null", *ndisc6_output);
+  auto const out_in = get_self_pipes(false);
+
+  const pid_t pid = spawn(cmd_ipv6_tmp, "/dev/null", std::get<1>(out_in));
   wait_until_pid_exits(pid);
 
   // if there are more than one line, there must be another host
   // one line is this programm/node
   return contains_mac_different_from_given(this_nodes_mac,
-                                           ndisc6_output->get_content());
+                                           std::get<0>(out_in).read());
 }
 
 bool Ip_neigh_checker::operator()(std::string const &iface,

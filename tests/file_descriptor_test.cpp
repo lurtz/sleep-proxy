@@ -25,6 +25,7 @@
 #include "to_string.h"
 #include "spawn_process.h"
 #include <container_utils.h>
+#include "packet_test_utils.h"
 
 int duplicate_file_descriptors(int const from, int const to);
 int get_fd_from_stream(FILE *const stream);
@@ -35,6 +36,12 @@ int dup_exception(int const fd) {
     throw std::runtime_error(std::string() + strerror(errno));
   }
   return new_fd;
+}
+
+void write(File_descriptor const &fd, std::string const &text) {
+  ssize_t const written_bytes = ::write(fd, text.c_str(), text.size());
+  CPPUNIT_ASSERT(-1 != written_bytes);
+  CPPUNIT_ASSERT_EQUAL(text.size(), static_cast<size_t>(written_bytes));
 }
 
 struct Tmp_fd_remap {
@@ -67,8 +74,6 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_file_exists);
   CPPUNIT_TEST(test_fd_close);
   CPPUNIT_TEST(test_fd_delete_on_close);
-  CPPUNIT_TEST(test_fd_delete_content);
-  CPPUNIT_TEST(test_fd_get_content);
   CPPUNIT_TEST(test_fd_self_pipes_as_stdout);
   CPPUNIT_TEST(test_get_self_pipes);
   CPPUNIT_TEST(test_fd_read_file);
@@ -93,12 +98,6 @@ public:
                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   }
 
-  void write(File_descriptor const &fd, std::string const &text) {
-    ssize_t const written_bytes = ::write(fd, text.c_str(), text.size());
-    CPPUNIT_ASSERT(-1 != written_bytes);
-    CPPUNIT_ASSERT_EQUAL(text.size(), static_cast<size_t>(written_bytes));
-  }
-
   void test_fd_constructor_open() {
     {
       File_descriptor fd("");
@@ -109,7 +108,7 @@ public:
     File_descriptor fd1(filename);
     std::ofstream ofs(filename);
     ofs << "blabla" << std::endl;
-    auto const content = fd1.get_content();
+    auto const content = fd1.read();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), content.size());
     CPPUNIT_ASSERT_EQUAL(std::string("blabla"), content.at(0));
   }
@@ -166,69 +165,6 @@ public:
     fd.close();
     CPPUNIT_ASSERT_EQUAL(-1, fcntl(fd, F_GETFD));
     CPPUNIT_ASSERT(file_exists(filename));
-  }
-
-  void test_fd_delete_content() {
-    File_descriptor const fd{get_tmp_file("test_fd_delete_contentXXXXXX")};
-
-    // write some stuff and check that it is present
-    {
-      write(fd, "testdata");
-      std::ifstream ifs(fd.filename);
-      std::string line;
-      CPPUNIT_ASSERT(std::getline(ifs, line));
-      CPPUNIT_ASSERT_EQUAL(std::string("testdata"), line);
-    }
-
-    fd.delete_content();
-
-    // check that everything is deleted
-    {
-      std::ifstream ifs(fd.filename,
-                        std::ifstream::ate | std::ifstream::binary);
-      CPPUNIT_ASSERT(0 == ifs.tellg());
-    }
-
-    // writing to file descriptor again
-    for (uint8_t i = 0; i < 3; i++) {
-      auto const pid =
-          spawn(split(std::string(get_path("echo") + " blabla"), ' '),
-                "/dev/null", fd);
-      auto const status = wait_until_pid_exits(pid);
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-    }
-
-    {
-      std::ifstream ifs(fd.filename);
-      std::string line;
-      CPPUNIT_ASSERT(std::getline(ifs, line));
-      CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
-      CPPUNIT_ASSERT(std::getline(ifs, line));
-      CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
-      CPPUNIT_ASSERT(std::getline(ifs, line));
-      CPPUNIT_ASSERT_EQUAL(std::string("blabla"), line);
-      CPPUNIT_ASSERT(!std::getline(ifs, line));
-    }
-  }
-
-  void test_fd_get_content() {
-    File_descriptor const fd{get_tmp_file("test_fd_get_contentXXXXXX")};
-    write(fd, "testdata");
-    write(fd, "\n");
-    write(fd, "testdata2");
-
-    std::vector<std::string> lines = fd.get_content();
-
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), lines.size());
-    CPPUNIT_ASSERT_EQUAL(std::string("testdata"), lines.at(0));
-    CPPUNIT_ASSERT_EQUAL(std::string("testdata2"), lines.at(1));
-
-    write(fd, "\n");
-    lines = fd.get_content();
-
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), lines.size());
-    CPPUNIT_ASSERT_EQUAL(std::string("testdata"), lines.at(0));
-    CPPUNIT_ASSERT_EQUAL(std::string("testdata2"), lines.at(1));
   }
 
   void test_fd_self_pipes_as_stdout() {

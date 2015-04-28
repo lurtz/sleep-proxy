@@ -19,6 +19,7 @@
 #include <thread>
 #include <unistd.h>
 #include <string.h>
+#include "packet_test_utils.h"
 
 #include "spawn_process.h"
 

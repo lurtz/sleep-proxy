@@ -99,41 +99,6 @@ void File_descriptor::close() {
   }
 }
 
-off_t fseek_exception(int const fildes, off_t const offset, int const whence) {
-  off_t const status = lseek(fildes, offset, whence);
-
-  if (status == -1) {
-    throw std::runtime_error(std::string("File_descriptor::fseek() failed: ") +
-                             strerror(errno));
-  }
-
-  return status;
-}
-
-void File_descriptor::delete_content() const {
-  auto const status = ftruncate(fd, 0);
-  fseek_exception(fd, 0, SEEK_SET);
-  if (status < 0) {
-    throw std::runtime_error(
-        std::string("File_descriptor::delete_content() failed: ") +
-        strerror(errno));
-  }
-}
-
-std::vector<uint8_t> pread_exception(int const fildes, size_t length,
-                                     off_t const offset) {
-  std::vector<uint8_t> data(length, 0);
-  ssize_t read_bytes = pread(fildes, data.data(), data.size(), offset);
-
-  if (read_bytes == -1) {
-    throw std::runtime_error(std::string("File_descriptor::pread() failed: ") +
-                             strerror(errno));
-  }
-
-  data.resize(static_cast<std::vector<uint8_t>::size_type>(read_bytes));
-  return data;
-}
-
 auto const byte_vector_to_string = [](std::vector<uint8_t> const &v) {
   return std::string(std::begin(v), std::end(v));
 };
@@ -145,16 +110,6 @@ byte_vector_to_strings(std::vector<uint8_t> const &data) {
   std::transform(std::begin(splitted_data), std::end(splitted_data),
                  std::begin(lines), byte_vector_to_string);
   return lines;
-}
-
-std::vector<std::string> File_descriptor::get_content() const {
-  off_t const current_pos = fseek_exception(fd, 0, SEEK_CUR);
-  off_t const last_pos = fseek_exception(fd, 0, SEEK_END);
-  fseek_exception(fd, current_pos, SEEK_SET);
-
-  std::vector<uint8_t> const data =
-      pread_exception(fd, static_cast<size_t>(last_pos), 0);
-  return byte_vector_to_strings(data);
 }
 
 bool is_data_ready_to_read(int const fd) {
@@ -195,20 +150,6 @@ bool file_exists(const std::string &filename) {
   bool ret_val = stat(filename.c_str(), &stats) == 0;
   errno = errno_save;
   return ret_val;
-}
-
-File_descriptor get_tmp_file(std::string const &filename) {
-  std::string const path = std::string(P_tmpdir) + '/' + filename;
-  std::vector<char> modifiable_string(path.size() + 1, '\0');
-  std::copy(std::begin(path), std::end(path), std::begin(modifiable_string));
-
-  int const raw_fd = mkstemp(modifiable_string.data());
-  if (raw_fd == -1) {
-    throw std::runtime_error(std::string("failed to create temporary file: ") +
-                             strerror(errno));
-  }
-
-  return File_descriptor{raw_fd, modifiable_string.data()};
 }
 
 std::tuple<File_descriptor, File_descriptor>
