@@ -40,61 +40,6 @@ uint8_t wait_until_pid_exits(const pid_t &pid) {
   return WEXITSTATUS(status);
 }
 
-IO_remap_params::IO_remap_params(char const *p) : type(PATH), path(p) {}
-
-IO_remap_params::IO_remap_params(std::string p)
-    : type(PATH), path(std::move(p)) {}
-
-IO_remap_params::IO_remap_params(File_descriptor const &fd)
-    : type(FILE_DESCRIPTOR), file_descriptor(&fd) {}
-
-IO_remap_params::~IO_remap_params() {}
-
-IO_remap_params &IO_remap_params::operator=(IO_remap_params &&rhs) {
-  type = rhs.type;
-  switch (type) {
-  case PATH:
-    path = std::move(rhs.path);
-    break;
-  case FILE_DESCRIPTOR:
-    file_descriptor = std::move(rhs.file_descriptor);
-    break;
-  }
-  return *this;
-}
-
-IO_remap_params::Type IO_remap_params::get_type() const { return type; }
-
-std::string const &IO_remap_params::get_path() const {
-  if (type != PATH) {
-    throw std::runtime_error(
-        "requested path from IO_remap_params, but no path saved");
-  }
-  return path;
-}
-
-File_descriptor const &IO_remap_params::get_file_descriptor() const {
-  if (type != FILE_DESCRIPTOR) {
-    throw std::runtime_error("requested File_descriptor from IO_remap_params, "
-                             "but no File_descriptor saved");
-  }
-  if (nullptr == file_descriptor) {
-    throw std::runtime_error("file descriptor is null");
-  }
-  return *file_descriptor;
-}
-
-void freopen_with_exception(const std::string &path, const std::string &mode,
-                            FILE *stream) {
-  if (path.empty())
-    return;
-  if (freopen(path.c_str(), mode.c_str(), stream) == nullptr) {
-    throw std::runtime_error(
-        std::string("freopen(" + path + ", " + mode + ", ...) failed: ") +
-        strerror(errno));
-  }
-}
-
 int get_fd_from_stream(FILE *const stream) {
   int const fd = fileno(stream);
   if (-1 == fd) {
@@ -122,25 +67,16 @@ int duplicate_file_descriptors(int const from, int const to) {
 }
 
 void remap_file_descriptor(File_descriptor const &fd, FILE *const stream) {
+  if (fd < 0) {
+    return;
+  }
   flush_file(stream);
   int const old_fd = get_fd_from_stream(stream);
   duplicate_file_descriptors(fd, old_fd);
 }
 
-void io_remap(IO_remap_params const &params, std::string const &mode,
-              FILE *const stream) {
-  switch (params.get_type()) {
-  case IO_remap_params::PATH:
-    freopen_with_exception(params.get_path(), mode, stream);
-    break;
-  case IO_remap_params::FILE_DESCRIPTOR:
-    remap_file_descriptor(params.get_file_descriptor(), stream);
-    break;
-  }
-}
-
 pid_t fork_exec_pipes(const std::vector<const char *> &command,
-                      IO_remap_params const &in, IO_remap_params const &out) {
+                      File_descriptor const &in, File_descriptor const &out) {
   std::tuple<File_descriptor, File_descriptor> pipes = get_self_pipes();
 
   pid_t child = fork();
@@ -150,18 +86,18 @@ pid_t fork_exec_pipes(const std::vector<const char *> &command,
                              strerror(errno));
   case 0:
     // child
-    io_remap(in, "a", stdin);
-    io_remap(out, "a", stdout);
+    remap_file_descriptor(in, stdin);
+    remap_file_descriptor(out, stdout);
     std::get<0>(pipes).close();
     execv(command.at(0), const_cast<char **>(command.data()));
-    write(std::get<1>(pipes).fd, &errno, sizeof(int));
+    write(std::get<1>(pipes), &errno, sizeof(int));
     _exit(0);
   default: {
     // parent
     std::get<1>(pipes).close();
     ssize_t count;
     int err;
-    while ((count = read(std::get<0>(pipes).fd, &err, sizeof(err))) == -1 &&
+    while ((count = read(std::get<0>(pipes), &err, sizeof(err))) == -1 &&
            (errno == EAGAIN || errno == EINTR))
       ;
     std::get<0>(pipes).close();

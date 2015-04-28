@@ -76,17 +76,32 @@ public:
     std::string const filename{"/tmp/blublub"};
     CPPUNIT_ASSERT(!file_exists(filename));
 
-    std::vector<std::string> const cmd{get_path("ip"), "neigh"};
+    // create file
+    { std::ofstream ofs(filename); }
+    CPPUNIT_ASSERT(file_exists(filename));
+
+    // write neigh into file
+    std::vector<std::string> const cmd{get_path("echo"), "neigh"};
     pid_t pid = spawn(cmd, "/dev/null", filename);
     uint8_t status = wait_until_pid_exits(pid);
     CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-    CPPUNIT_ASSERT(file_exists("/tmp/blublub"));
+    CPPUNIT_ASSERT(file_exists(filename));
 
+    // read and verify it
+    {
+      std::ifstream ifs(filename);
+      std::string line;
+      CPPUNIT_ASSERT(std::getline(ifs, line));
+      CPPUNIT_ASSERT_EQUAL(std::string("neigh"), line);
+      CPPUNIT_ASSERT(!std::getline(ifs, line));
+    }
+
+    // delete it
     std::vector<std::string> const clean{get_path("rm"), filename};
     pid = spawn(clean);
     status = wait_until_pid_exits(pid);
     CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-    CPPUNIT_ASSERT(!file_exists("/tmp/blublub"));
+    CPPUNIT_ASSERT(!file_exists(filename));
   }
 
   void test_direct_output_to_tmp_file() {
