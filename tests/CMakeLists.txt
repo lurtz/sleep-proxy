@@ -32,7 +32,7 @@ function(make_test name)
         target_link_libraries(${name} ${CPPUNIT_LIBRARIES} ${ARGV1} ${ARGV2})
         add_test(${name} ${name})
         if (VALGRIND_PROGRAM)
-                add_test(${name}-valgrind ${VALGRIND_PROGRAM} --leak-check=yes --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp --error-exitcode=9001 ./${name})
+                add_test(${name}_valgrind ${VALGRIND_PROGRAM} --leak-check=yes --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp --error-exitcode=9001 ./${name})
         endif (VALGRIND_PROGRAM)
 endfunction(make_test)
 
