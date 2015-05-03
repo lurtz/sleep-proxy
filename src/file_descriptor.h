@@ -47,9 +47,17 @@ struct File_descriptor {
   void close();
 
   std::vector<std::string> read() const;
+
+  void remap(FILE *const stream) const;
 };
 
 bool file_exists(const std::string &filename);
 
 std::tuple<File_descriptor, File_descriptor>
 get_self_pipes(bool const close_on_exec = true);
+
+int get_fd_from_stream(FILE *const stream);
+
+void flush_file(FILE *const stream);
+
+int duplicate_file_descriptors(int const from, int const to);

@@ -27,42 +27,6 @@
 #include <container_utils.h>
 #include "packet_test_utils.h"
 
-int duplicate_file_descriptors(int const from, int const to);
-int get_fd_from_stream(FILE *const stream);
-
-int dup_exception(int const fd) {
-  auto const new_fd = dup(fd);
-  if (new_fd == -1) {
-    throw std::runtime_error(std::string() + strerror(errno));
-  }
-  return new_fd;
-}
-
-void write(File_descriptor const &fd, std::string const &text) {
-  ssize_t const written_bytes = ::write(fd, text.c_str(), text.size());
-  CPPUNIT_ASSERT(-1 != written_bytes);
-  CPPUNIT_ASSERT_EQUAL(text.size(), static_cast<size_t>(written_bytes));
-}
-
-struct Tmp_fd_remap {
-  int const m_previous_fd;
-  int const m_to_fd;
-
-  Tmp_fd_remap(int const from_fd, int const to_fd)
-      : m_previous_fd{dup_exception(to_fd)}, m_to_fd{to_fd} {
-    duplicate_file_descriptors(from_fd, m_to_fd);
-  }
-
-  ~Tmp_fd_remap() {
-    try {
-      duplicate_file_descriptors(m_previous_fd, m_to_fd);
-    } catch (std::exception const &e) {
-      std::cout << "Tmp_fd_remap::~Tmp_fd_remap() caught exception: "
-                << e.what() << std::endl;
-    }
-  }
-};
-
 class File_descriptor_test : public CppUnit::TestFixture {
   std::string const filename = "fdclosetestfile";
 

@@ -18,12 +18,9 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdexcept>
-#include <fcntl.h>
 #include <cstring>
 #include <cstdlib>
 #include <cerrno>
-#include <tuple>
-#include <stdexcept>
 
 uint8_t wait_until_pid_exits(const pid_t &pid) {
   int status;
@@ -40,41 +37,6 @@ uint8_t wait_until_pid_exits(const pid_t &pid) {
   return WEXITSTATUS(status);
 }
 
-int get_fd_from_stream(FILE *const stream) {
-  int const fd = fileno(stream);
-  if (-1 == fd) {
-    throw std::runtime_error(
-        std::string("could not get file descriptor of file: ") +
-        strerror(errno));
-  }
-  return fd;
-}
-
-void flush_file(FILE *const stream) {
-  if (fflush(stream)) {
-    throw std::runtime_error(std::string("could not flush file: ") +
-                             strerror(errno));
-  }
-}
-
-int duplicate_file_descriptors(int const from, int const to) {
-  int const status = dup2(from, to);
-  if (-1 == status) {
-    throw std::runtime_error(std::string("cannot duplicate file descriptor: ") +
-                             strerror(errno));
-  }
-  return status;
-}
-
-void remap_file_descriptor(File_descriptor const &fd, FILE *const stream) {
-  if (fd < 0) {
-    return;
-  }
-  flush_file(stream);
-  int const old_fd = get_fd_from_stream(stream);
-  duplicate_file_descriptors(fd, old_fd);
-}
-
 pid_t fork_exec_pipes(const std::vector<const char *> &command,
                       File_descriptor const &in, File_descriptor const &out) {
   std::tuple<File_descriptor, File_descriptor> pipes = get_self_pipes();
@@ -86,8 +48,8 @@ pid_t fork_exec_pipes(const std::vector<const char *> &command,
                              strerror(errno));
   case 0:
     // child
-    remap_file_descriptor(in, stdin);
-    remap_file_descriptor(out, stdout);
+    in.remap(stdin);
+    out.remap(stdout);
     std::get<0>(pipes).close();
     execv(command.at(0), const_cast<char **>(command.data()));
     write(std::get<1>(pipes), &errno, sizeof(int));

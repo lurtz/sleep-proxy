@@ -144,6 +144,15 @@ std::vector<std::string> File_descriptor::read() const {
   return byte_vector_to_strings(complete_data);
 }
 
+void File_descriptor::remap(FILE *const stream) const {
+  if (fd < 0) {
+    return;
+  }
+  flush_file(stream);
+  int const old_fd = get_fd_from_stream(stream);
+  duplicate_file_descriptors(fd, old_fd);
+}
+
 bool file_exists(const std::string &filename) {
   struct stat stats;
   const auto errno_save = errno;
@@ -168,4 +177,30 @@ get_self_pipes(bool const close_on_exec) {
   }
 
   return std::make_tuple(std::move(p0), std::move(p1));
+}
+
+int get_fd_from_stream(FILE *const stream) {
+  int const fd = fileno(stream);
+  if (-1 == fd) {
+    throw std::runtime_error(
+        std::string("could not get file descriptor of file: ") +
+        strerror(errno));
+  }
+  return fd;
+}
+
+void flush_file(FILE *const stream) {
+  if (fflush(stream)) {
+    throw std::runtime_error(std::string("could not flush file: ") +
+                             strerror(errno));
+  }
+}
+
+int duplicate_file_descriptors(int const from, int const to) {
+  int const status = dup2(from, to);
+  if (-1 == status) {
+    throw std::runtime_error(std::string("cannot duplicate file descriptor: ") +
+                             strerror(errno));
+  }
+  return status;
 }

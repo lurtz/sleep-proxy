@@ -25,6 +25,7 @@
 #include <tuple>
 #include <to_string.h>
 #include <spawn_process.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 std::vector<uint8_t> to_binary(const std::string &hex);
 
@@ -78,3 +79,16 @@ void check_header(Iterator &&iter, End_iter &&end, const unsigned char start,
   check_range(iter, end, start, end_pos);
   CPPUNIT_ASSERT(iter != end);
 }
+
+int dup_exception(int const fd);
+
+void write(File_descriptor const &fd, std::string const &text);
+
+struct Tmp_fd_remap {
+  int const m_previous_fd;
+  int const m_to_fd;
+
+  Tmp_fd_remap(int const from_fd, int const to_fd);
+
+  ~Tmp_fd_remap();
+};

@@ -4,6 +4,7 @@
 #include <cppunit/ui/text/TestRunner.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
+#include <unistd.h>
 #include "container_utils.h"
 #include "int_utils.h"
 
@@ -118,4 +119,32 @@ Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content) {
                  std::begin(iface_ip), create_iface_ip);
 
   return iface_ip;
+}
+
+int dup_exception(int const fd) {
+  auto const new_fd = dup(fd);
+  if (new_fd == -1) {
+    throw std::runtime_error(std::string() + strerror(errno));
+  }
+  return new_fd;
+}
+
+void write(File_descriptor const &fd, std::string const &text) {
+  ssize_t const written_bytes = ::write(fd, text.c_str(), text.size());
+  CPPUNIT_ASSERT(-1 != written_bytes);
+  CPPUNIT_ASSERT_EQUAL(text.size(), static_cast<size_t>(written_bytes));
+}
+
+Tmp_fd_remap::Tmp_fd_remap(int const from_fd, int const to_fd)
+    : m_previous_fd{dup_exception(to_fd)}, m_to_fd{to_fd} {
+  duplicate_file_descriptors(from_fd, m_to_fd);
+}
+
+Tmp_fd_remap::~Tmp_fd_remap() {
+  try {
+    duplicate_file_descriptors(m_previous_fd, m_to_fd);
+  } catch (std::exception const &e) {
+    std::cout << "Tmp_fd_remap::~Tmp_fd_remap() caught exception: " << e.what()
+              << std::endl;
+  }
 }
