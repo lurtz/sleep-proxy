@@ -60,8 +60,8 @@ bool ping_ips(const std::string &iface, const Container &ips) {
 }
 
 void thread_main(const Args args) {
-  bool wake_success = true;
-  while (!is_signaled() && wake_success) {
+  bool loop = true;
+  while (!is_signaled() && loop) {
     log_string(LOG_INFO, "ping " + args.hostname);
     while (ping_ips(args.interface, args.address) && !is_signaled()) {
       std::this_thread::sleep_for(std::chrono::milliseconds(500));
@@ -70,9 +70,9 @@ void thread_main(const Args args) {
       return;
     }
     try {
-      wake_success = emulate_host(args);
-    } catch (const Duplicate_address_exception &e) {
-      log_string(LOG_NOTICE, e.what());
+      Emulate_host_status const status = emulate_host(args);
+      loop = Emulate_host_status::duplicate_address == status ||
+             Emulate_host_status::success == status;
     } catch (const std::exception &e) {
       log(LOG_ERR, "caught exception what(): %s", e.what());
       raise(SIGTERM);

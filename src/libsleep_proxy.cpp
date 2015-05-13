@@ -77,14 +77,6 @@ bool is_signaled() { return signaled; }
 
 void reset_signaled() { signaled = false; }
 
-Duplicate_address_exception::Duplicate_address_exception(
-    const std::string &mess)
-    : message("one of these ips is owned by another machine: " + mess) {}
-
-const char *Duplicate_address_exception::what() const noexcept {
-  return message.c_str();
-}
-
 /**
  * Adds from args the IPs to the machine and setups the firewall
  */
@@ -118,7 +110,8 @@ rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
  * any of the given ports in Args is received. Returns the data, the IP
  * source of the received packet and the destination IP
  */
-std::tuple<std::vector<uint8_t>, IP_address, IP_address>
+std::tuple<Pcap_wrapper::Loop_end_reason, std::vector<uint8_t>, IP_address,
+           IP_address>
 wait_and_listen(const Args &args) {
   Pcap_wrapper pc("any");
 
@@ -140,10 +133,12 @@ wait_and_listen(const Args &args) {
   // check if address duplication got something
   switch (ler) {
   case Pcap_wrapper::Loop_end_reason::duplicate_address:
-    throw Duplicate_address_exception(to_string(args.address));
+    log_string(LOG_INFO, "Detected duplicated address: one of these ips is "
+                         "owned by another machine: " +
+                             to_string(args.address));
     break;
   case Pcap_wrapper::Loop_end_reason::signal:
-    throw std::runtime_error("received signal while capturing with pcap");
+    log_string(LOG_INFO, "received signal while capturing with pcap");
     break;
   case Pcap_wrapper::Loop_end_reason::unset:
     log_string(LOG_ERR, "no reason given why pcap has been stopped");
@@ -152,11 +147,19 @@ wait_and_listen(const Args &args) {
     break;
   }
 
-  if (std::get<1>(catcher.headers) == nullptr) {
-    throw std::runtime_error("got nothing while catching with pcap");
-  }
   log_string(LOG_INFO, catcher.headers);
-  return std::make_tuple(catcher.data, std::get<1>(catcher.headers)->source(),
+
+  if (std::get<1>(catcher.headers) == nullptr) {
+    log_string(LOG_INFO, "got nothing while catching with pcap");
+    if (Pcap_wrapper::Loop_end_reason::packets_captured == ler) {
+      throw std::runtime_error(
+          "received some data but parsing headers did not succeed");
+    }
+    return std::make_tuple(ler, catcher.data, IP_address(), IP_address());
+  }
+
+  return std::make_tuple(ler, catcher.data,
+                         std::get<1>(catcher.headers)->source(),
                          std::get<1>(catcher.headers)->destination());
 }
 
@@ -211,29 +214,49 @@ void replay_data(const std::string &iface, const int type,
  * Puts everything together. Sets up firewall and IPs. Waits for an incoming
  * SYN packet and wakes the sleeping host via WOL
  */
-bool emulate_host(const Args &args) {
+Emulate_host_status emulate_host(const Args &args) {
   // setup firewall rules and add IPs to the interface
   std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
   // wait until upon an incoming connection
-  const auto data_source_destination = wait_and_listen(args);
+  const auto status_data_source_destination = wait_and_listen(args);
   log_string(LOG_INFO, "got something");
+
+  switch (std::get<0>(status_data_source_destination)) {
+  case Pcap_wrapper::Loop_end_reason::duplicate_address:
+    return Emulate_host_status::duplicate_address;
+  case Pcap_wrapper::Loop_end_reason::signal:
+    return Emulate_host_status::signal_received;
+  case Pcap_wrapper::Loop_end_reason::unset:
+    return Emulate_host_status::undefined_error;
+  case Pcap_wrapper::Loop_end_reason::error:
+    return Emulate_host_status::undefined_error;
+  case Pcap_wrapper::Loop_end_reason::packets_captured:
+    break;
+  default:
+    log_string(LOG_ERR, "got unknown return status from Pcap_wrapper");
+    return Emulate_host_status::undefined_error;
+  }
+
   // block icmp messages to the source IP, e.g. not tell him that his
   // destination IP is gone for a short while
   const Scope_guard block_icmp(
-      Block_icmp{std::get<1>(data_source_destination)});
+      Block_icmp{std::get<2>(status_data_source_destination)});
   // release_locks()
   locks.clear();
   // wake the sleeping server
   wol_ethernet(args.interface, args.mac);
   // wait until server responds and release ICMP rules
-  log_string(LOG_INFO, "ping: " + std::get<2>(data_source_destination).pure());
-  const bool wake_success = ping_and_wait(
-      args.interface, std::get<2>(data_source_destination), args.ping_tries);
+  log_string(LOG_INFO,
+             "ping: " + std::get<3>(status_data_source_destination).pure());
+  const bool wake_success =
+      ping_and_wait(args.interface, std::get<3>(status_data_source_destination),
+                    args.ping_tries);
   const std::string status = wake_success ? " succeeded" : " failed";
   log_string(LOG_NOTICE, "waking " + args.hostname + " with mac " +
                              binary_to_mac(args.mac) + status);
   // replay SYN packet
   replay_data(args.interface, DLT_LINUX_SLL,
-              std::get<0>(data_source_destination), args.mac);
-  return wake_success;
+              std::get<1>(status_data_source_destination), args.mac);
+  return wake_success ? Emulate_host_status::success
+                      : Emulate_host_status::wake_failure;
 }

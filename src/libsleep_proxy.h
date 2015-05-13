@@ -25,14 +25,15 @@ void setup_signals();
 
 bool is_signaled();
 
-class Duplicate_address_exception : public std::exception {
-  std::string message;
-
-public:
-  Duplicate_address_exception(const std::string &);
-  virtual const char *what() const noexcept;
-};
-
 bool ping_and_wait(const std::string &iface, const IP_address &ip,
                    const unsigned int tries);
-bool emulate_host(const Args &args);
+
+enum class Emulate_host_status {
+  success,
+  wake_failure,
+  signal_received,
+  duplicate_address,
+  undefined_error
+};
+
+Emulate_host_status emulate_host(const Args &args);

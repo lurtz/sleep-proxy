@@ -27,7 +27,6 @@ class Libsleep_proxy_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_sigterm);
   CPPUNIT_TEST(test_sigint);
   CPPUNIT_TEST(test_ping_and_wait);
-  CPPUNIT_TEST(test_duplicate_address_detection_exception);
   CPPUNIT_TEST(test_get_bindable_ip);
   CPPUNIT_TEST(test_rule_to_listen_on_ips_and_ports);
   CPPUNIT_TEST_SUITE_END();
@@ -67,20 +66,6 @@ public:
     CPPUNIT_ASSERT(!ping_and_wait("eth0", parse_ip("192.168.254.200"), 1));
     CPPUNIT_ASSERT(!ping_and_wait("lo", parse_ip("::2"), 1));
     CPPUNIT_ASSERT(!ping_and_wait("eth0", parse_ip("::2"), 1));
-  }
-
-  void test_duplicate_address_detection_exception() {
-    bool catched = false;
-    const std::string txt = "here would is txt";
-    try {
-      throw Duplicate_address_exception(txt);
-    } catch (const Duplicate_address_exception &e) {
-      catched = true;
-      CPPUNIT_ASSERT_EQUAL("one of these ips is owned by another machine: " +
-                               txt,
-                           std::string(e.what()));
-    }
-    CPPUNIT_ASSERT(catched);
   }
 
   void test_get_bindable_ip() {
