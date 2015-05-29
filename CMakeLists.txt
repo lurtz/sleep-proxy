@@ -14,7 +14,7 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 2.8.12)
 project (emulateHost)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${emulateHost_SOURCE_DIR}/cmake)
 

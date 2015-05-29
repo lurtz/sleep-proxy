@@ -19,20 +19,17 @@ find_package (Threads REQUIRED)
 
 add_library(sleep-proxy SHARED pcap_wrapper.cpp ethernet.cpp ip.cpp scope_guard.cpp ip_utils.cpp socket.cpp args.cpp to_string.cpp libsleep_proxy.cpp spawn_process.cpp int_utils.cpp wol.cpp packet_parser.cpp log.cpp ip_address.cpp file_descriptor.cpp duplicate_address_watcher.cpp)
 target_link_libraries(sleep-proxy ${PCAP_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+target_include_directories(sleep-proxy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(emulateHost emulateHost.cpp)
-target_link_libraries(emulateHost sleep-proxy)
+set(main_programs emulateHost watchHost waker sniffer)
 
-add_executable(watchHost watchHost.cpp)
-target_link_libraries(watchHost sleep-proxy)
+foreach(program ${main_programs})
+        message(STATUS "adding program: ${program}")
+        add_executable(${program} ${program}.cpp)
+        target_link_libraries(${program} sleep-proxy)
+endforeach(program)
 
-add_executable(waker waker.cpp)
-target_link_libraries(waker sleep-proxy)
-
-add_executable(sniffer sniffer.cpp)
-target_link_libraries(sniffer sleep-proxy)
-
-INSTALL(TARGETS sleep-proxy emulateHost watchHost waker sniffer
+INSTALL(TARGETS sleep-proxy ${main_programs}
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin
