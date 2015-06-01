@@ -166,10 +166,6 @@ typedef std::function<void(const std::string &, const IP_address &,
                            Pcap_wrapper &)> Main_Function_Type;
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
-  // TODO this does not work for ipv6
-  if (ip.family == AF_INET6)
-    return "";
-
   Main_Function_Type const main_function =
       ip.family == AF_INET ? daw_thread_main_non_root : daw_thread_main_ipv6;
 
