@@ -147,7 +147,7 @@ wait_and_listen(const Args &args) {
     break;
   }
 
-  log_string(LOG_INFO, catcher.headers);
+  log_string(LOG_INFO, "catched headers: " + to_string(catcher.headers));
 
   if (std::get<1>(catcher.headers) == nullptr) {
     log_string(LOG_INFO, "got nothing while catching with pcap");
@@ -219,7 +219,6 @@ Emulate_host_status emulate_host(const Args &args) {
   std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
   // wait until upon an incoming connection
   const auto status_data_source_destination = wait_and_listen(args);
-  log_string(LOG_INFO, "got something");
 
   switch (std::get<0>(status_data_source_destination)) {
   case Pcap_wrapper::Loop_end_reason::duplicate_address:
@@ -236,6 +235,8 @@ Emulate_host_status emulate_host(const Args &args) {
     log_string(LOG_ERR, "got unknown return status from Pcap_wrapper");
     return Emulate_host_status::undefined_error;
   }
+
+  log_string(LOG_INFO, "got something");
 
   // block icmp messages to the source IP, e.g. not tell him that his
   // destination IP is gone for a short while
