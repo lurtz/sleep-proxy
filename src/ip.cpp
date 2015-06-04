@@ -18,18 +18,6 @@
 #include <arpa/inet.h>
 #include "to_string.h"
 
-std::ostream &operator<<(std::ostream &out, const in_addr &ip) {
-  char addr[INET6_ADDRSTRLEN];
-  out << inet_ntop(AF_INET, &(ip.s_addr), addr, INET6_ADDRSTRLEN);
-  return out;
-}
-
-std::ostream &operator<<(std::ostream &out, const in6_addr &ip) {
-  char addr[INET6_ADDRSTRLEN];
-  out << inet_ntop(AF_INET6, ip.s6_addr, addr, INET6_ADDRSTRLEN);
-  return out;
-}
-
 std::ostream &operator<<(std::ostream &out, const ip::Version &v) {
   switch (v) {
   case ip::Version::ipv4:
