@@ -25,6 +25,7 @@
 
 class Spawn_process_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Spawn_process_test);
+  CPPUNIT_TEST(test_wait_until_pid_exits);
   CPPUNIT_TEST(test_fork_exec);
   CPPUNIT_TEST(test_direct_output_to_file);
   CPPUNIT_TEST(test_direct_output_to_tmp_file);
@@ -36,6 +37,11 @@ public:
   void setUp() {}
 
   void tearDown() {}
+
+  void test_wait_until_pid_exits() {
+    pid_t pid = -1;
+    CPPUNIT_ASSERT_THROW(wait_until_pid_exits(pid), std::runtime_error);
+  }
 
   void test_without_exceptions() const {
     std::vector<std::string> const cmd{"/bin/echo", "pspawn_test()"};
@@ -126,6 +132,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables"), get_path("iptables"));
     CPPUNIT_ASSERT_EQUAL(std::string("/bin/sh"), get_path("sh"));
     CPPUNIT_ASSERT_EQUAL(std::string("/usr/bin/make"), get_path("make"));
+    CPPUNIT_ASSERT_THROW(get_path("i_do_not_exist_fdasfd"), std::runtime_error);
   }
 
   void test_direct_output_to_self_pipes() {

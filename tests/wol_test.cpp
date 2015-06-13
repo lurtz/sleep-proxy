@@ -33,7 +33,7 @@ public:
                                     const unsigned char start,
                                     const unsigned char end_pos) {
     auto data = std::begin(wol);
-    const auto end = std::begin(wol);
+    const auto end = std::end(wol);
     for (unsigned int i = 0; i < 6 && data < end; i++, data++) {
       CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(255), *data);
     }

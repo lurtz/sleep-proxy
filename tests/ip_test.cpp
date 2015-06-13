@@ -122,8 +122,7 @@ public:
 
   void test_unknown_ip_version() {
     for (uint16_t i = 0; i < 20; i++) {
-      if (ip::ipv4 == i || ip::ipv6 == i)
-        continue;
+      CPPUNIT_ASSERT(ip::ipv4 != i && ip::ipv6 != i);
       CPPUNIT_ASSERT(std::unique_ptr<ip>(nullptr) ==
                      parse_ip(i, std::begin(ipv4_tcp_0), std::end(ipv4_tcp_0)));
     }

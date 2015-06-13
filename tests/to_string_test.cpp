@@ -23,6 +23,7 @@
 
 class To_string_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(To_string_test);
+  CPPUNIT_TEST(test_vector_stream);
   CPPUNIT_TEST(test_to_string);
   CPPUNIT_TEST(test_test_characters);
   CPPUNIT_TEST(test_get_c_string_array);
@@ -33,6 +34,28 @@ public:
   void setUp() {}
 
   void tearDown() {}
+
+  void test_vector_stream() {
+    std::vector<int> vi;
+    std::stringstream ss;
+    ss << vi;
+    CPPUNIT_ASSERT_EQUAL(std::string(""), ss.str());
+
+    vi.push_back(3);
+    ss.str("");
+    ss << vi;
+    CPPUNIT_ASSERT_EQUAL(std::string("3"), ss.str());
+
+    vi.push_back(8);
+    ss.str("");
+    ss << vi;
+    CPPUNIT_ASSERT_EQUAL(std::string("3, 8"), ss.str());
+
+    std::vector<std::string> vs{"blaa"};
+    ss.str("");
+    ss << vs;
+    CPPUNIT_ASSERT_EQUAL(std::string("blaa"), ss.str());
+  }
 
   void test_to_string() {
     CPPUNIT_ASSERT_EQUAL(std::string("1"), to_string(1));
