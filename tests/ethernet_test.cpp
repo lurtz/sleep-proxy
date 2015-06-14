@@ -56,6 +56,9 @@ class Ethernet_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_create_ethernet_header_2);
   CPPUNIT_TEST(test_create_ethernet_header_3);
   CPPUNIT_TEST(test_non_supported_protocol);
+  CPPUNIT_TEST(test_stream_operator);
+  CPPUNIT_TEST(test_mac_to_binary);
+  CPPUNIT_TEST(test_binary_to_mac);
   CPPUNIT_TEST_SUITE_END();
 
   const std::vector<uint8_t> lcc_not_supported =
@@ -233,6 +236,35 @@ public:
       CPPUNIT_ASSERT(std::unique_ptr<Link_layer>(nullptr) ==
                      parse_link_layer(type, std::begin(data), std::end(data)));
     }
+  }
+
+  void test_stream_operator() {
+    auto const ll = parse_link_layer(DLT_EN10MB, std::begin(ethernet_ipv4_0),
+                                     std::end(ethernet_ipv4_0));
+    std::stringstream ss;
+    ss << *ll;
+    std::string const result = ss.str();
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0"), result);
+  }
+
+  void test_mac_to_binary() {
+    std::string const mac = "00:11:Aa:Cd:65:43";
+    ether_addr const binary = mac_to_binary(mac);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), binary.ether_addr_octet[0]);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(17), binary.ether_addr_octet[1]);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(170), binary.ether_addr_octet[2]);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(205), binary.ether_addr_octet[3]);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(101), binary.ether_addr_octet[4]);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(67), binary.ether_addr_octet[5]);
+
+    CPPUNIT_ASSERT_THROW(mac_to_binary("fdsafdsa"), std::runtime_error);
+  }
+
+  void test_binary_to_mac() {
+    ether_addr const binary{{0, 17, 170, 205, 101, 67}};
+    CPPUNIT_ASSERT_EQUAL(std::string("0:11:aa:cd:65:43"),
+                         binary_to_mac(binary));
   }
 };
 

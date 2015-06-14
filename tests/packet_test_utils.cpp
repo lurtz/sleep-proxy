@@ -135,16 +135,19 @@ void write(File_descriptor const &fd, std::string const &text) {
   CPPUNIT_ASSERT_EQUAL(text.size(), static_cast<size_t>(written_bytes));
 }
 
-Tmp_fd_remap::Tmp_fd_remap(int const from_fd, int const to_fd)
-    : m_previous_fd{dup_exception(to_fd)}, m_to_fd{to_fd} {
-  duplicate_file_descriptors(from_fd, m_to_fd);
-}
+Fd_restore::Fd_restore(int const fd)
+    : m_fd(fd), m_backup_fd(dup_exception(fd)) {}
 
-Tmp_fd_remap::~Tmp_fd_remap() {
+Fd_restore::~Fd_restore() {
   try {
-    duplicate_file_descriptors(m_previous_fd, m_to_fd);
+    duplicate_file_descriptors(m_backup_fd, m_fd);
   } catch (std::exception const &e) {
-    std::cout << "Tmp_fd_remap::~Tmp_fd_remap() caught exception: " << e.what()
+    std::cout << "Fd_restore::~Fd_restore() caught exception: " << e.what()
               << std::endl;
   }
+}
+
+Tmp_fd_remap::Tmp_fd_remap(int const from_fd, int const to_fd)
+    : m_restore(to_fd) {
+  duplicate_file_descriptors(from_fd, to_fd);
 }

@@ -61,3 +61,5 @@ int get_fd_from_stream(FILE *const stream);
 void flush_file(FILE *const stream);
 
 int duplicate_file_descriptors(int const from, int const to);
+
+void unlink_with_exception(std::string const &filename);

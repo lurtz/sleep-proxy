@@ -55,6 +55,7 @@ public:
                          std::out_of_range);
     CPPUNIT_ASSERT_THROW(fallback::std::stoll("-1234567890123456789123456789"),
                          std::out_of_range);
+    CPPUNIT_ASSERT_THROW(fallback::std::stoll("fdasfd"), std::invalid_argument);
 
     CPPUNIT_ASSERT_EQUAL(static_cast<long long int>(0),
                          fallback::std::stoll("0", 16));
@@ -72,6 +73,8 @@ public:
     CPPUNIT_ASSERT_THROW(fallback::std::stoull("-123"), std::out_of_range);
     CPPUNIT_ASSERT_THROW(fallback::std::stoull("12345678901234567890123456789"),
                          std::out_of_range);
+    CPPUNIT_ASSERT_THROW(fallback::std::stoull("fdasfd"),
+                         std::invalid_argument);
 
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long long int>(0),
                          fallback::std::stoull("0", 16));

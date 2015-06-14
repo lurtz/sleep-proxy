@@ -84,11 +84,16 @@ int dup_exception(int const fd);
 
 void write(File_descriptor const &fd, std::string const &text);
 
+struct Fd_restore {
+  int const m_fd;
+  int const m_backup_fd;
+  Fd_restore(int const fd);
+
+  ~Fd_restore();
+};
+
 struct Tmp_fd_remap {
-  int const m_previous_fd;
-  int const m_to_fd;
+  Fd_restore const m_restore;
 
   Tmp_fd_remap(int const from_fd, int const to_fd);
-
-  ~Tmp_fd_remap();
 };

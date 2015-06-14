@@ -62,8 +62,6 @@ ether_addr mac_to_binary(const std::string &mac) {
 
 std::string binary_to_mac(const ether_addr &mac) {
   char canon_mac[12 + 5 + 1] = {0};
-  if (ether_ntoa_r(&mac, canon_mac) == nullptr) {
-    throw std::runtime_error("could convert binary to hex mac");
-  }
+  ether_ntoa_r(&mac, canon_mac);
   return canon_mac;
 }

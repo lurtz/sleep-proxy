@@ -40,9 +40,14 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_fd_delete_on_close);
   CPPUNIT_TEST(test_fd_self_pipes_as_stdout);
   CPPUNIT_TEST(test_get_self_pipes);
+  CPPUNIT_TEST(test_fd_read);
   CPPUNIT_TEST(test_fd_read_file);
   CPPUNIT_TEST(test_fd_read_from_self_pipe);
   CPPUNIT_TEST(test_fd_self_pipe_without_close_on_exec);
+  CPPUNIT_TEST(test_fd_remap);
+  CPPUNIT_TEST(test_unlink_with_exception);
+  CPPUNIT_TEST(test_get_fd_from_stream);
+  CPPUNIT_TEST(test_duplicate_file_descriptors);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -68,7 +73,11 @@ public:
       CPPUNIT_ASSERT(0 > fd.fd);
       CPPUNIT_ASSERT(!fd.delete_on_close);
     }
+
     { File_descriptor fd("/dev/null"); }
+
+    CPPUNIT_ASSERT_THROW(File_descriptor("/dev/balbla"), std::runtime_error);
+
     File_descriptor fd1(filename);
     std::ofstream ofs(filename);
     ofs << "blabla" << std::endl;
@@ -79,6 +88,11 @@ public:
 
   void test_fd_constructor() {
     CPPUNIT_ASSERT_THROW(File_descriptor(-1, ""), std::runtime_error);
+
+    File_descriptor fd(get_fd_from_stream(stdout), "stdout", false);
+    CPPUNIT_ASSERT_EQUAL(1, fd.fd);
+    CPPUNIT_ASSERT_EQUAL(std::string("stdout"), fd.filename);
+    CPPUNIT_ASSERT_EQUAL(false, fd.delete_on_close);
   }
 
   void test_fd_copy_constructor() {
@@ -114,6 +128,18 @@ public:
       CPPUNIT_ASSERT(file_exists(filename));
     }
     CPPUNIT_ASSERT(-1 == fcntl(c_fd, F_GETFD));
+
+    auto out_in = get_self_pipes();
+    Tmp_fd_remap const tmp_fd_remap(std::get<1>(out_in),
+                                    get_fd_from_stream(stderr));
+    {
+      File_descriptor fd1("");
+      fd1.fd = std::numeric_limits<int>::max();
+    }
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("File_descriptor::~File_descriptor(): caught exception: "
+                    "File_descriptor::close() failed: Bad file descriptor"),
+        std::get<0>(out_in).read().at(0));
   }
 
   void test_fd_close() {
@@ -121,6 +147,10 @@ public:
     CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
     fd.close();
     CPPUNIT_ASSERT_EQUAL(-1, fcntl(fd, F_GETFD));
+
+    File_descriptor fd1("");
+    fd1.fd = std::numeric_limits<int>::max();
+    CPPUNIT_ASSERT_THROW(fd1.close(), std::runtime_error);
   }
 
   void test_fd_delete_on_close() {
@@ -168,6 +198,13 @@ public:
         std::string(std::begin(lines.at(1)), std::end(lines.at(1))));
   }
 
+  void test_fd_read() {
+    File_descriptor fd("");
+    fd.fd = std::numeric_limits<int>::max();
+    CPPUNIT_ASSERT_THROW(fd.read(), std::runtime_error);
+    fd.fd = -1;
+  }
+
   void test_fd_read_file() {
     File_descriptor fd{get_tmp_file("test_fd_readXXXXXX")};
 
@@ -207,6 +244,60 @@ public:
       int const mode = fcntl(std::get<1>(out_in), F_GETFD);
       CPPUNIT_ASSERT(!(mode & FD_CLOEXEC));
     }
+  }
+
+  void test_fd_remap() {
+    auto const out_in = get_self_pipes();
+    Fd_restore const fdr(get_fd_from_stream(stdout));
+    std::get<1>(out_in).remap(stdout);
+    std::cout << "blabla" << std::endl;
+    auto const text = std::get<0>(out_in).read();
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), text.size());
+    CPPUNIT_ASSERT_EQUAL(std::string("blabla"), text.at(0));
+  }
+
+  void test_unlink_with_exception() {
+    CPPUNIT_ASSERT_THROW(unlink_with_exception("/dev/null"),
+                         std::runtime_error);
+  }
+
+  void test_get_fd_from_stream() {
+    FILE bla{0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             {0},
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             0,
+             {0}};
+    bla._fileno = -1;
+    CPPUNIT_ASSERT_THROW(get_fd_from_stream(&bla), std::runtime_error);
+  }
+
+  void test_duplicate_file_descriptors() {
+    CPPUNIT_ASSERT_THROW(duplicate_file_descriptors(-1, -2),
+                         std::runtime_error);
   }
 };
 

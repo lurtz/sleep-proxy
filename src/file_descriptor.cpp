@@ -84,7 +84,8 @@ void unlink_with_exception(std::string const &filename) {
 }
 
 void File_descriptor::close() {
-  if (fd < 0) {
+  if (fd < 0 || get_fd_from_stream(stdin) == fd ||
+      get_fd_from_stream(stdout) == fd || get_fd_from_stream(stderr) == fd) {
     return;
   }
 
@@ -144,6 +145,13 @@ std::vector<std::string> File_descriptor::read() const {
   return byte_vector_to_strings(complete_data);
 }
 
+void flush_file(FILE *const stream) {
+  if (fflush(stream)) {
+    throw std::runtime_error(std::string("could not flush file: ") +
+                             strerror(errno));
+  }
+}
+
 void File_descriptor::remap(FILE *const stream) const {
   if (fd < 0) {
     return;
@@ -187,13 +195,6 @@ int get_fd_from_stream(FILE *const stream) {
         strerror(errno));
   }
   return fd;
-}
-
-void flush_file(FILE *const stream) {
-  if (fflush(stream)) {
-    throw std::runtime_error(std::string("could not flush file: ") +
-                             strerror(errno));
-  }
 }
 
 int duplicate_file_descriptors(int const from, int const to) {
