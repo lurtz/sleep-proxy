@@ -54,6 +54,7 @@ class Ip_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_wrong_ip_version_ipv4);
   CPPUNIT_TEST(test_wrong_ip_version_ipv6);
   CPPUNIT_TEST(test_unknown_ip_version);
+  CPPUNIT_TEST(test_stream_operator);
   CPPUNIT_TEST_SUITE_END();
 
   const std::vector<uint8_t> ipv4_tcp_0 = to_binary(ipv4_tcp_wireshark);
@@ -126,6 +127,20 @@ public:
       CPPUNIT_ASSERT(std::unique_ptr<ip>(nullptr) ==
                      parse_ip(i, std::begin(ipv4_tcp_0), std::end(ipv4_tcp_0)));
     }
+  }
+  void test_stream_operator() {
+    auto ip0 = parse_ip(ip::ipv4, std::begin(ipv4_tcp_0), std::end(ipv4_tcp_0));
+    std::stringstream ss;
+    ss << *ip0;
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("IPv4: dst = 10.38.4.225, src = 141.76.2.4"), ss.str());
+
+    auto ip1 = parse_ip(ip::ipv6, std::begin(ipv6_udp), std::end(ipv6_udp));
+    ss.str("");
+    ss << *ip1;
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("IPv6: dst = ff02::1, src = fe80::9863:12ff:fee1:3a3d"),
+        ss.str());
   }
 };
 

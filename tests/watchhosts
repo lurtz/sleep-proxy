@@ -17,3 +17,5 @@ mac FF:EE:DD:CC:BB:AA
 interface lo
 ping_tries 1
 
+ignoredgarbage
+to ignore

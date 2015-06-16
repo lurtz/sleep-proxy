@@ -32,8 +32,8 @@ std::ostream &operator<<(std::ostream &out, const ip::Version &v) {
 
 std::ostream &operator<<(std::ostream &out, const ip &ip) {
   out << "IPv" << ip.version() << ": ";
-  out << "dst = " << ip.destination().pure() << ", src = " << ip.source().pure()
-      << ", ";
+  out << "dst = " << ip.destination().pure()
+      << ", src = " << ip.source().pure();
   return out;
 }
 
