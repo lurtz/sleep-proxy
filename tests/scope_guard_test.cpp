@@ -14,6 +14,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "to_string.h"
 #include "main.h"
 
 #include "scope_guard.h"
@@ -21,13 +22,16 @@
 
 class Scope_guard_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Scope_guard_test);
+  CPPUNIT_TEST(test_scope_guard_constructor);
   CPPUNIT_TEST(test_scope_guard);
+  CPPUNIT_TEST(test_ptr_guard);
   CPPUNIT_TEST(test_temp_ip);
   CPPUNIT_TEST(test_drop_port);
   CPPUNIT_TEST(test_reject_tp);
   CPPUNIT_TEST(test_block_icmp);
   CPPUNIT_TEST(test_block_ipv6_neighbor_solicitation_link_local);
   CPPUNIT_TEST(test_block_ipv6_neighbor_solicitation_global_address);
+  CPPUNIT_TEST(test_block_ipv6_neighbor_solicitation_with_ipv4);
   CPPUNIT_TEST(test_take_action);
   CPPUNIT_TEST(test_take_action_failed_command);
   CPPUNIT_TEST(test_take_action_non_existing_command);
@@ -37,6 +41,31 @@ public:
   void setUp() {}
 
   void tearDown() {}
+
+  void test_scope_guard_constructor() {
+    {
+      Scope_guard sg;
+      sg.free();
+    }
+    {
+      std::mutex ints_mutex;
+      std::vector<int *> ints;
+      int x = 123;
+
+      Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
+
+      Scope_guard sg2 = std::move(sg);
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
+      sg.free(); // should do nothing
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
+      sg2.free();
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), ints.size());
+    }
+  }
 
   void test_scope_guard() {
     std::mutex ints_mutex;
@@ -82,6 +111,24 @@ public:
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
       CPPUNIT_ASSERT_EQUAL(&y, ints.at(0));
     }
+  }
+
+  void test_ptr_guard() {
+    std::mutex ints_mutex;
+    std::vector<int *> ints;
+    int x = 123;
+    auto guard = ptr_guard(ints, ints_mutex, x);
+    CPPUNIT_ASSERT_EQUAL(&ints_mutex, &guard.cont_mutex);
+    CPPUNIT_ASSERT_EQUAL(ints, guard.cont);
+    CPPUNIT_ASSERT_EQUAL(x, guard.ref);
+
+    CPPUNIT_ASSERT_EQUAL(std::string(), guard(static_cast<Action>(3)));
+
+    CPPUNIT_ASSERT_EQUAL(&ints_mutex, &guard.cont_mutex);
+    CPPUNIT_ASSERT_EQUAL(ints, guard.cont);
+    CPPUNIT_ASSERT_EQUAL(x, guard.ref);
+
+    CPPUNIT_ASSERT_THROW(guard(Action::del), std::runtime_error);
   }
 
   void test_temp_ip() {
@@ -226,6 +273,13 @@ public:
 
     CPPUNIT_ASSERT_EQUAL(expected_insert, bipv6ns(Action::add));
     CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
+  }
+
+  void test_block_ipv6_neighbor_solicitation_with_ipv4() {
+    Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("192.168.6.6")};
+
+    CPPUNIT_ASSERT_THROW(bipv6ns(Action::add), std::runtime_error);
+    CPPUNIT_ASSERT_THROW(bipv6ns(Action::del), std::runtime_error);
   }
 
   struct Take_action_function {

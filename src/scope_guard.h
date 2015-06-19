@@ -30,7 +30,6 @@ enum struct Action { add, del };
  * reverse this modification.
  */
 struct Scope_guard {
-public:
   typedef std::function<std::string(const Action)> Aquire_release;
 
 private:
@@ -38,6 +37,11 @@ private:
   bool freed;
   /** function to take or release */
   const Aquire_release aquire_release;
+
+  /**
+   * Consume or free the resource
+   */
+  void take_action(const Action a) const;
 
 public:
   /**
@@ -72,11 +76,6 @@ public:
    * Checks if the resource is already freed and frees them if not
    */
   void free();
-
-  /**
-   * Consume or free the resource
-   */
-  void take_action(const Action a) const;
 };
 
 /** Adds ip to iface, removes it afterwards */
