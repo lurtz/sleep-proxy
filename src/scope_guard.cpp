@@ -116,17 +116,21 @@ std::string ipv6_to_u32_rule(IP_address const &ip) {
         "cannot convert ipv4 address into u32 ip6tables rule");
   }
 
+  // only up to 9 && are allored in a --u32 rule, do it as 32bit integers
   // from fe80::123
   // to   -m u32 --u32 48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123
 
-  uint8_t pos = 48;
-  auto const address_byte_to_rule = [&](uint8_t ipv6_byte) {
-    return to_string(static_cast<uint32_t>(pos++)) + "=0x" +
-           one_byte_to_two_hex_chars(ipv6_byte);
+  uint32_t const base = 48;
+  uint32_t const step = 4;
+  uint32_t pos = 0;
+  auto const address_int_to_rule = [&](uint32_t ipv6_int) {
+    return to_string(base + step * (pos++)) + "=0x" +
+           uint32_t_to_eight_hex_chars(ipv6_int);
   };
-  std::vector<uint8_t> const ipv6_address{std::begin(ip.address.ipv6.s6_addr),
-                                          std::end(ip.address.ipv6.s6_addr)};
-  std::string const rule = join(ipv6_address, address_byte_to_rule, " && ");
+  std::vector<uint32_t> const ipv6_address{
+      std::begin(ip.address.ipv6.s6_addr32),
+      std::end(ip.address.ipv6.s6_addr32)};
+  std::string const rule = join(ipv6_address, address_int_to_rule, "&&");
 
   return " -m u32 --u32 " + rule;
 }

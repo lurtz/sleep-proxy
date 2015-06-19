@@ -70,4 +70,4 @@ template <typename T> T str_to_integral(const std::string &string) {
   return static_cast<T>(value);
 }
 
-std::string one_byte_to_two_hex_chars(const uint8_t b) noexcept;
+std::string uint32_t_to_eight_hex_chars(const uint32_t i) noexcept;

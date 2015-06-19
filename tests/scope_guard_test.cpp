@@ -245,10 +245,10 @@ public:
   void test_block_ipv6_neighbor_solicitation_link_local() {
     Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("fe80::123")};
 
-    std::string const rule{"48=0xfe && 49=0x80 && 50=0x00 && 51=0x00 && "
-                           "52=0x00 && 53=0x00 && 54=0x00 && 55=0x00 && "
-                           "56=0x00 && 57=0x00 && 58=0x00 && 59=0x00 && "
-                           "60=0x00 && 61=0x00 && 62=0x01 && 63=0x23"};
+    std::string const rule{"48=0xfe800000&&"
+                           "52=0x00000000&&"
+                           "56=0x00000000&&"
+                           "60=0x00000123"};
     std::string const expected_insert{
         block_ipv6_neighbor_solicitation_cmd("I", rule)};
     std::string const expected_delete{
@@ -262,10 +262,10 @@ public:
     Block_ipv6_neighbor_solicitation const bipv6ns{
         parse_ip("2a00:1450:4005:800::1004")};
 
-    std::string const rule{"48=0x2a && 49=0x00 && 50=0x14 && 51=0x50 && "
-                           "52=0x40 && 53=0x05 && 54=0x08 && 55=0x00 && "
-                           "56=0x00 && 57=0x00 && 58=0x00 && 59=0x00 && "
-                           "60=0x00 && 61=0x00 && 62=0x10 && 63=0x04"};
+    std::string const rule{"48=0x2a001450&&"
+                           "52=0x40050800&&"
+                           "56=0x00000000&&"
+                           "60=0x00001004"};
     std::string const expected_insert{
         block_ipv6_neighbor_solicitation_cmd("I", rule)};
     std::string const expected_delete{

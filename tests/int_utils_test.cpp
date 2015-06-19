@@ -26,7 +26,7 @@ class Str_to_integral_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_EXCEPTION(outofposbounds, std::out_of_range);
   CPPUNIT_TEST(test_stoll);
   CPPUNIT_TEST(test_stoull);
-  CPPUNIT_TEST(test_one_byte_to_two_hex_chars);
+  CPPUNIT_TEST(test_uint32_t_to_eight_hex_chars);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -84,11 +84,39 @@ public:
                          fallback::std::stoull("F", 16));
   }
 
-  void test_one_byte_to_two_hex_chars() {
-    CPPUNIT_ASSERT_EQUAL(std::string("ff"), one_byte_to_two_hex_chars(255));
-    CPPUNIT_ASSERT_EQUAL(std::string("00"), one_byte_to_two_hex_chars(0));
-    CPPUNIT_ASSERT_EQUAL(std::string("0a"), one_byte_to_two_hex_chars(10));
-    CPPUNIT_ASSERT_EQUAL(std::string("a0"), one_byte_to_two_hex_chars(160));
+  void test_uint32_t_to_eight_hex_chars() {
+    CPPUNIT_ASSERT_EQUAL(std::string("00000000"),
+                         uint32_t_to_eight_hex_chars(0));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("0000000a"),
+                         uint32_t_to_eight_hex_chars(10 << 24));
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("000000a0"),
+        uint32_t_to_eight_hex_chars(static_cast<uint32_t>(160) << 24));
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("000000ff"),
+        uint32_t_to_eight_hex_chars(static_cast<uint32_t>(255) << 24));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("00000a00"),
+                         uint32_t_to_eight_hex_chars(10 << 16));
+    CPPUNIT_ASSERT_EQUAL(std::string("0000a000"),
+                         uint32_t_to_eight_hex_chars(160 << 16));
+    CPPUNIT_ASSERT_EQUAL(std::string("0000ff00"),
+                         uint32_t_to_eight_hex_chars(255 << 16));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("000a0000"),
+                         uint32_t_to_eight_hex_chars(10 << 8));
+    CPPUNIT_ASSERT_EQUAL(std::string("00a00000"),
+                         uint32_t_to_eight_hex_chars(160 << 8));
+    CPPUNIT_ASSERT_EQUAL(std::string("00ff0000"),
+                         uint32_t_to_eight_hex_chars(255 << 8));
+
+    CPPUNIT_ASSERT_EQUAL(std::string("0a000000"),
+                         uint32_t_to_eight_hex_chars(10));
+    CPPUNIT_ASSERT_EQUAL(std::string("a0000000"),
+                         uint32_t_to_eight_hex_chars(160));
+    CPPUNIT_ASSERT_EQUAL(std::string("ff000000"),
+                         uint32_t_to_eight_hex_chars(255));
   }
 };
 

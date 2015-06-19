@@ -18,6 +18,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include "to_string.h"
+#include <arpa/inet.h>
 
 namespace fallback {
 namespace std {
@@ -70,8 +71,8 @@ unsigned long long int stoull(const ::std::string &s, const int base) {
 }
 }
 
-std::string one_byte_to_two_hex_chars(const uint8_t b) noexcept {
-  char val[3] = {0};
-  snprintf(val, sizeof(val), "%02x", b);
+std::string uint32_t_to_eight_hex_chars(const uint32_t i) noexcept {
+  char val[9] = {0};
+  snprintf(val, sizeof(val), "%08x", htonl(i));
   return val;
 }
