@@ -22,6 +22,7 @@
 class Ip_address_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Ip_address_test);
   CPPUNIT_TEST(test_parse_ip);
+  CPPUNIT_TEST(test_stream_operator);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -53,6 +54,16 @@ public:
     CPPUNIT_ASSERT_THROW(parse_ip("10"), std::runtime_error);
     CPPUNIT_ASSERT_THROW(parse_ip("fe80::123/200"), std::invalid_argument);
     CPPUNIT_ASSERT_THROW(parse_ip("10.0.0.1/200"), std::invalid_argument);
+  }
+
+  void test_stream_operator() {
+    std::string const ip_str = "192.168.1.2/23";
+    auto const ipa = parse_ip(ip_str);
+    compare_ip(ip_str, AF_INET, "192.168.1.2", 23);
+
+    std::stringstream ss;
+    ss << ipa;
+    CPPUNIT_ASSERT_EQUAL(std::string("192.168.1.2/23"), ss.str());
   }
 };
 

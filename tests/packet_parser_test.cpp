@@ -17,10 +17,10 @@
 #include "main.h"
 #include <string>
 
-#include "../src/packet_parser.h"
-#include "../src/ethernet.h"
-#include "../src/container_utils.h"
-#include "../src/int_utils.h"
+#include "packet_parser.h"
+#include "ethernet.h"
+#include "container_utils.h"
+#include "int_utils.h"
 
 #include "packet_test_utils.h"
 
@@ -58,8 +58,12 @@ class Packet_parser_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_parse_lcc_ipv6_tcp_too_short);
   CPPUNIT_TEST(test_parse_lcc_vlan_ipv4_udp);
   CPPUNIT_TEST(test_parse_lcc_vlan_ipv4_udp_too_short);
+  CPPUNIT_TEST(test_parse_unknown_link_layer);
+  CPPUNIT_TEST(test_parse_unknown_ip);
   CPPUNIT_TEST(test_catch_incoming_connection);
   CPPUNIT_TEST(test_catch_incoming_connection_unknown_lcc_protocol);
+  CPPUNIT_TEST(test_catch_incoming_connection_void_ptr);
+  CPPUNIT_TEST(test_stream_operator);
   CPPUNIT_TEST_SUITE_END();
 
   const std::vector<uint8_t> ethernet_ipv4_tcp =
@@ -157,6 +161,32 @@ public:
                          std::length_error);
   }
 
+  void test_parse_unknown_link_layer() {
+    std::vector<uint8_t> const data;
+    auto const headers = get_headers(-1, data);
+    CPPUNIT_ASSERT(nullptr == std::get<0>(headers));
+    CPPUNIT_ASSERT(nullptr == std::get<1>(headers));
+  }
+
+  void test_parse_unknown_ip() {
+    std::vector<uint8_t> data{std::begin(ethernet_ipv4_tcp),
+                              std::end(ethernet_ipv4_tcp)};
+    data.at(12) = 0xFF;
+    data.at(13) = 0xFF;
+    auto const headers = get_headers(DLT_EN10MB, data);
+    CPPUNIT_ASSERT(nullptr != std::get<0>(headers));
+    CPPUNIT_ASSERT(nullptr == std::get<1>(headers));
+
+    auto &ll = std::get<0>(headers);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(14), ll->header_length());
+    CPPUNIT_ASSERT_EQUAL(std::string("0:0:0:0:0:0"),
+                         binary_to_mac(ll->source()));
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0xFFFF), ll->payload_protocol());
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0"),
+        ll->get_info());
+  }
+
   void test_catch_incoming_connection() {
     auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
     Catch_incoming_connection cic(DLT_EN10MB);
@@ -175,6 +205,52 @@ public:
     cic(&hdr, lcc_unknown_udp.data());
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), cic.data.size());
     CPPUNIT_ASSERT_EQUAL(basic_headers(), cic.headers);
+  }
+
+  void test_catch_incoming_connection_void_ptr() {
+    Catch_incoming_connection cic(DLT_LINUX_SLL);
+    pcap_pkthdr hdr;
+    hdr.len = static_cast<bpf_u_int32>(lcc_unknown_udp.size());
+    cic(nullptr, nullptr);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), cic.data.size());
+    CPPUNIT_ASSERT_EQUAL(basic_headers(), cic.headers);
+    cic(nullptr, lcc_unknown_udp.data());
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), cic.data.size());
+    CPPUNIT_ASSERT_EQUAL(basic_headers(), cic.headers);
+    cic(&hdr, nullptr);
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), cic.data.size());
+    CPPUNIT_ASSERT_EQUAL(basic_headers(), cic.headers);
+  }
+
+  void test_stream_operator() {
+    auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
+    std::stringstream ss;
+    ss << headers;
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0\nIPv4: dst "
+                    "= 127.0.0.1, src = 127.0.0.1"),
+        ss.str());
+
+    basic_headers const headers1 = std::make_tuple(
+        std::unique_ptr<Link_layer>(), std::move(std::get<1>(headers)));
+    ss.str("");
+    ss << headers1;
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("\nIPv4: dst = 127.0.0.1, src = 127.0.0.1"), ss.str());
+
+    basic_headers const headers2 =
+        std::make_tuple(std::move(std::get<0>(headers)), std::unique_ptr<ip>());
+    ss.str("");
+    ss << headers2;
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0\n"),
+        ss.str());
+
+    basic_headers const headers3 =
+        std::make_tuple(std::unique_ptr<Link_layer>(), std::unique_ptr<ip>());
+    ss.str("");
+    ss << headers3;
+    CPPUNIT_ASSERT_EQUAL(std::string("\n"), ss.str());
   }
 };
 
