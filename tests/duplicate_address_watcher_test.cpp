@@ -33,6 +33,10 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
                               Is_ip_occupied const &is_ip_occupied,
                               std::atomic_bool &loop, Pcap_wrapper &pc);
 
+void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
+                          Is_ip_occupied const &is_ip_occupied,
+                          std::atomic_bool &loop, Pcap_wrapper &pc);
+
 struct Pcap_dummy : public Pcap_wrapper {
   Pcap_dummy() {}
   Pcap_wrapper::Loop_end_reason get_end_reason() const {
@@ -72,6 +76,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
   std::atomic_bool loop;
 
   CPPUNIT_TEST_SUITE(Duplicate_address_watcher_test);
+  CPPUNIT_TEST(test_duplicate_address_watcher_constructor);
   CPPUNIT_TEST(test_duplicate_address_watcher_destructor);
   CPPUNIT_TEST(test_copy_constructor);
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv4_ip_not_taken);
@@ -79,6 +84,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv6_ip_not_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv6_ip_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_receives_exception_in_thread);
+  CPPUNIT_TEST(test_daw_thread_main_ipv6);
   CPPUNIT_TEST(test_ip_neigh_checker);
   CPPUNIT_TEST(test_contains_mac_different_from_given);
   CPPUNIT_TEST(test_get_mac);
@@ -91,6 +97,18 @@ public:
   }
 
   void tearDown() {}
+
+  void test_duplicate_address_watcher_constructor() {
+    Duplicate_address_watcher const daw{"eth0", parse_ip("10.0.0.1/16"), pcap};
+
+    CPPUNIT_ASSERT_EQUAL(std::string("eth0"), daw.iface);
+    CPPUNIT_ASSERT_EQUAL(static_cast<Pcap_wrapper *>(&pcap), &daw.pcap);
+    CPPUNIT_ASSERT_EQUAL(parse_ip("10.0.0.1/16"), daw.ip);
+    CPPUNIT_ASSERT_EQUAL(std::atomic_bool(false), *daw.loop);
+    auto ip_neigh_ptr = daw.is_ip_occupied.target<Ip_neigh_checker>();
+    CPPUNIT_ASSERT(ip_neigh_ptr != nullptr);
+    CPPUNIT_ASSERT_EQUAL(get_mac("eth0"), ip_neigh_ptr->this_nodes_mac);
+  }
 
   void test_duplicate_address_watcher_destructor() {
     {
@@ -200,6 +218,16 @@ public:
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::signal ==
                    pcap.get_end_reason());
     CPPUNIT_ASSERT(!*daw.loop);
+  }
+
+  void test_daw_thread_main_ipv6() {
+    // is only executable as root
+    daw_thread_main_ipv6("eth0", parse_ip("2001:470:1f15:df3::1/64"),
+                         ip_checker, loop, pcap);
+
+    CPPUNIT_ASSERT(!loop);
+    CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::signal ==
+                   pcap.get_end_reason());
   }
 
   void test_ip_neigh_checker() {
