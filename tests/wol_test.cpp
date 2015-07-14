@@ -18,7 +18,10 @@
 #include <string>
 #include "ethernet.h"
 #include "packet_test_utils.h"
-#include "wol_test_interface.h"
+#include <vector>
+#include <netinet/ether.h>
+
+std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac);
 
 class Wol_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Wol_test);

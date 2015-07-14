@@ -40,7 +40,7 @@ template <> void log_string<std::string>(const int priority, std::string &&t) {
 
 void log(const int priority, const char *format, ...) {
   static std::mutex log_mutex;
-  std::lock_guard<std::mutex> lg(log_mutex);
+  std::lock_guard<std::mutex> const lg(log_mutex);
   va_list args;
   va_start(args, format);
   if (logger == nullptr) {

@@ -17,10 +17,15 @@
 #include "main.h"
 
 #include "libsleep_proxy.h"
-#include "libsleep_proxy_test_interface.h"
 #include "container_utils.h"
 #include "ip_utils.h"
 #include <csignal>
+
+void reset_signaled();
+
+std::string get_bindable_ip(const std::string &iface, const std::string &ip);
+std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
+                                            const std::vector<uint16_t> &ports);
 
 class Libsleep_proxy_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Libsleep_proxy_test);

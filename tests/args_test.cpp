@@ -20,10 +20,13 @@
 #include <unistd.h>
 
 #include "args.h"
-#include "args_test_interface.h"
 #include "to_string.h"
 #include "ethernet.h"
 #include "ip_utils.h"
+#include "packet_test_utils.h"
+
+void reset();
+void print_help();
 
 class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Args_test);
@@ -35,6 +38,7 @@ class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_ping_tries);
   CPPUNIT_TEST(test_syslog);
   CPPUNIT_TEST(test_read_file);
+  CPPUNIT_TEST(test_print_help);
   CPPUNIT_TEST_SUITE_END();
   std::string interface;
   std::string addresses;
@@ -208,6 +212,18 @@ public:
     auto args3 = get_args("watchhosts", true);
     CPPUNIT_ASSERT_EQUAL(true, args3.at(0).syslog);
     CPPUNIT_ASSERT_EQUAL(true, args3.at(1).syslog);
+  }
+
+  void test_print_help() {
+    auto out_in = get_self_pipes();
+    {
+      Tmp_fd_remap const out_remap(std::get<1>(out_in),
+                                   get_fd_from_stream(stdout));
+      print_help();
+      std::cout << std::flush;
+    }
+    auto const help_text = std::get<0>(out_in).read();
+    CPPUNIT_ASSERT(help_text.size() > 18);
   }
 };
 
