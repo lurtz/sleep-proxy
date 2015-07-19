@@ -62,6 +62,8 @@ struct Socket_listen : public Socket {
 
 class Socket_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Socket_test);
+  CPPUNIT_TEST(test_constructor_throws);
+  CPPUNIT_TEST(test_ioctl_throws);
   CPPUNIT_TEST(test_send_to);
   CPPUNIT_TEST(test_get_ifindex);
   CPPUNIT_TEST(test_set_sock_opt);
@@ -69,7 +71,21 @@ class Socket_test : public CppUnit::TestFixture {
 
 public:
   void setUp() {}
+
   void tearDown() {}
+
+  void test_constructor_throws() {
+    CPPUNIT_ASSERT_THROW(Socket(-1, -1), std::runtime_error);
+  }
+
+  void test_ioctl_throws() {
+    Socket s0(AF_INET, SOCK_DGRAM);
+    ifreq ifreq;
+    CPPUNIT_ASSERT_THROW(
+        s0.ioctl(std::numeric_limits<unsigned long>::max(), ifreq),
+        std::runtime_error);
+  }
+
   void test_send_to() {
     sockaddr_in addr{0, 0, {0}, {0}};
     addr.sin_family = AF_INET;
@@ -96,7 +112,11 @@ public:
     data.push_back(64);
     s1.send_to(data, 0, addr);
     CPPUNIT_ASSERT(data == s0.recv());
+
+    sockaddr_in const broken_addr{0xff, 0xff, {0xff}, {0xff}};
+    CPPUNIT_ASSERT_THROW(s1.send_to(data, 0, broken_addr), std::runtime_error);
   }
+
   void test_get_ifindex() {
     // Socket(int domain, int type, int protocol = 0)
     Socket s0(AF_INET, SOCK_DGRAM);
@@ -106,6 +126,7 @@ public:
     const ether_addr ea = s0.get_hwaddr("eth0");
     CPPUNIT_ASSERT("" != binary_to_mac(ea));
   }
+
   void test_set_sock_opt() {
     Socket_listen sock(AF_INET, SOCK_DGRAM);
     CPPUNIT_ASSERT_EQUAL(0, sock.get_sock_opt<int>(SOL_SOCKET, SO_BROADCAST));
@@ -113,6 +134,8 @@ public:
     CPPUNIT_ASSERT_EQUAL(1, sock.get_sock_opt<int>(SOL_SOCKET, SO_BROADCAST));
     sock.set_sock_opt(SOL_SOCKET, SO_BROADCAST, 0);
     CPPUNIT_ASSERT_EQUAL(0, sock.get_sock_opt<int>(SOL_SOCKET, SO_BROADCAST));
+
+    CPPUNIT_ASSERT_THROW(sock.set_sock_opt(-1, -1, -1), std::runtime_error);
   }
 };
 

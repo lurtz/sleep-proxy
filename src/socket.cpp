@@ -21,6 +21,7 @@
 #include <sys/ioctl.h>
 #include <linux/if_ether.h>
 #include "to_string.h"
+#include "log.h"
 
 Socket::Socket(int domain, int type, int protocol)
     : sock{socket(domain, type, protocol)} {
@@ -32,8 +33,8 @@ Socket::Socket(int domain, int type, int protocol)
 
 Socket::~Socket() {
   if (close(sock) != 0) {
-    throw std::runtime_error(std::string("close() failed with errno: ") +
-                             strerror(errno));
+    log_string(LOG_ERR,
+               std::string("close() failed with errno: ") + strerror(errno));
   }
 }
 
