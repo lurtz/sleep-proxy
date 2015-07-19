@@ -80,10 +80,19 @@ public:
 
   void test_ioctl_throws() {
     Socket s0(AF_INET, SOCK_DGRAM);
-    ifreq ifreq;
-    CPPUNIT_ASSERT_THROW(
-        s0.ioctl(std::numeric_limits<unsigned long>::max(), ifreq),
-        std::runtime_error);
+
+    struct ifreq ifreq {
+      {
+        { 0 }
+      }
+      , {
+        {
+          0, { 0 }
+        }
+      }
+    };
+
+    CPPUNIT_ASSERT_THROW(s0.ioctl(0, ifreq), std::runtime_error);
   }
 
   void test_send_to() {
