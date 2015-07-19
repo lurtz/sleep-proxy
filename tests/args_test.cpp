@@ -30,6 +30,7 @@ void print_help();
 
 class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Args_test);
+  CPPUNIT_TEST(test_default_constructor);
   CPPUNIT_TEST(test_interface);
   CPPUNIT_TEST(test_addresses);
   CPPUNIT_TEST(test_ports);
@@ -39,6 +40,7 @@ class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_syslog);
   CPPUNIT_TEST(test_read_file);
   CPPUNIT_TEST(test_print_help);
+  CPPUNIT_TEST(test_ostream_operator);
   CPPUNIT_TEST_SUITE_END();
   std::string interface;
   std::string addresses;
@@ -119,6 +121,14 @@ public:
 
   void tearDown() {}
 
+  void test_default_constructor() {
+    Args args;
+
+    CPPUNIT_ASSERT_EQUAL(ether_addr{{0}}, args.mac);
+    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), args.ping_tries);
+    CPPUNIT_ASSERT_EQUAL(false, args.syslog);
+  }
+
   void test_interface() {
     interface = "lo";
     compare(get_args());
@@ -189,7 +199,7 @@ public:
 
   void test_read_file() {
     auto args = get_args("watchhosts");
-    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(2), args.size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), args.size());
     interface = "lo";
     addresses = "10.0.0.1/16,fe80::123/64";
     ports = "12345,23456";
@@ -205,6 +215,14 @@ public:
     hostname = "test2";
     ping_tries = "1";
     compare(args.at(1));
+
+    interface = "lo";
+    addresses = "10.0.0.1/16,fe80::123/64";
+    ports = "12345,23456";
+    mac = "1:12:34:45:67:89";
+    hostname = "";
+    ping_tries = "5";
+    compare(args.at(2));
 
     auto args2 = get_args("watchhosts-empty");
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), args2.size());
@@ -224,6 +242,16 @@ public:
     }
     auto const help_text = std::get<0>(out_in).read();
     CPPUNIT_ASSERT(help_text.size() > 18);
+  }
+
+  void test_ostream_operator() {
+    Args args;
+    std::stringstream ss;
+    ss << args;
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("Args(interface = , address = , ports = , mac = "
+                    "0:0:0:0:0:0, hostname = , print_tries = 0, syslog = 0)"),
+        ss.str());
   }
 };
 

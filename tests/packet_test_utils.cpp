@@ -151,3 +151,16 @@ Tmp_fd_remap::Tmp_fd_remap(int const from_fd, int const to_fd)
     : m_restore(to_fd) {
   duplicate_file_descriptors(from_fd, to_fd);
 }
+
+bool operator==(ether_addr const &lhs, ether_addr const &rhs) {
+  return std::equal(std::begin(lhs.ether_addr_octet),
+                    std::end(lhs.ether_addr_octet),
+                    std::begin(rhs.ether_addr_octet));
+}
+
+std::ostream &operator<<(std::ostream &out, ether_addr const &ether_addr) {
+  out << "ether_addr("
+      << std::vector<uint8_t>(std::begin(ether_addr.ether_addr_octet),
+                              std::end(ether_addr.ether_addr_octet)) << ")";
+  return out;
+}

@@ -58,8 +58,10 @@ Args::Args(const std::string interface_, const std::string address_,
            std::move(ping_tries_)) {}
 
 const std::string def_iface = "lo";
-const std::string def_address = "10.0.0.1/16,fe80::123/64";
-const std::string def_ports = "12345,23456";
+const std::string def_address_ipv4 = "10.0.0.1/16";
+const std::string def_address_ipv6 = "fe80::123/64";
+const std::string def_ports0 = "12345";
+const std::string def_ports1 = "23456";
 const std::string def_mac = "01:12:34:45:67:89";
 const std::string def_hostname = "";
 const std::string def_ping_tries = "5";
@@ -131,10 +133,14 @@ Args read_args(std::ifstream &file) {
       log_string(LOG_INFO, "unknown name \"" + token.at(0) + "\": skipping");
     }
   }
-  if (address.empty())
-    address.push_back(def_address);
-  if (ports.empty())
-    ports.push_back(def_ports);
+  if (address.empty()) {
+    address.push_back(def_address_ipv4);
+    address.push_back(def_address_ipv6);
+  }
+  if (ports.empty()) {
+    ports.push_back(def_ports0);
+    ports.push_back(def_ports1);
+  }
   return Args(std::move(interface), std::move(address), std::move(ports),
               std::move(mac), std::move(hostname), std::move(ping_tries));
 }
@@ -166,8 +172,8 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
   int option_index = 0;
   int c = -1;
   std::string interface = def_iface;
-  std::string address = def_address;
-  std::string ports = def_ports;
+  std::string address = def_address_ipv6;
+  std::string ports = def_ports0;
   std::string mac = def_mac;
   std::string hostname = def_hostname;
   std::string ping_tries = def_ping_tries;

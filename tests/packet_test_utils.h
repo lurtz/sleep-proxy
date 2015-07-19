@@ -97,3 +97,7 @@ struct Tmp_fd_remap {
 
   Tmp_fd_remap(int const from_fd, int const to_fd);
 };
+
+bool operator==(ether_addr const &lhs, ether_addr const &rhs);
+
+std::ostream &operator<<(std::ostream &out, ether_addr const &ether_addr);
