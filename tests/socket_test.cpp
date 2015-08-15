@@ -19,9 +19,11 @@
 #include <cstring>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include "../src/ethernet.h"
+#include <unistd.h>
+#include "packet_test_utils.h"
+#include "ethernet.h"
 
-#include "../src/socket.h"
+#include "socket.h"
 
 struct Socket_listen : public Socket {
   Socket_listen(int domain, int type, int protocol = 0)
@@ -58,6 +60,8 @@ struct Socket_listen : public Socket {
     }
     return optval;
   }
+
+  void close_early() { close(sock); }
 };
 
 class Socket_test : public CppUnit::TestFixture {
@@ -67,6 +71,7 @@ class Socket_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_send_to);
   CPPUNIT_TEST(test_get_ifindex);
   CPPUNIT_TEST(test_set_sock_opt);
+  CPPUNIT_TEST(test_destructor);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -145,6 +150,24 @@ public:
     CPPUNIT_ASSERT_EQUAL(0, sock.get_sock_opt<int>(SOL_SOCKET, SO_BROADCAST));
 
     CPPUNIT_ASSERT_THROW(sock.set_sock_opt(-1, -1, -1), std::runtime_error);
+  }
+
+  void test_destructor() {
+    auto out_in = get_self_pipes();
+    {
+      Tmp_fd_remap const out_remap(std::get<1>(out_in),
+                                   get_fd_from_stream(stdout));
+      {
+        Socket_listen sock(AF_INET, SOCK_DGRAM);
+        sock.close_early();
+      }
+      std::cout << std::flush;
+    }
+    auto const log_text = std::get<0>(out_in).read();
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), log_text.size());
+    CPPUNIT_ASSERT_EQUAL(
+        std::string("close() failed with errno: Bad file descriptor"),
+        log_text.at(0));
   }
 };
 
