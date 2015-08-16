@@ -43,8 +43,6 @@ bool operator==(const ip &lhs, const ip &rhs);
 
 bool operator<(IP_address const &lhs, IP_address const &rhs);
 
-File_descriptor get_tmp_file(std::string const &filename);
-
 std::vector<std::string> get_ip_neigh_output();
 
 typedef std::vector<std::tuple<std::string, IP_address>> Iface_Ips;

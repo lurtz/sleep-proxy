@@ -74,20 +74,6 @@ bool operator<(IP_address const &lhs, IP_address const &rhs) {
   return lhs.with_subnet() < rhs.with_subnet();
 }
 
-File_descriptor get_tmp_file(std::string const &filename) {
-  std::string const path = std::string(P_tmpdir) + '/' + filename;
-  std::vector<char> modifiable_string(path.size() + 1, '\0');
-  std::copy(std::begin(path), std::end(path), std::begin(modifiable_string));
-
-  int const raw_fd = mkstemp(modifiable_string.data());
-  if (raw_fd == -1) {
-    throw std::runtime_error(std::string("failed to create temporary file: ") +
-                             strerror(errno));
-  }
-
-  return File_descriptor{raw_fd, modifiable_string.data()};
-}
-
 std::vector<std::string> get_ip_neigh_output() {
   auto const out_in = get_self_pipes(false);
   std::vector<std::string> const cmd{get_path("ip"), "neigh"};
@@ -161,6 +147,7 @@ bool operator==(ether_addr const &lhs, ether_addr const &rhs) {
 std::ostream &operator<<(std::ostream &out, ether_addr const &ether_addr) {
   out << "ether_addr("
       << std::vector<uint8_t>(std::begin(ether_addr.ether_addr_octet),
-                              std::end(ether_addr.ether_addr_octet)) << ")";
+                              std::end(ether_addr.ether_addr_octet))
+      << ")";
   return out;
 }

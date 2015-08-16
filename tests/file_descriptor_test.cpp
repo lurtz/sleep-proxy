@@ -41,7 +41,6 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_fd_self_pipes_as_stdout);
   CPPUNIT_TEST(test_get_self_pipes);
   CPPUNIT_TEST(test_fd_read);
-  CPPUNIT_TEST(test_fd_read_file);
   CPPUNIT_TEST(test_fd_read_from_self_pipe);
   CPPUNIT_TEST(test_fd_self_pipe_without_close_on_exec);
   CPPUNIT_TEST(test_fd_remap);
@@ -206,21 +205,6 @@ public:
     fd.fd = std::numeric_limits<int>::max();
     CPPUNIT_ASSERT_THROW(fd.read(), std::runtime_error);
     fd.fd = -1;
-  }
-
-  void test_fd_read_file() {
-    File_descriptor fd{get_tmp_file("test_fd_readXXXXXX")};
-
-    {
-      std::ofstream ifs(fd.filename);
-      ifs << "blablabla" << std::endl;
-      ifs << "blubblub" << std::endl;
-    }
-
-    std::vector<std::string> lines = fd.read();
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), lines.size());
-    CPPUNIT_ASSERT_EQUAL(std::string("blablabla"), lines.at(0));
-    CPPUNIT_ASSERT_EQUAL(std::string("blubblub"), lines.at(1));
   }
 
   void test_fd_read_from_self_pipe() {
