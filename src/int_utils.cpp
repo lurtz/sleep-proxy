@@ -24,7 +24,7 @@ namespace fallback {
 namespace std {
 const ::std::string numbers{"-0123456789abcdefABCDEF"};
 
-long long int stoll(const ::std::string &s, const int base) {
+int64_t stoll(const ::std::string &s, const int base) {
   if (s.size() == 0 || !contains_only_valid_characters(s, numbers)) {
     throw ::std::invalid_argument("strtoll(): cannot convert string: " + s);
   }
@@ -45,7 +45,7 @@ long long int stoll(const ::std::string &s, const int base) {
   return ret_val;
 }
 
-unsigned long long int stoull(const ::std::string &s, const int base) {
+uint64_t stoull(const ::std::string &s, const int base) {
   if (s.size() == 0 || !contains_only_valid_characters(s, numbers)) {
     throw ::std::invalid_argument("strtoull(): cannot convert string: " + s);
   }
