@@ -58,6 +58,6 @@ make_test(duplicate_address_watcher_test packet_test_utils)
 make_test(ip_address_test sleep-proxy)
 make_test(packet_parser_test packet_test_utils)
 make_test(ip_test packet_test_utils)
-make_test(socket_test sleep-proxy)
+make_test(socket_test packet_test_utils)
 make_test(file_descriptor_test packet_test_utils)
 

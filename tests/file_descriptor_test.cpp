@@ -45,9 +45,12 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_fd_read_from_self_pipe);
   CPPUNIT_TEST(test_fd_self_pipe_without_close_on_exec);
   CPPUNIT_TEST(test_fd_remap);
+  CPPUNIT_TEST(test_fd_remap_fd_is_negative);
+  CPPUNIT_TEST(test_fd_remap_throws);
   CPPUNIT_TEST(test_unlink_with_exception);
   CPPUNIT_TEST(test_get_fd_from_stream);
   CPPUNIT_TEST(test_duplicate_file_descriptors);
+  CPPUNIT_TEST(test_flush_file_nullptr);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -256,48 +259,52 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("blabla"), text.at(0));
   }
 
+  void test_fd_remap_fd_is_negative() {
+    File_descriptor fd(42, "/dev/blabla", false);
+
+    // precondition
+    CPPUNIT_ASSERT_EQUAL(false, fd.delete_on_close);
+    CPPUNIT_ASSERT_EQUAL(42, fd.fd);
+    CPPUNIT_ASSERT_EQUAL(std::string("/dev/blabla"), fd.filename);
+    CPPUNIT_ASSERT_EQUAL(1, get_fd_from_stream(stdout));
+
+    fd.fd = -1;
+    fd.remap(stdout);
+
+    // postcondition
+    CPPUNIT_ASSERT_EQUAL(false, fd.delete_on_close);
+    CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
+    CPPUNIT_ASSERT_EQUAL(std::string("/dev/blabla"), fd.filename);
+    CPPUNIT_ASSERT_EQUAL(1, get_fd_from_stream(stdout));
+  }
+
+  void test_fd_remap_throws() {
+    File_descriptor fd(42, "/dev/blabla", false);
+    CPPUNIT_ASSERT_THROW(fd.remap(nullptr), std::domain_error);
+    fd.fd = -1;
+  }
+
   void test_unlink_with_exception() {
     CPPUNIT_ASSERT_THROW(unlink_with_exception("/dev/null"),
                          std::runtime_error);
   }
 
   void test_get_fd_from_stream() {
-    FILE bla{0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             {0},
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             0,
-             {0}};
+    FILE bla{0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,  0,
+             0, 0, 0, 0, {0}, 0, 0, 0, 0, 0, 0, 0, 0, {0}};
     bla._fileno = -1;
     CPPUNIT_ASSERT_THROW(get_fd_from_stream(&bla), std::runtime_error);
+
+    CPPUNIT_ASSERT_THROW(get_fd_from_stream(nullptr), std::domain_error);
   }
 
   void test_duplicate_file_descriptors() {
     CPPUNIT_ASSERT_THROW(duplicate_file_descriptors(-1, -2),
                          std::runtime_error);
+  }
+
+  void test_flush_file_nullptr() {
+    CPPUNIT_ASSERT_THROW(flush_file(nullptr), std::domain_error);
   }
 };
 

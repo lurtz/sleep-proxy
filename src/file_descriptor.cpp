@@ -30,7 +30,8 @@ File_descriptor::File_descriptor(char const *str)
     : File_descriptor(std::string(str)) {}
 
 File_descriptor::File_descriptor(std::string name)
-    : filename{std::move(name)}, delete_on_close{!file_exists(filename)} {
+    : fd(-1), filename{std::move(name)},
+      delete_on_close{!file_exists(filename)} {
   if (!filename.empty()) {
     fd = open(filename.c_str(), O_CREAT | O_RDWR,
               S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
@@ -53,7 +54,8 @@ File_descriptor::File_descriptor(const int fdd, std::string name,
   }
 }
 
-File_descriptor::File_descriptor(File_descriptor &&rhs) : fd(-1), filename{""} {
+File_descriptor::File_descriptor(File_descriptor &&rhs)
+    : fd(-1), filename{""}, delete_on_close(false) {
   *this = std::move(rhs);
 }
 
@@ -146,6 +148,9 @@ std::vector<std::string> File_descriptor::read() const {
 }
 
 void flush_file(FILE *const stream) {
+  if (nullptr == stream) {
+    throw std::domain_error("given FILE input is nullptr");
+  }
   if (fflush(stream)) {
     throw std::runtime_error(std::string("could not flush file: ") +
                              strerror(errno));
@@ -153,6 +158,9 @@ void flush_file(FILE *const stream) {
 }
 
 void File_descriptor::remap(FILE *const stream) const {
+  if (nullptr == stream) {
+    throw std::domain_error("given FILE input is nullptr");
+  }
   if (fd < 0) {
     return;
   }
@@ -188,6 +196,9 @@ get_self_pipes(bool const close_on_exec) {
 }
 
 int get_fd_from_stream(FILE *const stream) {
+  if (nullptr == stream) {
+    throw std::domain_error("input FILE is nullptr");
+  }
   int const fd = fileno(stream);
   if (-1 == fd) {
     throw std::runtime_error(
