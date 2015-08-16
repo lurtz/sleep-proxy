@@ -77,7 +77,7 @@ bool operator<(IP_address const &lhs, IP_address const &rhs) {
 std::vector<std::string> get_ip_neigh_output() {
   auto const out_in = get_self_pipes(false);
   std::vector<std::string> const cmd{get_path("ip"), "neigh"};
-  pid_t const pid = spawn(cmd, "/dev/null", std::get<1>(out_in));
+  pid_t const pid = spawn(cmd, File_descriptor(), std::get<1>(out_in));
   const uint8_t status = wait_until_pid_exits(pid);
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
   return std::get<0>(out_in).read();

@@ -26,10 +26,7 @@
 #include <poll.h>
 #include "container_utils.h"
 
-File_descriptor::File_descriptor(char const *str)
-    : File_descriptor(std::string(str)) {}
-
-File_descriptor::File_descriptor(std::string) : fd(-1) {}
+File_descriptor::File_descriptor() : fd(-1) {}
 
 File_descriptor::File_descriptor(const int fdd) : fd(fdd) {
   if (fdd < 0) {

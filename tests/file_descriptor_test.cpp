@@ -69,11 +69,7 @@ public:
 
   void test_fd_constructor_open() {
     {
-      File_descriptor fd("");
-      CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
-    }
-    {
-      File_descriptor fd("/dev/null");
+      File_descriptor fd;
       CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
     }
   }
@@ -86,7 +82,7 @@ public:
   }
 
   void test_fd_copy_constructor() {
-    File_descriptor fd(filename);
+    File_descriptor fd;
     fd.fd = -10;
     CPPUNIT_ASSERT_EQUAL(-10, fd.fd);
 
@@ -118,7 +114,7 @@ public:
     Tmp_fd_remap const tmp_fd_remap(std::get<1>(out_in),
                                     get_fd_from_stream(stderr));
     {
-      File_descriptor fd1("");
+      File_descriptor fd1;
       fd1.fd = std::numeric_limits<int>::max();
     }
     CPPUNIT_ASSERT_EQUAL(
@@ -129,13 +125,13 @@ public:
 
   void test_fd_close() {
     // negative fd will not be changed
-    File_descriptor fd(filename);
+    File_descriptor fd;
     fd.fd = -10;
     fd.close();
     CPPUNIT_ASSERT_EQUAL(-10, fd.fd);
 
     // invalid fd cause exception
-    File_descriptor fd1("");
+    File_descriptor fd1;
     fd1.fd = std::numeric_limits<int>::max();
     CPPUNIT_ASSERT_THROW(fd1.close(), std::runtime_error);
 
@@ -189,7 +185,7 @@ public:
   }
 
   void test_fd_read() {
-    File_descriptor fd("");
+    File_descriptor fd;
     fd.fd = std::numeric_limits<int>::max();
     CPPUNIT_ASSERT_THROW(fd.read(), std::runtime_error);
     fd.fd = -1;

@@ -28,8 +28,8 @@ pid_t fork_exec_pipes(const std::vector<const char *> &command,
                       File_descriptor const &in, File_descriptor const &out);
 
 template <typename Container>
-pid_t spawn(Container &&cmd, File_descriptor const &in = File_descriptor(""),
-            File_descriptor const &out = File_descriptor("")) {
+pid_t spawn(Container &&cmd, File_descriptor const &in = File_descriptor(),
+            File_descriptor const &out = File_descriptor()) {
   static_assert(std::is_same<typename std::decay<Container>::type::value_type,
                              std::string>::value,
                 "container has to carry std::string");

@@ -23,9 +23,7 @@
 struct File_descriptor {
   int fd;
 
-  File_descriptor(char const *str);
-
-  File_descriptor(std::string name);
+  File_descriptor();
 
   File_descriptor(const int fdd);
 

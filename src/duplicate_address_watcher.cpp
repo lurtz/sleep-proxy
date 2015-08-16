@@ -23,7 +23,7 @@
 std::string get_mac(std::string const &iface) {
   auto const cmd = split(get_path("ip") + " a show dev " + iface, ' ');
   auto const out_in = get_self_pipes(false);
-  pid_t const pid = spawn(cmd, "/dev/null", std::get<1>(out_in));
+  pid_t const pid = spawn(cmd, File_descriptor(), std::get<1>(out_in));
   uint8_t const status = wait_until_pid_exits(pid);
   if (status != 0) {
     throw std::runtime_error(std::string("get_mac(): ip a show dev ") + iface +
@@ -42,8 +42,9 @@ bool contains_mac_different_from_given(std::string mac,
     return tmp;
   };
 
-  auto const macs_are_not_equal =
-      [&](std::string const &line) { return transform_to_upper(line) != mac; };
+  auto const macs_are_not_equal = [&](std::string const &line) {
+    return transform_to_upper(line) != mac;
+  };
 
   mac = transform_to_upper(mac);
 
@@ -60,7 +61,7 @@ bool Ip_neigh_checker::is_ipv4_present(std::string const &iface,
   auto cmd_ipv4_tmp = cmd_ipv4;
   cmd_ipv4_tmp.push_back(iface);
   cmd_ipv4_tmp.push_back(ip.pure());
-  const pid_t pid = spawn(cmd_ipv4_tmp, "/dev/null");
+  const pid_t pid = spawn(cmd_ipv4_tmp);
   const uint8_t status = wait_until_pid_exits(pid);
   // if arping detects duplicate address, it returns 1
   return status == 1;
@@ -82,7 +83,7 @@ bool Ip_neigh_checker::is_ipv6_present(std::string const &iface,
 
   auto const out_in = get_self_pipes(false);
 
-  const pid_t pid = spawn(cmd_ipv6_tmp, "/dev/null", std::get<1>(out_in));
+  const pid_t pid = spawn(cmd_ipv6_tmp, File_descriptor(), std::get<1>(out_in));
   wait_until_pid_exits(pid);
 
   // if there are more than one line, there must be another host

@@ -50,7 +50,7 @@ void Scope_guard::take_action(const Action a) const {
   std::string cmd = aquire_release(a);
   if (cmd.size() > 0) {
     log_string(LOG_INFO, cmd);
-    pid_t pid = spawn(split(cmd, ' '), "/dev/null");
+    pid_t pid = spawn(split(cmd, ' '));
     uint8_t status = wait_until_pid_exits(pid);
     if (status != 0) {
       throw std::runtime_error("command failed: " + cmd);

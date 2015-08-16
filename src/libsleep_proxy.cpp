@@ -182,7 +182,7 @@ bool ping_and_wait(const std::string &iface, const IP_address &ip,
   const std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip.pure())};
   uint8_t ret_val = 1;
   for (unsigned int i = 0; i < tries && !is_signaled() && ret_val != 0; i++) {
-    const pid_t pid = spawn(split(cmd, ' '), "/dev/null", "/dev/null");
+    const pid_t pid = spawn(split(cmd, ' '));
     ret_val = wait_until_pid_exits(pid);
   }
   if (ret_val != 0) {
