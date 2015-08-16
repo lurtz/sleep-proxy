@@ -29,40 +29,21 @@
 File_descriptor::File_descriptor(char const *str)
     : File_descriptor(std::string(str)) {}
 
-File_descriptor::File_descriptor(std::string name)
-    : fd(-1), filename{std::move(name)},
-      delete_on_close{!file_exists(filename)} {
-  if (!filename.empty()) {
-    fd = open(filename.c_str(), O_CREAT | O_RDWR,
-              S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-    if (-1 == fd) {
-      throw std::runtime_error(std::string("File_descriptor::open() failed: ") +
-                               strerror(errno));
-    }
-  } else {
-    fd = -1;
-    delete_on_close = false;
-  }
-}
+File_descriptor::File_descriptor(std::string) : fd(-1) {}
 
-File_descriptor::File_descriptor(const int fdd, std::string name,
-                                 bool delete_on_closee)
-    : fd(fdd), filename(std::move(name)), delete_on_close(delete_on_closee) {
+File_descriptor::File_descriptor(const int fdd) : fd(fdd) {
   if (fdd < 0) {
     throw std::runtime_error(std::string("file descriptor is negative: ") +
                              strerror(errno));
   }
 }
 
-File_descriptor::File_descriptor(File_descriptor &&rhs)
-    : fd(-1), filename{""}, delete_on_close(false) {
+File_descriptor::File_descriptor(File_descriptor &&rhs) : fd(-1) {
   *this = std::move(rhs);
 }
 
 File_descriptor &File_descriptor::operator=(File_descriptor &&rhs) {
   std::swap(fd, rhs.fd);
-  std::swap(filename, rhs.filename);
-  std::swap(delete_on_close, rhs.delete_on_close);
   return *this;
 }
 
@@ -77,14 +58,6 @@ File_descriptor::~File_descriptor() {
 
 File_descriptor::operator int() const { return fd; }
 
-void unlink_with_exception(std::string const &filename) {
-  int const status = unlink(filename.c_str());
-  if (status) {
-    throw std::runtime_error(std::string("unlinking file ") + filename +
-                             " failed: " + strerror(errno));
-  }
-}
-
 void File_descriptor::close() {
   if (fd < 0 || get_fd_from_stream(stdin) == fd ||
       get_fd_from_stream(stdout) == fd || get_fd_from_stream(stderr) == fd) {
@@ -96,9 +69,6 @@ void File_descriptor::close() {
   if (status == -1) {
     throw std::runtime_error(std::string("File_descriptor::close() failed: ") +
                              strerror(errno));
-  }
-  if (delete_on_close) {
-    unlink_with_exception(filename);
   }
 }
 
@@ -183,8 +153,8 @@ get_self_pipes(bool const close_on_exec) {
   if (pipe(pipefds)) {
     throw std::runtime_error(std::string("pipe() failed: ") + strerror(errno));
   }
-  File_descriptor p0{pipefds[0], "selfpipe0", false};
-  File_descriptor p1{pipefds[1], "selfpipe1", false};
+  File_descriptor p0{pipefds[0]};
+  File_descriptor p1{pipefds[1]};
   if (close_on_exec) {
     if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC)) {
       throw std::runtime_error(std::string("fcntl() failed: ") +

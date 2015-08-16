@@ -27,7 +27,6 @@ class Spawn_process_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Spawn_process_test);
   CPPUNIT_TEST(test_wait_until_pid_exits);
   CPPUNIT_TEST(test_fork_exec);
-  CPPUNIT_TEST(test_direct_output_to_file);
   CPPUNIT_TEST(test_get_path);
   CPPUNIT_TEST(test_direct_output_to_self_pipes);
   CPPUNIT_TEST_SUITE_END();
@@ -75,38 +74,6 @@ public:
   void test_fork_exec() {
     test_without_exceptions();
     test_with_exceptions();
-  }
-
-  void test_direct_output_to_file() {
-    std::string const filename{"/tmp/blublub"};
-    CPPUNIT_ASSERT(!file_exists(filename));
-
-    // create file
-    { std::ofstream ofs(filename); }
-    CPPUNIT_ASSERT(file_exists(filename));
-
-    // write neigh into file
-    std::vector<std::string> const cmd{get_path("echo"), "neigh"};
-    pid_t pid = spawn(cmd, "/dev/null", filename);
-    uint8_t status = wait_until_pid_exits(pid);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-    CPPUNIT_ASSERT(file_exists(filename));
-
-    // read and verify it
-    {
-      std::ifstream ifs(filename);
-      std::string line;
-      CPPUNIT_ASSERT(std::getline(ifs, line));
-      CPPUNIT_ASSERT_EQUAL(std::string("neigh"), line);
-      CPPUNIT_ASSERT(!std::getline(ifs, line));
-    }
-
-    // delete it
-    std::vector<std::string> const clean{get_path("rm"), filename};
-    pid = spawn(clean);
-    status = wait_until_pid_exits(pid);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
-    CPPUNIT_ASSERT(!file_exists(filename));
   }
 
   void test_get_path() {

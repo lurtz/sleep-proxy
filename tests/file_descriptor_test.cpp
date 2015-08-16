@@ -37,7 +37,6 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_fd_destructor);
   CPPUNIT_TEST(test_file_exists);
   CPPUNIT_TEST(test_fd_close);
-  CPPUNIT_TEST(test_fd_delete_on_close);
   CPPUNIT_TEST(test_fd_self_pipes_as_stdout);
   CPPUNIT_TEST(test_get_self_pipes);
   CPPUNIT_TEST(test_fd_read);
@@ -46,7 +45,6 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_fd_remap);
   CPPUNIT_TEST(test_fd_remap_fd_is_negative);
   CPPUNIT_TEST(test_fd_remap_throws);
-  CPPUNIT_TEST(test_unlink_with_exception);
   CPPUNIT_TEST(test_get_fd_from_stream);
   CPPUNIT_TEST(test_duplicate_file_descriptors);
   CPPUNIT_TEST(test_flush_file_nullptr);
@@ -72,44 +70,29 @@ public:
   void test_fd_constructor_open() {
     {
       File_descriptor fd("");
-      CPPUNIT_ASSERT(0 > fd.fd);
-      CPPUNIT_ASSERT(!fd.delete_on_close);
+      CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
     }
-
-    { File_descriptor fd("/dev/null"); }
-
-    CPPUNIT_ASSERT_THROW(File_descriptor("/dev/balbla"), std::runtime_error);
-
-    File_descriptor fd1(filename);
-    std::ofstream ofs(filename);
-    ofs << "blabla" << std::endl;
-    auto const content = fd1.read();
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), content.size());
-    CPPUNIT_ASSERT_EQUAL(std::string("blabla"), content.at(0));
+    {
+      File_descriptor fd("/dev/null");
+      CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
+    }
   }
 
   void test_fd_constructor() {
-    CPPUNIT_ASSERT_THROW(File_descriptor(-1, ""), std::runtime_error);
+    CPPUNIT_ASSERT_THROW(File_descriptor(-1), std::runtime_error);
 
-    File_descriptor fd(get_fd_from_stream(stdout), "stdout", false);
+    File_descriptor fd(get_fd_from_stream(stdout));
     CPPUNIT_ASSERT_EQUAL(1, fd.fd);
-    CPPUNIT_ASSERT_EQUAL(std::string("stdout"), fd.filename);
-    CPPUNIT_ASSERT_EQUAL(false, fd.delete_on_close);
   }
 
   void test_fd_copy_constructor() {
     File_descriptor fd(filename);
-    CPPUNIT_ASSERT(file_exists(filename));
-    CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
+    fd.fd = -10;
+    CPPUNIT_ASSERT_EQUAL(-10, fd.fd);
 
     File_descriptor const fd2(std::move(fd));
-    CPPUNIT_ASSERT(-1 != fcntl(fd2, F_GETFD));
-    CPPUNIT_ASSERT(-1 == fcntl(fd, F_GETFD));
-
+    CPPUNIT_ASSERT_EQUAL(-10, fd2.fd);
     CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
-    CPPUNIT_ASSERT_EQUAL(std::string(), fd.filename);
-
-    CPPUNIT_ASSERT(file_exists(filename));
   }
 
   void test_file_exists() {
@@ -124,7 +107,7 @@ public:
     CPPUNIT_ASSERT(-1 != fcntl(c_fd, F_GETFD));
     CPPUNIT_ASSERT(file_exists(filename));
     {
-      File_descriptor fd(c_fd, filename);
+      File_descriptor fd(c_fd);
       CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
       CPPUNIT_ASSERT_EQUAL(c_fd, static_cast<int>(fd));
       CPPUNIT_ASSERT(file_exists(filename));
@@ -145,22 +128,27 @@ public:
   }
 
   void test_fd_close() {
+    // negative fd will not be changed
     File_descriptor fd(filename);
-    CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
+    fd.fd = -10;
     fd.close();
-    CPPUNIT_ASSERT_EQUAL(-1, fcntl(fd, F_GETFD));
+    CPPUNIT_ASSERT_EQUAL(-10, fd.fd);
 
+    // invalid fd cause exception
     File_descriptor fd1("");
     fd1.fd = std::numeric_limits<int>::max();
     CPPUNIT_ASSERT_THROW(fd1.close(), std::runtime_error);
-  }
 
-  void test_fd_delete_on_close() {
-    File_descriptor fd(open_file(), filename, false);
-    CPPUNIT_ASSERT(-1 != fcntl(fd, F_GETFD));
-    fd.close();
-    CPPUNIT_ASSERT_EQUAL(-1, fcntl(fd, F_GETFD));
-    CPPUNIT_ASSERT(file_exists(filename));
+    // normal fd are set to -1
+    auto self_pipes = get_self_pipes();
+    CPPUNIT_ASSERT(2 < std::get<0>(self_pipes));
+    CPPUNIT_ASSERT(2 < std::get<1>(self_pipes));
+
+    std::get<0>(self_pipes).close();
+    CPPUNIT_ASSERT_EQUAL(-1, std::get<0>(self_pipes).fd);
+
+    std::get<1>(self_pipes).close();
+    CPPUNIT_ASSERT_EQUAL(-1, std::get<1>(self_pipes).fd);
   }
 
   void test_fd_self_pipes_as_stdout() {
@@ -244,33 +232,24 @@ public:
   }
 
   void test_fd_remap_fd_is_negative() {
-    File_descriptor fd(42, "/dev/blabla", false);
+    File_descriptor fd(42);
 
     // precondition
-    CPPUNIT_ASSERT_EQUAL(false, fd.delete_on_close);
     CPPUNIT_ASSERT_EQUAL(42, fd.fd);
-    CPPUNIT_ASSERT_EQUAL(std::string("/dev/blabla"), fd.filename);
     CPPUNIT_ASSERT_EQUAL(1, get_fd_from_stream(stdout));
 
     fd.fd = -1;
     fd.remap(stdout);
 
     // postcondition
-    CPPUNIT_ASSERT_EQUAL(false, fd.delete_on_close);
     CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
-    CPPUNIT_ASSERT_EQUAL(std::string("/dev/blabla"), fd.filename);
     CPPUNIT_ASSERT_EQUAL(1, get_fd_from_stream(stdout));
   }
 
   void test_fd_remap_throws() {
-    File_descriptor fd(42, "/dev/blabla", false);
+    File_descriptor fd(42);
     CPPUNIT_ASSERT_THROW(fd.remap(nullptr), std::domain_error);
     fd.fd = -1;
-  }
-
-  void test_unlink_with_exception() {
-    CPPUNIT_ASSERT_THROW(unlink_with_exception("/dev/null"),
-                         std::runtime_error);
   }
 
   void test_get_fd_from_stream() {

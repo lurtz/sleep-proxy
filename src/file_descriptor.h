@@ -22,15 +22,12 @@
 
 struct File_descriptor {
   int fd;
-  std::string filename;
-  bool delete_on_close;
 
   File_descriptor(char const *str);
 
   File_descriptor(std::string name);
 
-  File_descriptor(const int fdd, std::string name,
-                  bool delete_on_closee = true);
+  File_descriptor(const int fdd);
 
   File_descriptor(File_descriptor &&rhs);
 
@@ -61,5 +58,3 @@ int get_fd_from_stream(FILE *const stream);
 void flush_file(FILE *const stream);
 
 int duplicate_file_descriptors(int const from, int const to);
-
-void unlink_with_exception(std::string const &filename);
