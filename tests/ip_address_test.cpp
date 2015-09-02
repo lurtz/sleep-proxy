@@ -54,6 +54,7 @@ public:
     CPPUNIT_ASSERT_THROW(parse_ip("10"), std::runtime_error);
     CPPUNIT_ASSERT_THROW(parse_ip("fe80::123/200"), std::invalid_argument);
     CPPUNIT_ASSERT_THROW(parse_ip("10.0.0.1/200"), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW(parse_ip(""), std::invalid_argument);
   }
 
   void test_stream_operator() {

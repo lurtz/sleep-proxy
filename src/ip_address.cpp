@@ -18,6 +18,7 @@
 #include "to_string.h"
 #include "int_utils.h"
 #include "container_utils.h"
+#include "log.h"
 #include <array>
 
 std::string IP_address::pure() const {
@@ -76,6 +77,10 @@ static const std::string ip_chars{
     "0123456789.abcdefghijklmnopqrstuvwxyzABCDEF:/%"};
 
 IP_address parse_ip(const std::string &ip) {
+  if (ip.empty()) {
+    throw std::invalid_argument("given ip is empty");
+  }
+  log_string(LOG_INFO, "parsing ip: " + ip);
   test_characters(ip, ip_chars, "ip contains invalid characters: " + ip);
   // one slash or no slash
   if (ip.find('/') != ip.rfind('/')) {

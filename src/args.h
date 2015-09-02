@@ -43,10 +43,6 @@ struct Args {
   Args(const std::string interface_, const std::vector<std::string> addresss_,
        const std::vector<std::string> ports_, const std::string mac_,
        const std::string hostname_, const std::string ping_tries_);
-
-  Args(const std::string interface_, const std::string addresss_,
-       const std::string ports_, const std::string mac_,
-       const std::string hostname_, const std::string ping_tries_);
 };
 
 std::vector<Args> read_commandline(const int argc, char *const argv[]);

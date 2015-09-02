@@ -251,13 +251,19 @@ public:
   void test_mac_to_binary() {
     std::string const mac = "00:11:Aa:Cd:65:43";
     ether_addr const binary = mac_to_binary(mac);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), binary.ether_addr_octet[0]);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(17), binary.ether_addr_octet[1]);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(170), binary.ether_addr_octet[2]);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(205), binary.ether_addr_octet[3]);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(101), binary.ether_addr_octet[4]);
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(67), binary.ether_addr_octet[5]);
+    std::array<uint8_t, 6> const expected_mac{{0, 17, 170, 205, 101, 67}};
+    CPPUNIT_ASSERT(std::equal(std::begin(expected_mac), std::end(expected_mac),
+                              std::begin(binary.ether_addr_octet)));
 
+    std::string const mac1 = "0:11:Aa:Cd:65:43";
+    ether_addr const binary1 = mac_to_binary(mac1);
+    CPPUNIT_ASSERT(std::equal(std::begin(expected_mac), std::end(expected_mac),
+                              std::begin(binary1.ether_addr_octet)));
+
+    CPPUNIT_ASSERT_THROW(mac_to_binary("0011aacd6543"), std::runtime_error);
+    CPPUNIT_ASSERT_THROW(mac_to_binary("011AaCd6543"), std::runtime_error);
+    CPPUNIT_ASSERT_THROW(mac_to_binary("0:11::Cd:05:43"), std::runtime_error);
+    CPPUNIT_ASSERT_THROW(mac_to_binary("0:11::Cd:5:43"), std::runtime_error);
     CPPUNIT_ASSERT_THROW(mac_to_binary("fdsafdsa"), std::runtime_error);
   }
 

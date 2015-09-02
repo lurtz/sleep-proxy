@@ -25,7 +25,6 @@
 class Ip_utils_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Ip_utils_test);
   CPPUNIT_TEST(test_validate_iface);
-  CPPUNIT_TEST(test_validate_mac);
   CPPUNIT_TEST(test_parse_items);
   CPPUNIT_TEST_SUITE_END();
 
@@ -45,18 +44,6 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string(""), validate_iface(""));
   }
 
-  void test_validate_mac() {
-    CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:ab"),
-                         validate_mac("01:23:45:67:89:AB"));
-    CPPUNIT_ASSERT_EQUAL(std::string("01:23:45:67:89:ab"),
-                         validate_mac("01:23:45:67:89:ab"));
-    CPPUNIT_ASSERT_THROW(validate_mac("lo\""), std::runtime_error);
-    CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89:AAB"),
-                         std::runtime_error);
-    CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89"), std::runtime_error);
-    CPPUNIT_ASSERT_THROW(validate_mac("01:23:45:67:89:"), std::runtime_error);
-  }
-
   void test_parse_items() {
     std::vector<std::string> strings{"1", "2", "3", "4"};
     std::vector<int> ints{1, 2, 3, 4};
@@ -66,6 +53,10 @@ public:
     CPPUNIT_ASSERT(strings == parse_items(strings, identity<std::string>));
     CPPUNIT_ASSERT(std::vector<int>() == parse_items(std::vector<std::string>(),
                                                      str_to_integral<int>));
+
+    CPPUNIT_ASSERT_THROW(
+        parse_items(std::vector<std::string>{""}, str_to_integral<int>),
+        std::invalid_argument);
   }
 };
 

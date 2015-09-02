@@ -41,25 +41,19 @@ class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_read_file);
   CPPUNIT_TEST(test_print_help);
   CPPUNIT_TEST(test_ostream_operator);
+  CPPUNIT_TEST(test_read_command_line_weird_option);
   CPPUNIT_TEST_SUITE_END();
-  std::string interface;
-  std::string addresses;
-  std::string ports;
-  std::string mac;
-  std::string hostname;
-  std::string ping_tries;
-  bool syslog__;
+  std::string interface = "lo";
+  std::vector<std::string> addresses{"fe80::123/64"};
+  std::vector<std::string> ports{"12345"};
+  std::string mac = "1:12:34:45:67:89";
+  std::string hostname = "";
+  std::string ping_tries = "5";
+  bool syslog__ = false;
 
 public:
   void setUp() {
     reset();
-    interface = "eth0";
-    addresses = "192.168.1.1/24,fe80::affe:123/64";
-    ports = "1,2,3456";
-    mac = "AF:FE:DE:AD:BE:EF";
-    hostname = "router";
-    ping_tries = "9001";
-    syslog__ = false;
     compare(get_args());
   }
 
@@ -71,15 +65,17 @@ public:
         const_cast<char *const *>(get_c_string_array(params).data()));
   }
 
-  Args get_args() const {
-    std::vector<std::string> params{
-        "args_test", "-i", interface, "-a",     addresses, "-p",      ports,
-        "-m",        mac,  "-n",      hostname, "-t",      ping_tries};
+  std::vector<Args> get_args_vec() const {
+    std::vector<std::string> params{"args_test"};
     if (syslog__) {
       std::cout << "syslog" << std::endl;
       params.push_back("--syslog");
     }
-    return get_args(params).at(0);
+    return get_args(params);
+  }
+
+  Args get_args() const {
+    return Args(interface, addresses, ports, mac, hostname, ping_tries);
   }
 
   std::vector<Args> get_args(const std::string &filename,
@@ -92,10 +88,8 @@ public:
   }
 
   std::vector<uint16_t> parse_ports() const {
-    std::vector<std::string> split_port = split(ports, ',');
-    std::vector<uint16_t> ret_val(split_port.size());
-    std::transform(std::begin(split_port), std::end(split_port),
-                   std::begin(ret_val),
+    std::vector<uint16_t> ret_val(ports.size());
+    std::transform(std::begin(ports), std::end(ports), std::begin(ret_val),
                    [](const std::string &s) { return std::stoi(s); });
     return ret_val;
   }
@@ -103,7 +97,7 @@ public:
   void compare(const Args &args) const {
     CPPUNIT_ASSERT_EQUAL(interface, args.interface);
     std::vector<IP_address> parsed_ips;
-    for (const auto &ip : split(addresses, ',')) {
+    for (const auto &ip : addresses) {
       parsed_ips.push_back(parse_ip(ip));
     }
     CPPUNIT_ASSERT(parsed_ips == args.address);
@@ -139,48 +133,55 @@ public:
   }
 
   void test_addresses() {
-    addresses = "192.168.1.1";
+    addresses = std::vector<std::string>{"192.168.1.1"};
     Args args(get_args());
-    addresses = "192.168.1.1/24";
+    addresses = std::vector<std::string>{"192.168.1.1/24"};
     compare(args);
-    addresses = "::1";
+    addresses = std::vector<std::string>{"::1"};
     Args args1(get_args());
-    addresses = "::1/128";
+    addresses = std::vector<std::string>{"::1/128"};
     compare(args1);
-    addresses = "::1/128;";
+    addresses = std::vector<std::string>{"::1/128;"};
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
-    addresses = "";
+    addresses = std::vector<std::string>{""};
+    CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
+    addresses = std::vector<std::string>{};
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
   void test_ports() {
-    ports = "123";
+    ports = std::vector<std::string>{"123"};
     compare(get_args());
-    ports = "123456789";
+    ports = std::vector<std::string>{"123456789"};
     CPPUNIT_ASSERT_THROW(get_args(), std::out_of_range);
-    ports = "66000";
+    ports = std::vector<std::string>{"66000"};
     CPPUNIT_ASSERT_THROW(get_args(), std::out_of_range);
-    ports = "12345;";
+    ports = std::vector<std::string>{"12345;"};
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
-    ports = "garbage";
+    ports = std::vector<std::string>{"garbage"};
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
-    ports = "";
+    ports = std::vector<std::string>{""};
+    CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
+    ports = std::vector<std::string>{};
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
   void test_mac() {
     mac = "aa:aa:aa:aa:bb:cc";
     Args args = get_args();
+    compare(args);
     mac = "AA:AA:AA:AA:BB:CC";
     compare(args);
+    mac = "01:2:03:04:05:06";
+    Args args1 = get_args();
+    mac = "1:2:3:4:5:6";
+    compare(args1);
     mac = "";
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
   void test_hostname() {
     hostname = "asdf,.-";
-    CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
-    hostname = "";
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
@@ -192,33 +193,37 @@ public:
   }
 
   void test_syslog() {
+    CPPUNIT_ASSERT(!Args().syslog);
     syslog__ = true;
-    auto args = get_args();
-    compare(args);
+    auto args = get_args_vec();
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args.size());
+    CPPUNIT_ASSERT(Args().syslog);
+    reset();
+    CPPUNIT_ASSERT(!Args().syslog);
   }
 
   void test_read_file() {
     auto args = get_args("watchhosts");
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), args.size());
     interface = "lo";
-    addresses = "10.0.0.1/16,fe80::123/64";
-    ports = "12345,23456";
+    addresses = std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"};
+    ports = std::vector<std::string>{"12345", "23456"};
     mac = "1:12:34:45:67:89";
     hostname = "test.lan";
     ping_tries = "5";
     compare(args.at(0));
 
     interface = "lo";
-    addresses = "10.1.2.3/16,fe80::de:ad/64";
-    ports = "22";
+    addresses = std::vector<std::string>{"10.1.2.3/16", "fe80::de:ad/64"};
+    ports = std::vector<std::string>{"22"};
     mac = "FF:EE:DD:CC:BB:AA";
     hostname = "test2";
     ping_tries = "1";
     compare(args.at(1));
 
     interface = "lo";
-    addresses = "10.0.0.1/16,fe80::123/64";
-    ports = "12345,23456";
+    addresses = std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"};
+    ports = std::vector<std::string>{"12345", "23456"};
     mac = "1:12:34:45:67:89";
     hostname = "";
     ping_tries = "5";
@@ -241,7 +246,7 @@ public:
       std::cout << std::flush;
     }
     auto const help_text = std::get<0>(out_in).read();
-    CPPUNIT_ASSERT(help_text.size() > 18);
+    CPPUNIT_ASSERT(help_text.size() > 7);
   }
 
   void test_ostream_operator() {
@@ -252,6 +257,38 @@ public:
         std::string("Args(interface = , address = , ports = , mac = "
                     "0:0:0:0:0:0, hostname = , print_tries = 0, syslog = 0)"),
         ss.str());
+  }
+
+  void test_read_command_line_weird_option() {
+    auto out_in = get_self_pipes();
+
+    {
+      Tmp_fd_remap const fd_remap{std::get<1>(out_in),
+                                  get_fd_from_stream(stdout)};
+
+      std::vector<std::string> cmd_args{"weird_option", "-f"};
+      auto args = get_args(cmd_args);
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args.size());
+
+      cmd_args[1] = "-c";
+      auto args1 = get_args(cmd_args);
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args1.size());
+
+      std::cout << std::flush;
+    }
+
+    auto const messages = std::get<0>(out_in).read();
+
+    std::cout << messages << std::endl;
+
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(4), messages.size());
+
+    CPPUNIT_ASSERT_EQUAL(std::string("parsing ip: fe80::123/64"),
+                         messages.at(0));
+    CPPUNIT_ASSERT_EQUAL(std::string("parsing ip: fe80::123/64"),
+                         messages.at(1));
+    CPPUNIT_ASSERT_EQUAL(std::string("got unknown option: f"), messages.at(2));
+    CPPUNIT_ASSERT_EQUAL(std::string("got unknown option: c"), messages.at(3));
   }
 };
 

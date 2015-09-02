@@ -15,34 +15,10 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "ip_utils.h"
-#include "container_utils.h"
-#include <sys/socket.h>
-#include <stdexcept>
-#include "int_utils.h"
 #include "to_string.h"
 
 std::string validate_iface(const std::string iface) {
   test_characters(iface, iface_chars,
                   "iface contains invalid characters: " + iface);
   return iface;
-}
-
-static const std::string hex_chars{":0123456789abcdef"};
-
-std::string validate_mac(std::string mac) {
-  std::transform(std::begin(mac), std::end(mac), std::begin(mac),
-                 [](char ch) { return std::tolower(ch); });
-  test_characters(mac, hex_chars, "mac address has to be given in hex");
-  std::vector<std::string> items = split(mac, ':');
-  if (items.size() != 6) {
-    throw std::runtime_error("mac address is not 48 bit long: " + mac);
-  }
-  const bool b =
-      std::all_of(std::begin(items), std::end(items),
-                  [](std::string &item) { return item.size() == 2; });
-  if (!b) {
-    throw std::runtime_error("at start, end and between double colons of mac "
-                             "two digits have to be given");
-  }
-  return mac;
 }

@@ -36,10 +36,9 @@ Args::Args(const std::string interface_,
     : interface(validate_iface(std::move(interface_))),
       address(parse_items(std::move(addresss_), parse_ip)),
       ports(parse_items(std::move(ports_), str_to_integral<uint16_t>)),
-      mac(mac_to_binary(validate_mac(std::move(mac_)))),
+      mac(mac_to_binary(std::move(mac_))),
       hostname(test_characters(hostname_, iface_chars + "-",
-                               std::string("invalid token in hostname: ") +
-                                   hostname_)),
+                               "invalid token in hostname: " + hostname_)),
       ping_tries(str_to_integral<unsigned int>(ping_tries_)),
       syslog(to_syslog) {
   if (address.size() == 0) {
@@ -49,13 +48,6 @@ Args::Args(const std::string interface_,
     throw std::runtime_error("no port given");
   }
 }
-
-Args::Args(const std::string interface_, const std::string address_,
-           const std::string ports_, const std::string mac_,
-           const std::string hostname_, const std::string ping_tries_)
-    : Args(std::move(interface_), split(std::move(address_), ','),
-           split(std::move(ports_), ','), std::move(mac_), std::move(hostname_),
-           std::move(ping_tries_)) {}
 
 const std::string def_iface = "lo";
 const std::string def_address_ipv4 = "10.0.0.1/16";
@@ -67,33 +59,16 @@ const std::string def_hostname = "";
 const std::string def_ping_tries = "5";
 
 void print_help() {
-  log_string(LOG_INFO,
-             "usage: emulateHost [-h] [-i INTERFACE] [-a ADDRESS] [-p PORTS]");
-  log_string(LOG_INFO, "                   [-m MACADDRESS]");
+  log_string(LOG_INFO, "usage: emulateHost [-h] [-s] [-c CONFIG]");
   log_string(LOG_INFO, "emulates a host, which went standby and wakes it upon "
                        "an incoming connection");
   log_string(LOG_INFO, "optional arguments:");
   log_string(LOG_INFO,
              "  -h, --help            show this help message and exit");
-  log_string(LOG_INFO, "  -i INTERFACE, --interface INTERFACE");
-  log_string(LOG_INFO, "                        interface to listen");
   log_string(LOG_INFO, "  -c CONFIG, --config CONFIG");
   log_string(
       LOG_INFO,
       "                        read config file, should be the last argument");
-  log_string(LOG_INFO, "  -a ADDRESS, --address ADDRESS");
-  log_string(LOG_INFO, "                        ips on which shall be listened "
-                       "to in cidr notation");
-  log_string(LOG_INFO, "  -p PORTS, --ports PORTS");
-  log_string(
-      LOG_INFO,
-      "                        comma seperated list of ports to listen on");
-  log_string(LOG_INFO, "  -m MACADDRESS, --macaddress MACADDRESS");
-  log_string(LOG_INFO, "                        mac of the host to wake");
-  log_string(LOG_INFO, "  -t PING_TRIES, --ping_tries PING_TRIES");
-  log_string(
-      LOG_INFO,
-      "                        how often it shall be tried to ping the target");
   log_string(LOG_INFO, "  -s, --syslog");
   log_string(LOG_INFO, "                        print messages to syslog");
 }
@@ -161,56 +136,21 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
   static const option long_options[] = {
       {"help", no_argument, nullptr, 'h'},
       {"config", required_argument, nullptr, 'c'},
-      {"interface", required_argument, nullptr, 'i'},
-      {"address", required_argument, nullptr, 'a'},
-      {"ports", required_argument, nullptr, 'p'},
-      {"macaddress", required_argument, nullptr, 'm'},
-      {"hostname", required_argument, nullptr, 'n'},
-      {"ping_tries", required_argument, nullptr, 't'},
       {"syslog", no_argument, nullptr, 's'},
       {nullptr, 0, nullptr, 0}};
   int option_index = 0;
   int c = -1;
-  std::string interface = def_iface;
-  std::string address = def_address_ipv6;
-  std::string ports = def_ports0;
-  std::string mac = def_mac;
-  std::string hostname = def_hostname;
-  std::string ping_tries = def_ping_tries;
   std::vector<Args> ret_val;
-  bool read_file_ = false;
   // read cmd line arguments and checks them
-  while ((c = getopt_long(argc, argv, "hc:i:a:p:m:n:t:s", long_options,
-                          &option_index)) != -1) {
+  while ((c = getopt_long(argc, argv, "hc:s", long_options, &option_index)) !=
+         -1) {
     switch (c) {
     case 'h':
       print_help();
       exit(0);
       break;
-    case 'i':
-      interface = optarg;
-      break;
     case 'c':
       ret_val = read_file(optarg);
-      read_file_ = true;
-      break;
-    case 'a':
-      address = optarg;
-      break;
-    case 'p':
-      ports = optarg;
-      break;
-    case 'm':
-      mac = optarg;
-      break;
-    case 'n':
-      hostname = optarg;
-      if (hostname.size() == 0) {
-        throw std::runtime_error("no hostname given");
-      }
-      break;
-    case 't':
-      ping_tries = optarg;
       break;
     case 's':
       to_syslog = true;
@@ -222,11 +162,6 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
       log(LOG_ERR, "got weird option: %c", c);
       break;
     }
-  }
-  if (!read_file_) {
-    ret_val.emplace_back(std::move(interface), std::move(address),
-                         std::move(ports), std::move(mac), std::move(hostname),
-                         ping_tries);
   }
   return ret_val;
 }

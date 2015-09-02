@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
     mac_pos += 2;
   }
   check_arguments(argc, count);
-  ether_addr mac = mac_to_binary(validate_mac(argv[mac_pos]));
+  ether_addr mac = mac_to_binary(argv[mac_pos]);
   if (std::string("-i") != argv[1]) {
     wol_udp(mac);
   } else {
