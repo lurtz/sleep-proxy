@@ -31,9 +31,10 @@ typedef std::function<bool(std::string const &, IP_address const &)>
     Is_ip_occupied;
 
 struct Ip_neigh_checker {
+  static std::vector<std::string> const cmd_ipv4;
+  static std::vector<std::string> const cmd_ipv6;
+
   std::string const this_nodes_mac;
-  std::vector<std::string> const cmd_ipv4;
-  std::vector<std::string> const cmd_ipv6;
 
   Ip_neigh_checker(std::string mac);
 

@@ -35,7 +35,8 @@ struct Pseudo_future {
   Pseudo_future(const std::string iface, const IP_address ip,
                 const unsigned int tries)
       : iface_(std::move(iface)), ip_(std::move(ip)), tries_(std::move(tries)),
-        thread([&]() { result = ping_and_wait(iface_, ip_, tries_); }) {}
+        thread([&]() { result = ping_and_wait(iface_, ip_, tries_); }),
+        result{false} {}
 
   Pseudo_future(Pseudo_future &&pf) = default;
 

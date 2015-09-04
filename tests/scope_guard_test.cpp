@@ -157,11 +157,13 @@ public:
     uint16_t port{1234};
     Drop_port op{ip, port};
     CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -I INPUT -d " + ip.pure() +
-                             " -p tcp --syn --dport " + std::to_string(port) +
+                             " -p tcp --syn --dport " +
+                             std::to_string(static_cast<uint32_t>(port)) +
                              " -j DROP",
                          op(Action::add));
     CPPUNIT_ASSERT_EQUAL("/sbin/iptables -w -D INPUT -d " + ip.pure() +
-                             " -p tcp --syn --dport " + std::to_string(port) +
+                             " -p tcp --syn --dport " +
+                             std::to_string(static_cast<uint32_t>(port)) +
                              " -j DROP",
                          op(Action::del));
 
@@ -169,11 +171,13 @@ public:
     port = 666;
     Drop_port op2{ip, port};
     CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -I INPUT -d " + ip.pure() +
-                             " -p tcp --syn --dport " + std::to_string(port) +
+                             " -p tcp --syn --dport " +
+                             std::to_string(static_cast<uint32_t>(port)) +
                              " -j DROP",
                          op2(Action::add));
     CPPUNIT_ASSERT_EQUAL("/sbin/ip6tables -w -D INPUT -d " + ip.pure() +
-                             " -p tcp --syn --dport " + std::to_string(port) +
+                             " -p tcp --syn --dport " +
+                             std::to_string(static_cast<uint32_t>(port)) +
                              " -j DROP",
                          op2(Action::del));
   }

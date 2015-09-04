@@ -72,8 +72,8 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
       std::vector<std::tuple<std::string, IP_address>>{
           std::make_tuple("wlan0", parse_ip("192.168.1.1/24")),
           std::make_tuple("wlan0", parse_ip("2001:470:1f15:df3::1/64"))}};
-  Pcap_dummy pcap;
-  std::atomic_bool loop;
+  Pcap_dummy pcap{};
+  std::atomic_bool loop{true};
 
   CPPUNIT_TEST_SUITE(Duplicate_address_watcher_test);
   CPPUNIT_TEST(test_duplicate_address_watcher_constructor);
@@ -95,8 +95,6 @@ public:
     pcap = Pcap_dummy();
     loop = true;
   }
-
-  void tearDown() {}
 
   void test_duplicate_address_watcher_constructor() {
     Duplicate_address_watcher const daw{"eth0", parse_ip("10.0.0.1/16"), pcap};
@@ -257,10 +255,10 @@ public:
     auto const new_end =
         std::remove_if(std::begin(not_present_ips), std::end(not_present_ips),
                        [&](Iface_Ips::value_type const &iface_ip) {
-          return std::end(iface_ips) != std::find(std::begin(iface_ips),
-                                                  std::end(iface_ips),
-                                                  iface_ip);
-        });
+                         return std::end(iface_ips) !=
+                                std::find(std::begin(iface_ips),
+                                          std::end(iface_ips), iface_ip);
+                       });
     not_present_ips.resize(static_cast<std::size_t>(
         std::distance(std::begin(not_present_ips), new_end)));
 
@@ -287,21 +285,21 @@ public:
     std::string const mac2 = "bb:bb:44:66:99:a3";
 
     CPPUNIT_ASSERT(!contains_mac_different_from_given(
-                       mac0, std::vector<std::string>{mac0}));
+        mac0, std::vector<std::string>{mac0}));
     CPPUNIT_ASSERT(!contains_mac_different_from_given(
-                       mac00, std::vector<std::string>{mac0}));
+        mac00, std::vector<std::string>{mac0}));
     CPPUNIT_ASSERT(!contains_mac_different_from_given(
-                       mac01, std::vector<std::string>{mac0}));
+        mac01, std::vector<std::string>{mac0}));
     CPPUNIT_ASSERT(!contains_mac_different_from_given(
-                       mac0, std::vector<std::string>{mac0, mac00, mac01}));
+        mac0, std::vector<std::string>{mac0, mac00, mac01}));
     CPPUNIT_ASSERT(!contains_mac_different_from_given(
-                       mac1, std::vector<std::string>{mac1}));
+        mac1, std::vector<std::string>{mac1}));
     CPPUNIT_ASSERT(contains_mac_different_from_given(
         mac1, std::vector<std::string>{mac0}));
     CPPUNIT_ASSERT(contains_mac_different_from_given(
         mac1, std::vector<std::string>{mac0, mac1}));
     CPPUNIT_ASSERT(!contains_mac_different_from_given(
-                       mac2, std::vector<std::string>{mac2}));
+        mac2, std::vector<std::string>{mac2}));
     CPPUNIT_ASSERT(contains_mac_different_from_given(
         mac2, std::vector<std::string>{mac0}));
     CPPUNIT_ASSERT(contains_mac_different_from_given(

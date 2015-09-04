@@ -17,7 +17,7 @@
 #include "main.h"
 #include <string>
 
-#include "../src/ip.h"
+#include "ip.h"
 
 #include "packet_test_utils.h"
 

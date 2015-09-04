@@ -62,7 +62,10 @@ std::ostream &operator<<(std::ostream &out, const ip &ip);
 template <typename iterator>
 bool ethernet_payload_and_ip_version_dont_match(uint16_t const type,
                                                 iterator data) {
-  uint8_t const version = *data >> 4;
+  static_assert(std::is_same<typename iterator::value_type, uint8_t>::value,
+                "container has to carry u_char or uint8_t");
+
+  uint8_t const version = static_cast<uint8_t>(*data >> 4);
   bool const result = (type == ip::Version::ipv4 && version != 4) ||
                       (type == ip::Version::ipv6 && version != 6);
   if (result) {
@@ -77,7 +80,7 @@ template <typename iterator>
 std::unique_ptr<ip> parse_ipv4(iterator data, iterator end) {
   check_type_and_range(data, end, 20);
   uint8_t const ip_vhl = *data;
-  size_t const header_length = (ip_vhl & 0x0f) * 4;
+  size_t const header_length = static_cast<uint8_t>((ip_vhl & 0x0f) * 4);
   std::advance(data, 9);
   uint8_t const ip_p = *data;
   std::advance(data, 3);

@@ -23,7 +23,8 @@
 struct BPF {
   bpf_program bpf;
   BPF(std::unique_ptr<pcap_t, std::function<void(pcap_t *)>> &pc,
-      const std::string &filter) {
+      const std::string &filter)
+      : bpf{0, 0} {
     if (pcap_compile(pc.get(), &bpf, filter.c_str(), false,
                      PCAP_NETMASK_UNKNOWN) == -1) {
       throw std::runtime_error("Can't compile bpf filter " + filter);
@@ -95,10 +96,8 @@ void Pcap_wrapper::set_filter(const std::string &filter) {
  */
 void callback_wrapper(u_char *args, const struct pcap_pkthdr *header,
                       const u_char *packet) {
-  auto cb =
-      *reinterpret_cast<
-          std::function<void(const struct pcap_pkthdr *, const u_char *)> *>(
-          args);
+  auto cb = *reinterpret_cast<
+      std::function<void(const struct pcap_pkthdr *, const u_char *)> *>(args);
   cb(header, packet);
 }
 
@@ -116,7 +115,7 @@ Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(
     throw std::runtime_error(std::string("error while captching data: ") +
                              pcap_geterr(pc.get()));
     break;
-  case PCAP_ERROR_BREAK:
+  default:
     break;
   }
   return loop_end_reason;

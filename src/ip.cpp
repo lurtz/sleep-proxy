@@ -26,6 +26,9 @@ std::ostream &operator<<(std::ostream &out, const ip::Version &v) {
   case ip::Version::ipv6:
     out << 6;
     break;
+  default:
+    out << "unknown";
+    break;
   }
   return out;
 }

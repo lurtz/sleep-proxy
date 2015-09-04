@@ -34,7 +34,7 @@ uint8_t wait_until_pid_exits(const pid_t &pid) {
   if (WIFSIGNALED(status)) {
     raise(WTERMSIG(status));
   }
-  return WEXITSTATUS(status);
+  return static_cast<uint8_t>(WEXITSTATUS(status));
 }
 
 pid_t fork_exec_pipes(const std::vector<const char *> &command,

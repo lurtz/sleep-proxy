@@ -51,10 +51,13 @@ bool contains_mac_different_from_given(std::string mac,
   return std::any_of(std::begin(lines), std::end(lines), macs_are_not_equal);
 }
 
+std::vector<std::string> const Ip_neigh_checker::cmd_ipv4{
+    get_path("arping"), "-q", "-D", "-c", "1", "-I"};
+std::vector<std::string> const Ip_neigh_checker::cmd_ipv6{get_path("ndisc6"),
+                                                          "-q", "-n", "-m"};
+
 Ip_neigh_checker::Ip_neigh_checker(std::string mac)
-    : this_nodes_mac{std::move(mac)},
-      cmd_ipv4{get_path("arping"), "-q", "-D", "-c", "1", "-I"},
-      cmd_ipv6{get_path("ndisc6"), "-q", "-n", "-m"} {}
+    : this_nodes_mac{std::move(mac)} {}
 
 bool Ip_neigh_checker::is_ipv4_present(std::string const &iface,
                                        IP_address const &ip) const {
@@ -146,14 +149,14 @@ Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee,
                                                      const IP_address ipp,
                                                      Pcap_wrapper &pc)
     : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc),
-      is_ip_occupied{Ip_neigh_checker{get_mac(iface)}},
+      is_ip_occupied{Ip_neigh_checker{get_mac(iface)}}, watcher(nullptr),
       loop(std::make_shared<std::atomic_bool>(false)) {}
 
 Duplicate_address_watcher::Duplicate_address_watcher(
     const std::string ifacee, const IP_address ipp, Pcap_wrapper &pc,
     Is_ip_occupied const is_ip_occupiedd)
     : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc),
-      is_ip_occupied{std::move(is_ip_occupiedd)},
+      is_ip_occupied{std::move(is_ip_occupiedd)}, watcher(nullptr),
       loop(std::make_shared<std::atomic_bool>(false)) {}
 
 Duplicate_address_watcher::~Duplicate_address_watcher() {

@@ -47,8 +47,8 @@ std::vector<uint8_t> create_ethernet_header(const ether_addr &dmac,
                                             const ether_addr &smac,
                                             const uint16_t type) {
   auto binary = to_vector(dmac) + to_vector(smac);
-  binary.push_back(type >> 8);
-  binary.push_back(type & 0xFF);
+  binary.push_back(static_cast<uint8_t>(type >> 8));
+  binary.push_back(static_cast<uint8_t>(type & 0xFF));
   return binary;
 }
 

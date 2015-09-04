@@ -8,8 +8,7 @@
 #include "container_utils.h"
 #include "int_utils.h"
 
-void check_range(const long long int val, const long long int lower,
-                 const long long int upper) {
+void check_range(const int64_t val, const int64_t lower, const int64_t upper) {
   if (val < lower || val >= upper) {
     throw std::out_of_range(to_string(val) + " is not in range [" +
                             to_string(lower) + "," + to_string(upper) + ")");
@@ -20,8 +19,8 @@ void check_range(const long long int val, const long long int lower,
  * converts two hex characters into a byte value
  */
 uint8_t two_hex_chars_to_byte(const char a, const char b) {
-  const long long int left = fallback::std::stoll(std::string(1, a), 16);
-  const long long int right = fallback::std::stoll(std::string(1, b), 16);
+  const int64_t left = fallback::std::stoll(std::string(1, a), 16);
+  const int64_t right = fallback::std::stoll(std::string(1, b), 16);
   check_range(left, 0, 16);
   check_range(right, 0, 16);
   return static_cast<uint8_t>(left << 4) | static_cast<uint8_t>(right);

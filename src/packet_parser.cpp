@@ -64,7 +64,7 @@ basic_headers get_headers(const int type, const std::vector<u_char> &packet) {
 }
 
 Catch_incoming_connection::Catch_incoming_connection(const int link_layer_typee)
-    : link_layer_type(link_layer_typee) {}
+    : link_layer_type(link_layer_typee), headers{}, data{} {}
 
 void Catch_incoming_connection::operator()(const pcap_pkthdr *header,
                                            const u_char *packet) {

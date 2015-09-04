@@ -27,7 +27,9 @@ bool to_syslog = false;
 
 void reset() { to_syslog = false; }
 
-Args::Args() : mac{{0}}, ping_tries{0}, syslog(to_syslog) {}
+Args::Args()
+    : interface{}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0},
+      syslog(to_syslog) {}
 
 Args::Args(const std::string interface_,
            const std::vector<std::string> addresss_,
