@@ -263,6 +263,7 @@ public:
     auto out_in = get_self_pipes();
 
     {
+      std::cout << std::flush;
       Tmp_fd_remap const fd_remap{std::get<1>(out_in),
                                   get_fd_from_stream(stdout)};
 
@@ -279,16 +280,10 @@ public:
 
     auto const messages = std::get<0>(out_in).read();
 
-    std::cout << messages << std::endl;
+    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), messages.size());
 
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(4), messages.size());
-
-    CPPUNIT_ASSERT_EQUAL(std::string("parsing ip: fe80::123/64"),
-                         messages.at(0));
-    CPPUNIT_ASSERT_EQUAL(std::string("parsing ip: fe80::123/64"),
-                         messages.at(1));
-    CPPUNIT_ASSERT_EQUAL(std::string("got unknown option: f"), messages.at(2));
-    CPPUNIT_ASSERT_EQUAL(std::string("got unknown option: c"), messages.at(3));
+    CPPUNIT_ASSERT_EQUAL(std::string("got unknown option: f"), messages.at(0));
+    CPPUNIT_ASSERT_EQUAL(std::string("got unknown option: c"), messages.at(1));
   }
 };
 
