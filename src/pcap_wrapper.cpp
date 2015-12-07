@@ -16,6 +16,7 @@
 
 #include "pcap_wrapper.h"
 #include <stdexcept>
+#include <mutex>
 #include "log.h"
 #include "to_string.h"
 
@@ -24,7 +25,11 @@ struct BPF {
   bpf_program bpf;
   BPF(std::unique_ptr<pcap_t, std::function<void(pcap_t *)>> &pc,
       const std::string &filter)
-      : bpf{0, 0} {
+      : bpf{0, nullptr} {
+    // pcap_compile is not thread safe
+    // see http://seclists.org/tcpdump/2012/q2/22
+    static std::mutex pcap_compile_mutex;
+    std::lock_guard<std::mutex> const lock(pcap_compile_mutex);
     if (pcap_compile(pc.get(), &bpf, filter.c_str(), false,
                      PCAP_NETMASK_UNKNOWN) == -1) {
       throw std::runtime_error("Can't compile bpf filter " + filter);
