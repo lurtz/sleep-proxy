@@ -76,9 +76,9 @@ public:
     return sent_bytes;
   }
 
-  void ioctl(const unsigned long, ifreq &) const;
+  void ioctl(const unsigned long req_number, ifreq &ifr) const;
 
   int get_ifindex(const std::string &iface) const;
 
-  ether_addr get_hwaddr(const std::string &) const;
+  ether_addr get_hwaddr(const std::string &iface) const;
 };

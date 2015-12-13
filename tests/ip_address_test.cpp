@@ -26,9 +26,9 @@ class Ip_address_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
+  void setUp() override {}
 
-  void tearDown() {}
+  void tearDown() override {}
 
   void compare_ip(const std::string &full_ip, const int family,
                   const std::string &ip, const uint8_t subnet) {

@@ -15,10 +15,10 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "pcap_wrapper.h"
-#include <stdexcept>
 #include <mutex>
 #include "log.h"
 #include "to_string.h"
+#include <stdexcept>
 
 /** provides a bpf_programm instance in an exception safe way */
 struct BPF {
@@ -101,9 +101,9 @@ void Pcap_wrapper::set_filter(const std::string &filter) {
  */
 void callback_wrapper(u_char *args, const struct pcap_pkthdr *header,
                       const u_char *packet) {
-  auto cb = *reinterpret_cast<
+  auto const cb = reinterpret_cast<
       std::function<void(const struct pcap_pkthdr *, const u_char *)> *>(args);
-  cb(header, packet);
+  (*cb)(header, packet);
 }
 
 Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(
@@ -128,8 +128,9 @@ Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(
 
 void Pcap_wrapper::break_loop(const Loop_end_reason &ler) {
   loop_end_reason = ler;
-  if (pc != nullptr)
+  if (pc != nullptr) {
     pcap_breakloop(pc.get());
+  }
 }
 
 int Pcap_wrapper::inject(const std::vector<uint8_t> &data) {

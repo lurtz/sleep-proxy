@@ -15,10 +15,10 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "to_string.h"
-#include <stdexcept>
-#include <vector>
 #include <cerrno>
 #include <cstring>
+#include <stdexcept>
+#include <vector>
 
 bool contains_only_valid_characters(const std::string &input,
                                     const std::string &valid_chars) {

@@ -19,9 +19,9 @@
 #include <unistd.h>
 #include <cstring>
 #include <sys/ioctl.h>
-#include <linux/if_ether.h>
 #include "to_string.h"
 #include "log.h"
+#include <linux/if_ether.h>
 
 Socket::Socket(int domain, int type, int protocol)
     : sock{socket(domain, type, protocol)} {

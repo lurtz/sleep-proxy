@@ -15,8 +15,8 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "main.h"
-#include <string>
 #include <cstring>
+#include <string>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
@@ -75,9 +75,9 @@ class Socket_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
+  void setUp() override {}
 
-  void tearDown() {}
+  void tearDown() override {}
 
   void test_constructor_throws() {
     CPPUNIT_ASSERT_THROW(Socket(-1, -1), std::runtime_error);

@@ -15,13 +15,13 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "args.h"
-#include <stdexcept>
-#include <getopt.h>
 #include <fstream>
 #include "log.h"
 #include "ip_utils.h"
 #include "int_utils.h"
 #include "ethernet.h"
+#include <getopt.h>
+#include <stdexcept>
 
 bool to_syslog = false;
 
@@ -126,8 +126,9 @@ std::vector<Args> read_file(const std::string &filename) {
   std::ifstream file(filename);
   std::vector<Args> ret_val;
   std::string line;
-  while (std::getline(file, line) && line.substr(0, 4) != "host")
+  while (std::getline(file, line) && line.substr(0, 4) != "host") {
     ;
+  }
   while (file) {
     ret_val.emplace_back(read_args(file));
   }

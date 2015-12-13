@@ -32,9 +32,9 @@ class Spawn_process_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
+  void setUp() override {}
 
-  void tearDown() {}
+  void tearDown() override {}
 
   void test_wait_until_pid_exits() {
     pid_t pid = -1;

@@ -38,9 +38,9 @@ class Scope_guard_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
+  void setUp() override {}
 
-  void tearDown() {}
+  void tearDown() override {}
 
   void test_scope_guard_constructor() {
     {
@@ -305,7 +305,7 @@ public:
     CPPUNIT_ASSERT(!file_exists(filename));
   }
 
-  std::string exception_causing_function(const Action &) {
+  std::string exception_causing_function(const Action & /*unused*/) {
     return get_path("false");
   }
 

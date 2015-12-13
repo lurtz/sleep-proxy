@@ -37,9 +37,9 @@ class Libsleep_proxy_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() { reset_signaled(); }
+  void setUp() override { reset_signaled(); }
 
-  void tearDown() {}
+  void tearDown() override {}
 
   void test_sigterm() {
     CPPUNIT_ASSERT(!is_signaled());

@@ -15,13 +15,13 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "args.h"
-#include "libsleep_proxy.h"
 #include "log.h"
+#include "libsleep_proxy.h"
 #include <future>
-#include <type_traits>
 #include <algorithm>
 #include <csignal>
 #include <thread>
+#include <type_traits>
 
 /** with std::async this code is not able to build on openwrt. this is a
  * replacement */
@@ -101,8 +101,9 @@ int main(int argc, char *argv[]) {
     threads.emplace_back(thread_main, std::move(args));
   }
   std::for_each(std::begin(threads), std::end(threads), [](std::thread &t) {
-    if (t.joinable())
+    if (t.joinable()) {
       t.join();
+    }
   });
   return 0;
 }

@@ -16,11 +16,11 @@
 
 #include "file_descriptor.h"
 #include <unistd.h>
-#include <string>
-#include <stdexcept>
 #include <cstring>
 #include <iostream>
 #include <cerrno>
+#include <stdexcept>
+#include <string>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <poll.h>
@@ -35,11 +35,11 @@ File_descriptor::File_descriptor(const int fdd) : fd(fdd) {
   }
 }
 
-File_descriptor::File_descriptor(File_descriptor &&rhs) : fd(-1) {
+File_descriptor::File_descriptor(File_descriptor &&rhs) noexcept : fd(-1) {
   *this = std::move(rhs);
 }
 
-File_descriptor &File_descriptor::operator=(File_descriptor &&rhs) {
+File_descriptor &File_descriptor::operator=(File_descriptor &&rhs) noexcept {
   std::swap(fd, rhs.fd);
   return *this;
 }

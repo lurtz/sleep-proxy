@@ -44,7 +44,7 @@ struct Link_layer {
   ether_addr source() const;
 };
 
-std::ostream &operator<<(std::ostream &out, const Link_layer &);
+std::ostream &operator<<(std::ostream &out, const Link_layer &ll);
 
 std::vector<uint8_t> create_ethernet_header(const ether_addr &dmac,
                                             const ether_addr &smac,

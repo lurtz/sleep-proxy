@@ -24,10 +24,10 @@
 // fallback because c++11 functions are not available
 namespace fallback {
 namespace std {
-int64_t stoll(const ::std::string &, const int base = 10);
-uint64_t stoull(const ::std::string &, const int base = 10);
-}
-}
+int64_t stoll(const ::std::string &s, const int base = 10);
+uint64_t stoull(const ::std::string &s, const int base = 10);
+} // namespace std
+} // namespace fallback
 
 /** range check for signed target types */
 template <typename R, typename T,

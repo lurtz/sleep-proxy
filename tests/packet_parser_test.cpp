@@ -18,8 +18,8 @@
 #include <string>
 
 #include "packet_parser.h"
-#include "ethernet.h"
 #include "container_utils.h"
+#include "ethernet.h"
 #include "int_utils.h"
 
 #include "packet_test_utils.h"

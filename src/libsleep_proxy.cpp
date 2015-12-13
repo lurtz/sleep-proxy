@@ -21,6 +21,7 @@
 #include <mutex>
 #include <csignal>
 #include <cstring>
+#include <atomic>
 #include "pcap_wrapper.h"
 #include "scope_guard.h"
 #include "ip_utils.h"
@@ -30,9 +31,8 @@
 #include "spawn_process.h"
 #include "wol.h"
 #include "packet_parser.h"
-#include "log.h"
-#include <atomic>
 #include "duplicate_address_watcher.h"
+#include "log.h"
 
 /*
  * Pretends to be a host, which has gone into standby and is startable via wake
@@ -50,7 +50,7 @@ std::vector<Pcap_wrapper *> pcaps;
 
 std::atomic_bool signaled{false};
 
-void signal_handler(int) {
+void signal_handler(int /*unused*/) {
   signaled = true;
   std::lock_guard<std::mutex> lock(pcaps_mutex);
   for (auto &pc : pcaps) {
@@ -171,9 +171,8 @@ std::string get_ping_cmd(const IP_address &ip) {
 std::string get_bindable_ip(const std::string &iface, const std::string &ip) {
   if (ip.find("fe80") == 0) {
     return ip + '%' + iface;
-  } else {
-    return ip;
   }
+  return ip;
 }
 
 bool ping_and_wait(const std::string &iface, const IP_address &ip,
@@ -198,8 +197,9 @@ void replay_data(const std::string &iface, const int type,
   log_string(LOG_INFO, "replaing SYN packet");
   basic_headers headers = get_headers(type, data);
   const std::unique_ptr<Link_layer> &ll = std::get<0>(headers);
-  if (ll == nullptr)
+  if (ll == nullptr) {
     return;
+  }
   const uint16_t payload_type = std::get<1>(headers)->version();
   auto data_iter = std::begin(data);
   std::advance(data_iter, ll->header_length());

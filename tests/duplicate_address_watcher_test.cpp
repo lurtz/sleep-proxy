@@ -17,14 +17,14 @@
 #include "main.h"
 
 #include "duplicate_address_watcher.h"
-#include <atomic>
 #include "file_descriptor.h"
 #include "to_string.h"
+#include <atomic>
 #include <future>
-#include <algorithm>
 #include "spawn_process.h"
 #include "container_utils.h"
 #include "packet_test_utils.h"
+#include <algorithm>
 
 bool contains_mac_different_from_given(std::string mac,
                                        std::vector<std::string> const &lines);
@@ -47,7 +47,7 @@ struct Pcap_dummy : public Pcap_wrapper {
 struct Is_ip_occupied_dummy {
   std::vector<std::tuple<std::string, IP_address>> const occupied;
 
-  Is_ip_occupied_dummy(
+  explicit Is_ip_occupied_dummy(
       std::vector<std::tuple<std::string, IP_address>> occupiedd)
       : occupied{std::move(occupiedd)} {}
 
@@ -60,7 +60,8 @@ struct Is_ip_occupied_dummy {
 };
 
 struct Throwing_ip_occupied_dummy {
-  bool operator()(std::string const &, IP_address const &) const {
+  bool operator()(std::string const & /*unused*/,
+                  IP_address const & /*unused*/) const {
     throw std::runtime_error("throwing ip occupied dummy throws");
     return false;
   }
@@ -91,7 +92,7 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {
+  void setUp() override {
     pcap = Pcap_dummy();
     loop = true;
   }

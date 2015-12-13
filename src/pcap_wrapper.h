@@ -45,8 +45,8 @@ protected:
 
 public:
   /** open a pcap instance on iface */
-  Pcap_wrapper(const std::string iface, const int snaplen = 65000,
-               const bool promisc = false, const int timeout = 1000);
+  explicit Pcap_wrapper(const std::string iface, const int snaplen = 65000,
+                        const bool promisc = false, const int timeout = 1000);
 
   /** tell if the first header is ethernet, unix socket, ... */
   int get_datalink() const;
@@ -61,7 +61,7 @@ public:
   loop(const int count,
        std::function<void(const struct pcap_pkthdr *, const u_char *)> cb);
 
-  void break_loop(const Loop_end_reason &);
+  void break_loop(const Loop_end_reason &ler);
 
-  int inject(const std::vector<uint8_t> &);
+  int inject(const std::vector<uint8_t> &data);
 };

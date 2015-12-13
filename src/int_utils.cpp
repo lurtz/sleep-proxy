@@ -68,8 +68,8 @@ uint64_t stoull(const ::std::string &s, const int base) {
   errno = errno_save;
   return ret_val;
 }
-}
-}
+} // namespace std
+} // namespace fallback
 
 std::string uint32_t_to_eight_hex_chars(const uint32_t i) noexcept {
   char val[9] = {0};

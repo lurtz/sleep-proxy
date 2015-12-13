@@ -231,8 +231,10 @@ public:
   void test_non_supported_protocol() {
     std::vector<uint8_t> data;
     for (int type = 0; type < 0xFFFFF; type++) {
-      if (type == DLT_LINUX_SLL || type == DLT_EN10MB || type == ETHERTYPE_VLAN)
+      if (type == DLT_LINUX_SLL || type == DLT_EN10MB ||
+          type == ETHERTYPE_VLAN) {
         continue;
+      }
       CPPUNIT_ASSERT(std::unique_ptr<Link_layer>(nullptr) ==
                      parse_link_layer(type, std::begin(data), std::end(data)));
     }

@@ -29,8 +29,8 @@ class Join_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
-  void tearDown() {}
+  void setUp() override {}
+  void tearDown() override {}
   void testConstructor() {
     std::string result = join(std::vector<int>(), identity<int>, ",");
     CPPUNIT_ASSERT_EQUAL(std::string(""), result);

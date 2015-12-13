@@ -16,12 +16,13 @@
 
 #pragma once
 
-#include <tuple>
+#include "packet_parser.h"
 #include <memory>
-#include <vector>
 #include <pcap/pcap.h>
-#include "ethernet.h"
+#include <tuple>
+#include <vector>
 #include "ip.h"
+#include "ethernet.h"
 
 /**
  * Ethernet, IP and TCP/UDP header in one tuple
@@ -48,7 +49,7 @@ struct Catch_incoming_connection {
   basic_headers headers;
   std::vector<uint8_t> data;
 
-  Catch_incoming_connection(const int link_layer_typee);
+  explicit Catch_incoming_connection(const int link_layer_typee);
 
   void operator()(const pcap_pkthdr *header, const u_char *packet);
 };

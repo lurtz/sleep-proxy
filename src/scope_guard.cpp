@@ -18,10 +18,10 @@
 #include <arpa/inet.h>
 #include <cerrno>
 #include "log.h"
-#include "to_string.h"
 #include "ip_utils.h"
 #include "spawn_process.h"
 #include "container_utils.h"
+#include "to_string.h"
 #include "int_utils.h"
 
 Scope_guard::Scope_guard() : freed{true}, aquire_release{} {}
@@ -31,7 +31,7 @@ Scope_guard::Scope_guard(Aquire_release &&aquire_release_arg)
   take_action(Action::add);
 }
 
-Scope_guard::Scope_guard(Scope_guard &&rhs)
+Scope_guard::Scope_guard(Scope_guard &&rhs) noexcept
     : freed{std::move(rhs.freed)},
       aquire_release(std::move(rhs.aquire_release)) {
   rhs.freed = true;

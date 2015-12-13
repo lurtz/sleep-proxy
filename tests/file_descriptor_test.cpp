@@ -51,9 +51,9 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() { CPPUNIT_ASSERT(!file_exists(filename)); }
+  void setUp() override { CPPUNIT_ASSERT(!file_exists(filename)); }
 
-  void tearDown() {
+  void tearDown() override {
     if (file_exists(filename)) {
       std::vector<std::string> cmd{get_path("rm"), filename};
       CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0),
@@ -249,8 +249,11 @@ public:
   }
 
   void test_get_fd_from_stream() {
-    FILE bla{0, 0, 0, 0, 0,   0, 0, 0, 0, 0, 0, 0, 0, 0,  0,
-             0, 0, 0, 0, {0}, 0, 0, 0, 0, 0, 0, 0, 0, {0}};
+    FILE bla{0,       nullptr, nullptr, nullptr, nullptr, nullptr,
+             nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+             nullptr, nullptr, 0,       0,       0,       0,
+             0,       {0},     nullptr, 0,       nullptr, nullptr,
+             nullptr, nullptr, 0,       0,       {0}};
     bla._fileno = -1;
     CPPUNIT_ASSERT_THROW(get_fd_from_stream(&bla), std::runtime_error);
 

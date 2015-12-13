@@ -15,8 +15,8 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "main.h"
-#include <string>
 #include <arpa/inet.h>
+#include <string>
 
 #include "ip_utils.h"
 #include "int_utils.h"
@@ -29,9 +29,9 @@ class Ip_utils_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
+  void setUp() override {}
 
-  void tearDown() {}
+  void tearDown() override {}
 
   void test_validate_iface() {
     CPPUNIT_ASSERT_EQUAL(std::string("eth0"), validate_iface("eth0"));

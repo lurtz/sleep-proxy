@@ -15,9 +15,9 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "ethernet.h"
+#include "int_utils.h"
 #include <iterator>
 #include <stdexcept>
-#include "int_utils.h"
 
 std::ostream &operator<<(std::ostream &out, const Link_layer &ll) {
   out << ll.get_info();

@@ -15,11 +15,11 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "main.h"
-#include <string>
 #include "ethernet.h"
 #include "packet_test_utils.h"
-#include <vector>
 #include <netinet/ether.h>
+#include <string>
+#include <vector>
 
 std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac);
 
@@ -29,8 +29,8 @@ class Wol_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
-  void tearDown() {}
+  void setUp() override {}
+  void tearDown() override {}
 
   static void check_wol_udp_payload(const std::vector<uint8_t> &wol,
                                     const unsigned char start,

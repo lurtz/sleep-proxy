@@ -17,10 +17,10 @@
 #include "spawn_process.h"
 #include <sys/wait.h>
 #include <unistd.h>
-#include <stdexcept>
 #include <cstring>
 #include <cstdlib>
 #include <cerrno>
+#include <stdexcept>
 
 uint8_t wait_until_pid_exits(const pid_t &pid) {
   int status;
@@ -60,8 +60,9 @@ pid_t fork_exec_pipes(const std::vector<const char *> &command,
     ssize_t count;
     int err;
     while ((count = read(std::get<0>(pipes), &err, sizeof(err))) == -1 &&
-           (errno == EAGAIN || errno == EINTR))
+           (errno == EAGAIN || errno == EINTR)) {
       ;
+    }
     std::get<0>(pipes).close();
     if (count) {
       // something bad happend in the child process
@@ -78,8 +79,9 @@ const std::array<std::string, 4> paths{
 std::string get_path(const std::string command) {
   for (const auto &p : paths) {
     const std::string fn = p + '/' + command;
-    if (file_exists(fn))
+    if (file_exists(fn)) {
       return fn;
+    }
   }
   throw std::runtime_error("unable to find path for file: " + command);
   return "";

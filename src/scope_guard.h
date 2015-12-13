@@ -54,12 +54,12 @@ public:
    * consume the resource or perform modification using
    * aquire_release_arg
    */
-  Scope_guard(Aquire_release &&aquire_release_arg);
+  explicit Scope_guard(Aquire_release &&aquire_release_arg);
 
   /**
    * Move constructor
    */
-  Scope_guard(Scope_guard &&rhs);
+  Scope_guard(Scope_guard &&rhs) noexcept;
 
   ~Scope_guard();
 

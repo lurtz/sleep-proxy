@@ -16,10 +16,11 @@
 
 #pragma once
 
-#include <string>
-#include <exception>
 #include "args.h"
 #include "ip_address.h"
+#include "libsleep_proxy.h"
+#include <exception>
+#include <string>
 
 void setup_signals();
 

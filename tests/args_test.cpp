@@ -15,8 +15,8 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "main.h"
-#include <string>
 #include <algorithm>
+#include <string>
 #include <unistd.h>
 
 #include "args.h"
@@ -52,7 +52,7 @@ class Args_test : public CppUnit::TestFixture {
   bool syslog__ = false;
 
 public:
-  void setUp() {
+  void setUp() override {
     reset();
     compare(get_args());
   }
@@ -113,7 +113,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(syslog__, args.syslog);
   }
 
-  void tearDown() {}
+  void tearDown() override {}
 
   void test_default_constructor() {
     Args args;

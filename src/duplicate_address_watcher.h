@@ -36,7 +36,7 @@ struct Ip_neigh_checker {
 
   std::string const this_nodes_mac;
 
-  Ip_neigh_checker(std::string mac);
+  explicit Ip_neigh_checker(std::string mac);
 
   bool is_ipv4_present(std::string const &iface, IP_address const &ip) const;
 
@@ -53,10 +53,11 @@ struct Duplicate_address_watcher {
   std::shared_ptr<std::thread> watcher;
   std::shared_ptr<std::atomic_bool> loop;
 
-  Duplicate_address_watcher(const std::string, const IP_address,
-                            Pcap_wrapper &);
+  Duplicate_address_watcher(const std::string ifacee, const IP_address ipp,
+                            Pcap_wrapper &pc);
 
-  Duplicate_address_watcher(const std::string, const IP_address, Pcap_wrapper &,
+  Duplicate_address_watcher(const std::string ifacee, const IP_address ipp,
+                            Pcap_wrapper &pc,
                             Is_ip_occupied const is_ip_occupiedd);
 
   ~Duplicate_address_watcher();

@@ -24,8 +24,8 @@ class Log_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() { setup_log("Log_test", 0, LOG_USER); }
-  void tearDown() {}
+  void setUp() override { setup_log("Log_test", 0, LOG_USER); }
+  void tearDown() override {}
   void test_log_string() {
     log_string(LOG_DEBUG, "test_log_string()");
     log_string(LOG_NOTICE, "test_log_string()");

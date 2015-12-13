@@ -15,8 +15,8 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "ip.h"
-#include <arpa/inet.h>
 #include "to_string.h"
+#include <arpa/inet.h>
 
 std::ostream &operator<<(std::ostream &out, const ip::Version &v) {
   switch (v) {

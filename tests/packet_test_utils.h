@@ -85,7 +85,7 @@ void write(File_descriptor const &fd, std::string const &text);
 struct Fd_restore {
   int const m_fd;
   int const m_backup_fd;
-  Fd_restore(int const fd);
+  explicit Fd_restore(int const fd);
 
   ~Fd_restore();
 };

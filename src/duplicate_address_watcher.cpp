@@ -99,9 +99,8 @@ bool Ip_neigh_checker::operator()(std::string const &iface,
                                   IP_address const &ip) const {
   if (ip.family == AF_INET) {
     return is_ipv4_present(iface, ip);
-  } else {
-    return is_ipv6_present(iface, ip);
   }
+  return is_ipv6_present(iface, ip);
 }
 
 void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,

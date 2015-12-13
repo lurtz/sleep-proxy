@@ -30,8 +30,8 @@ class Str_to_integral_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE_END();
 
 public:
-  void setUp() {}
-  void tearDown() {}
+  void setUp() override {}
+  void tearDown() override {}
   void testConstructor() {
     CPPUNIT_ASSERT_EQUAL(0, str_to_integral<int>("0"));
     CPPUNIT_ASSERT_EQUAL(1, str_to_integral<int>("1"));
