@@ -24,9 +24,6 @@
 #include "log.h"
 #include "ethernet.h"
 
-/**
- * create the payload for a UDP wol packet to be broadcast in to the network
- */
 std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac) {
   const std::vector<uint8_t> binary_mac = to_vector(mac);
   std::vector<uint8_t> magic_bytes{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -37,9 +34,6 @@ std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac) {
   return magic_bytes;
 }
 
-/**
- * Send a WOL UDP packet to the given mac
- */
 void wol_udp(const ether_addr &mac) {
   log_string(LOG_INFO, "waking (udp) " + binary_to_mac(mac));
   const std::vector<uint8_t> binary_data = create_wol_udp_payload(mac);

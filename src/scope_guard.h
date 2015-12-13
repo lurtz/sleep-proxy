@@ -19,6 +19,7 @@
 #include <functional>
 #include <algorithm>
 #include <mutex>
+#include <memory>
 #include "pcap_wrapper.h"
 #include "ip_address.h"
 
@@ -147,4 +148,16 @@ template <typename Cont, typename T> struct Ptr_guard {
 template <typename Cont, typename T>
 Ptr_guard<Cont, T> ptr_guard(Cont &cont, std::mutex &cont_mutex, T &ref) {
   return Ptr_guard<Cont, T>{cont, cont_mutex, ref};
+}
+
+template <typename FUNCTOR> struct Moveable_functor_wrapper {
+  std::shared_ptr<FUNCTOR> functor;
+
+  std::string operator()(const Action action) { return (*functor)(action); }
+};
+
+template <typename MOVEABLE, typename... ARGS>
+Moveable_functor_wrapper<MOVEABLE> make_copyable(ARGS... args) {
+  return Moveable_functor_wrapper<MOVEABLE>{
+      std::make_shared<MOVEABLE>(args...)};
 }

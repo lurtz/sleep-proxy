@@ -1,4 +1,4 @@
-// Copyright (C) 2014  Lutz Reinhardt
+// Copyright (C) 2015  Lutz Reinhardt
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,20 +14,25 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#pragma once
-
 #include <string>
 #include <netinet/ether.h>
-#include <vector>
+#include <thread>
+#include "scope_guard.h"
+#include "pcap_wrapper.h"
 
-/**
- * create the payload for a UDP wol packet to be broadcast in to the network
- */
-std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac);
+/** watches if someone else sends a magic wol packet */
+struct Wol_watcher {
+  ether_addr const mac;
+  Pcap_wrapper &waiting_for_syn;
 
-/**
- * Send a WOL UDP packet to the given mac
- */
-void wol_udp(const ether_addr &mac);
+  Pcap_wrapper waiting_for_wol;
+  std::thread wol_listener;
 
-void wol_ethernet(const std::string &iface, const ether_addr &mac);
+  Wol_watcher(std::string const &iface, ether_addr mac,
+              Pcap_wrapper &waiting_for_synn);
+  ~Wol_watcher();
+
+  std::string operator()(const Action action);
+
+  void stop();
+};
