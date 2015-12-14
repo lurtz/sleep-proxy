@@ -150,3 +150,19 @@ std::ostream &operator<<(std::ostream &out, ether_addr const &ether_addr) {
       << ")";
   return out;
 }
+
+Pcap_dummy::Pcap_dummy() {}
+
+Pcap_wrapper::Loop_end_reason Pcap_dummy::get_end_reason() const {
+  return loop_end_reason;
+}
+
+void Pcap_dummy::set_loop_return(Pcap_wrapper::Loop_end_reason const &ler) {
+  loop_return = ler;
+}
+
+Pcap_wrapper::Loop_end_reason Pcap_dummy::loop(
+    const int /*count*/,
+    std::function<void(const struct pcap_pkthdr *, const u_char *)> /*cb*/) {
+  return loop_return;
+}

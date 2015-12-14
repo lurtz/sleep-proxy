@@ -25,6 +25,7 @@
 #include <tuple>
 #include <to_string.h>
 #include <spawn_process.h>
+#include <pcap_wrapper.h>
 #include <cppunit/extensions/HelperMacros.h>
 
 std::vector<uint8_t> to_binary(const std::string &hex);
@@ -99,3 +100,18 @@ struct Tmp_fd_remap {
 bool operator==(ether_addr const &lhs, ether_addr const &rhs);
 
 std::ostream &operator<<(std::ostream &out, ether_addr const &ether_addr);
+
+struct Pcap_dummy : public Pcap_wrapper {
+  Pcap_wrapper::Loop_end_reason loop_return;
+
+  Pcap_dummy();
+
+  Pcap_wrapper::Loop_end_reason get_end_reason() const;
+
+  void set_loop_return(Pcap_wrapper::Loop_end_reason const &ler);
+
+  virtual Pcap_wrapper::Loop_end_reason
+  loop(const int count,
+       std::function<void(const struct pcap_pkthdr *, const u_char *)> cb)
+      override;
+};

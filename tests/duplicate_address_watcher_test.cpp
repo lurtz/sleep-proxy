@@ -37,13 +37,6 @@ void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
                           Is_ip_occupied const &is_ip_occupied,
                           std::atomic_bool &loop, Pcap_wrapper &pc);
 
-struct Pcap_dummy : public Pcap_wrapper {
-  Pcap_dummy() {}
-  Pcap_wrapper::Loop_end_reason get_end_reason() const {
-    return loop_end_reason;
-  }
-};
-
 struct Is_ip_occupied_dummy {
   std::vector<std::tuple<std::string, IP_address>> const occupied;
 

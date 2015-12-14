@@ -57,7 +57,7 @@ public:
   void set_filter(const std::string &filter);
 
   /** sniff count packets calling cb each time */
-  Pcap_wrapper::Loop_end_reason
+  virtual Pcap_wrapper::Loop_end_reason
   loop(const int count,
        std::function<void(const struct pcap_pkthdr *, const u_char *)> cb);
 
