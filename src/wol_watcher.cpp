@@ -29,16 +29,15 @@ bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac) {
   return std::string::npos != data_string.find(packet_string);
 }
 
-void break_when_magic_packet_is_found(const struct pcap_pkthdr *header,
-                                      const u_char *packet,
-                                      ether_addr const &mac,
-                                      Pcap_wrapper &waiting_for_wol) {
+void break_on_magic_packet(const struct pcap_pkthdr *header,
+                           const u_char *packet, ether_addr const &mac,
+                           Pcap_wrapper &waiting_for_wol) {
   if (header == nullptr || packet == nullptr) {
     log_string(LOG_ERR, "header or packet are nullptr");
     return;
   }
 
-  std::vector<uint8_t> const data{packet, packet + header->caplen};
+  std::vector<uint8_t> const data{packet, packet + header->len};
   if (is_magic_packet(data, mac)) {
     waiting_for_wol.break_loop(
         Pcap_wrapper::Loop_end_reason::duplicate_address);
@@ -48,12 +47,12 @@ void break_when_magic_packet_is_found(const struct pcap_pkthdr *header,
 void wol_watcher_thread_main(ether_addr const &mac,
                              Pcap_wrapper &waiting_for_wol,
                              Pcap_wrapper &waiting_for_syn) {
-  auto const break_on_magic_packet = [&](const struct pcap_pkthdr *header,
-                                         const u_char *packet) {
-    break_when_magic_packet_is_found(header, packet, mac, waiting_for_wol);
+  auto const break_on_magic_packet_lamb = [&](const struct pcap_pkthdr *header,
+                                              const u_char *packet) {
+    break_on_magic_packet(header, packet, mac, waiting_for_wol);
   };
 
-  auto const ler = waiting_for_wol.loop(0, break_on_magic_packet);
+  auto const ler = waiting_for_wol.loop(0, break_on_magic_packet_lamb);
   if (Pcap_wrapper::Loop_end_reason::duplicate_address == ler) {
     waiting_for_syn.break_loop(
         Pcap_wrapper::Loop_end_reason::duplicate_address);

@@ -60,4 +60,5 @@ make_test(packet_parser_test packet_test_utils)
 make_test(ip_test packet_test_utils)
 make_test(socket_test packet_test_utils)
 make_test(file_descriptor_test packet_test_utils)
+make_test(wol_watcher_test packet_test_utils)
 
