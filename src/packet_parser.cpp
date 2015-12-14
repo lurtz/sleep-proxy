@@ -31,8 +31,8 @@ std::ostream &operator<<(std::ostream &out, const basic_headers &headers) {
 }
 
 basic_headers get_headers(const int type, const std::vector<u_char> &packet) {
-  std::vector<u_char>::const_iterator data = std::begin(packet);
-  std::vector<u_char>::const_iterator end = std::end(packet);
+  auto data = std::begin(packet);
+  auto end = std::end(packet);
 
   // link layer header
   std::unique_ptr<Link_layer> ll = parse_link_layer(type, data, end);
