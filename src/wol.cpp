@@ -24,10 +24,10 @@
 #include "log.h"
 #include "ethernet.h"
 
-std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac) {
+std::vector<uint8_t> create_wol_payload(const ether_addr &mac) {
   const std::vector<uint8_t> binary_mac = to_vector(mac);
   std::vector<uint8_t> magic_bytes{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-  for (unsigned int i = 0; i < 20; i++) {
+  for (unsigned int i = 0; i < 16; i++) {
     magic_bytes.insert(std::end(magic_bytes), std::begin(binary_mac),
                        std::end(binary_mac));
   }
@@ -36,7 +36,7 @@ std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac) {
 
 void wol_udp(const ether_addr &mac) {
   log_string(LOG_INFO, "waking (udp) " + binary_to_mac(mac));
-  const std::vector<uint8_t> binary_data = create_wol_udp_payload(mac);
+  const std::vector<uint8_t> binary_data = create_wol_payload(mac);
   // Broadcast it to the LAN.
   Socket sock(AF_INET, SOCK_DGRAM);
   sock.set_sock_opt(SOL_SOCKET, SO_BROADCAST, 1);
@@ -60,7 +60,6 @@ void wol_ethernet(const std::string &iface, const ether_addr &mac) {
             std::end(hw_addr.ether_addr_octet), broadcast_ll.sll_addr);
 
   const std::vector<uint8_t> binary_data =
-      create_ethernet_header(mac, hw_addr, 0x0842) +
-      create_wol_udp_payload(mac);
+      create_ethernet_header(mac, hw_addr, 0x0842) + create_wol_payload(mac);
   sock.send_to(binary_data, 0, broadcast_ll);
 }

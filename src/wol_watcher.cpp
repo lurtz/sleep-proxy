@@ -21,7 +21,7 @@
 
 bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac) {
   // 1. put the magic pattern into a string
-  std::vector<uint8_t> const packet{create_wol_udp_payload(mac)};
+  std::vector<uint8_t> const packet{create_wol_payload(mac)};
   std::string const packet_string{std::begin(packet), std::end(packet)};
   // 2. convert data into a string
   std::string const data_string{std::begin(data), std::end(data)};

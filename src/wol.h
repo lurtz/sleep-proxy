@@ -23,7 +23,7 @@
 /**
  * create the payload for a UDP wol packet to be broadcast in to the network
  */
-std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac);
+std::vector<uint8_t> create_wol_payload(const ether_addr &mac);
 
 /**
  * Send a WOL UDP packet to the given mac

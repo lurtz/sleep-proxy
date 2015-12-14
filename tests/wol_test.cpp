@@ -20,38 +20,36 @@
 #include <netinet/ether.h>
 #include <string>
 #include <vector>
-
-std::vector<uint8_t> create_wol_udp_payload(const ether_addr &mac);
+#include "wol.h"
 
 class Wol_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Wol_test);
-  CPPUNIT_TEST(test_create_wol_udp_payload);
+  CPPUNIT_TEST(test_create_wol_payload);
   CPPUNIT_TEST_SUITE_END();
 
 public:
   void setUp() override {}
   void tearDown() override {}
 
-  static void check_wol_udp_payload(const std::vector<uint8_t> &wol,
-                                    const unsigned char start,
-                                    const unsigned char end_pos) {
+  static void check_wol_payload(const std::vector<uint8_t> &wol,
+                                const unsigned char start,
+                                const unsigned char end_pos) {
     auto data = std::begin(wol);
     const auto end = std::end(wol);
     for (unsigned int i = 0; i < 6 && data < end; i++, data++) {
       CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(255), *data);
     }
-    for (unsigned int i = 0; i < 20; i++) {
+    for (unsigned int i = 0; i < 16; i++) {
       check_range(data, end, start, end_pos);
     }
     CPPUNIT_ASSERT(data == end);
   }
 
-  void test_create_wol_udp_payload() {
-    auto wol_packet =
-        create_wol_udp_payload(mac_to_binary("11:22:33:44:55:66"));
-    check_wol_udp_payload(wol_packet, 1, 7);
-    wol_packet = create_wol_udp_payload(mac_to_binary("88:99:aA:bB:cc:dd"));
-    check_wol_udp_payload(wol_packet, 8, 14);
+  void test_create_wol_payload() {
+    auto wol_packet = create_wol_payload(mac_to_binary("11:22:33:44:55:66"));
+    check_wol_payload(wol_packet, 1, 7);
+    wol_packet = create_wol_payload(mac_to_binary("88:99:aA:bB:cc:dd"));
+    check_wol_payload(wol_packet, 8, 14);
   }
 };
 
