@@ -33,6 +33,7 @@
 #include "packet_parser.h"
 #include "duplicate_address_watcher.h"
 #include "log.h"
+#include "wol_watcher.h"
 
 /*
  * Pretends to be a host, which has gone into standby and is startable via wake
@@ -117,6 +118,8 @@ wait_and_listen(const Args &args) {
 
   // guards to handle signals and address duplication
   std::vector<Scope_guard> guards;
+  guards.emplace_back(
+      make_copyable<Wol_watcher>(args.interface, args.mac, std::ref(pc)));
   guards.emplace_back(ptr_guard(pcaps, pcaps_mutex, pc));
   for (const auto &ip : args.address) {
     guards.emplace_back(Duplicate_address_watcher{args.interface, ip, pc});
