@@ -23,7 +23,7 @@ uint8_t two_hex_chars_to_byte(const char a, const char b) {
   const int64_t right = fallback::std::stoll(std::string(1, b), 16);
   check_range(left, 0, 16);
   check_range(right, 0, 16);
-  return static_cast<uint8_t>(left << 4) | static_cast<uint8_t>(right);
+  return static_cast<uint8_t>(left << 4 | right);
 }
 
 std::vector<uint8_t> to_binary(const std::string &hex) {
@@ -151,7 +151,7 @@ std::ostream &operator<<(std::ostream &out, ether_addr const &ether_addr) {
   return out;
 }
 
-Pcap_dummy::Pcap_dummy() {}
+Pcap_dummy::Pcap_dummy() : loop_return{Pcap_wrapper::Loop_end_reason::unset} {}
 
 Pcap_wrapper::Loop_end_reason Pcap_dummy::get_end_reason() const {
   return loop_end_reason;

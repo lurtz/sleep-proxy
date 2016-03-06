@@ -17,7 +17,9 @@
 find_package(PCAP REQUIRED)
 find_package (Threads REQUIRED)
 
-add_library(sleep-proxy SHARED pcap_wrapper.cpp ethernet.cpp ip.cpp scope_guard.cpp ip_utils.cpp socket.cpp args.cpp to_string.cpp libsleep_proxy.cpp spawn_process.cpp int_utils.cpp wol.cpp packet_parser.cpp log.cpp ip_address.cpp file_descriptor.cpp duplicate_address_watcher.cpp wol_watcher.cpp)
+set(sleep-proxy-files pcap_wrapper.cpp ethernet.cpp ip.cpp scope_guard.cpp ip_utils.cpp socket.cpp args.cpp to_string.cpp libsleep_proxy.cpp spawn_process.cpp int_utils.cpp wol.cpp packet_parser.cpp log.cpp ip_address.cpp file_descriptor.cpp duplicate_address_watcher.cpp wol_watcher.cpp)
+
+add_library(sleep-proxy SHARED ${sleep-proxy-files})
 target_link_libraries(sleep-proxy ${PCAP_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 target_include_directories(sleep-proxy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -34,3 +36,4 @@ INSTALL(TARGETS sleep-proxy ${main_programs}
         LIBRARY DESTINATION lib
         RUNTIME DESTINATION bin
 )
+
