@@ -61,7 +61,7 @@ void wol_watcher_thread_main(ether_addr const &mac,
 
 Wol_watcher::Wol_watcher(std::string const &iface, ether_addr macc,
                          Pcap_wrapper &waiting_for_synn)
-    : mac(std::move(macc)), waiting_for_syn{waiting_for_synn},
+    : mac(std::move(macc)), waiting_for_syn(waiting_for_synn),
       waiting_for_wol{iface}, wol_listener{} {
   std::string const filter =
       "udp port 0 or udp port 7 or udp port 9 or ether proto 0x0842 ";
