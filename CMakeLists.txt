@@ -20,7 +20,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${emulateHost_SOURCE_DIR}/cmake)
 
 # Compiler setup
 #set(CMAKE_BUILD_TYPE Debug)
-#add_definitions(-std=c++11 -fsanitize=undefined)
+#add_definitions(-fsanitize=undefined)
 add_definitions(-std=c++11)
 INCLUDE(CompilerFlags)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${VALID_FLAGS}")
