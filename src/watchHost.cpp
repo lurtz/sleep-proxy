@@ -87,23 +87,27 @@ void thread_main(const Args args) {
 }
 
 int main(int argc, char *argv[]) {
-  setup_signals();
-  auto argss = read_commandline(argc, argv);
-  if (argss.empty()) {
-    log_string(LOG_ERR, "no configuration given");
-    return 1;
-  }
-  if (argss.at(0).syslog) {
-    setup_log(argv[0], 0, LOG_DAEMON);
-  }
-  std::vector<std::thread> threads;
-  for (auto &args : argss) {
-    threads.emplace_back(thread_main, std::move(args));
-  }
-  std::for_each(std::begin(threads), std::end(threads), [](std::thread &t) {
-    if (t.joinable()) {
-      t.join();
+  try {
+    setup_signals();
+    auto argss = read_commandline(argc, argv);
+    if (argss.empty()) {
+      log_string(LOG_ERR, "no configuration given");
+      return 1;
     }
-  });
+    if (argss.at(0).syslog) {
+      setup_log(argv[0], 0, LOG_DAEMON);
+    }
+    std::vector<std::thread> threads;
+    for (auto &args : argss) {
+      threads.emplace_back(thread_main, std::move(args));
+    }
+    std::for_each(std::begin(threads), std::end(threads), [](std::thread &t) {
+      if (t.joinable()) {
+        t.join();
+      }
+    });
+  } catch (std::exception const &e) {
+    log(LOG_ERR, "something wrong: %s\n", e.what());
+  }
   return 0;
 }

@@ -51,17 +51,21 @@ bool contains_mac_different_from_given(std::string mac,
   return std::any_of(std::begin(lines), std::end(lines), macs_are_not_equal);
 }
 
-std::vector<std::string> const Ip_neigh_checker::cmd_ipv4{
-    get_path("arping"), "-q", "-D", "-c", "1", "-I"};
-std::vector<std::string> const Ip_neigh_checker::cmd_ipv6{get_path("ndisc6"),
-                                                          "-q", "-n", "-m"};
+std::vector<std::string> const get_cmd_ipv4() {
+  return std::vector<std::string>{
+      get_path("arping"), "-q", "-D", "-c", "1", "-I"};
+}
+
+std::vector<std::string> get_cmd_ipv6() {
+  return std::vector<std::string>{get_path("ndisc6"), "-q", "-n", "-m"};
+}
 
 Ip_neigh_checker::Ip_neigh_checker(std::string mac)
     : this_nodes_mac{std::move(mac)} {}
 
 bool Ip_neigh_checker::is_ipv4_present(std::string const &iface,
                                        IP_address const &ip) const {
-  auto cmd_ipv4_tmp = cmd_ipv4;
+  auto cmd_ipv4_tmp = get_cmd_ipv4();
   cmd_ipv4_tmp.push_back(iface);
   cmd_ipv4_tmp.push_back(ip.pure());
   const pid_t pid = spawn(cmd_ipv4_tmp);
@@ -80,7 +84,7 @@ bool Ip_neigh_checker::is_ipv6_present(std::string const &iface,
   // openwrt handles this differently, and outputs only foreign MACs with an
   // error code. to be able to do tests, I have to check the output if there
   // are foreign macs in it
-  auto cmd_ipv6_tmp = cmd_ipv6;
+  auto cmd_ipv6_tmp = get_cmd_ipv6();
   cmd_ipv6_tmp.push_back(ip.pure());
   cmd_ipv6_tmp.push_back(iface);
 

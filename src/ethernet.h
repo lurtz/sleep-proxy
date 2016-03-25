@@ -20,6 +20,7 @@
 #include <vector>
 #include <array>
 #include <arpa/inet.h>
+#include <sys/types.h> // needed by bpf.h after openwrt 15.05+
 #include <pcap/bpf.h>
 #include <memory>
 #include <netinet/ether.h>
