@@ -78,7 +78,7 @@ std::string Wol_watcher::operator()(const Action action) {
                     std::ref(waiting_for_wol), std::ref(waiting_for_syn));
   }
   if (Action::del == action) {
-    log(LOG_INFO, "starting Wol_watcher");
+    log(LOG_INFO, "stopping Wol_watcher");
     stop();
   }
   return "";
