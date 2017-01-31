@@ -15,16 +15,16 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "file_descriptor.h"
-#include <unistd.h>
-#include <cstring>
-#include <iostream>
+#include "container_utils.h"
 #include <cerrno>
+#include <cstring>
+#include <fcntl.h>
+#include <iostream>
+#include <poll.h>
 #include <stdexcept>
 #include <string>
-#include <fcntl.h>
 #include <sys/stat.h>
-#include <poll.h>
-#include "container_utils.h"
+#include <unistd.h>
 
 File_descriptor::File_descriptor() : fd(-1) {}
 

@@ -15,10 +15,10 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "int_utils.h"
-#include <cerrno>
-#include <cstdlib>
 #include "to_string.h"
 #include <arpa/inet.h>
+#include <cerrno>
+#include <cstdlib>
 
 namespace fallback {
 namespace std {

@@ -15,11 +15,11 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "main.h"
+#include "packet_test_utils.h"
+#include <string.h>
 #include <string>
 #include <thread>
 #include <unistd.h>
-#include <string.h>
-#include "packet_test_utils.h"
 
 #include "spawn_process.h"
 

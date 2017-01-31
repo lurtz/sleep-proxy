@@ -16,11 +16,11 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
-#include <type_traits>
 #include <algorithm>
 #include <functional>
+#include <string>
+#include <type_traits>
+#include <vector>
 
 static const std::string iface_chars{"qwertzuiopasdfghjklyxcvbnm.-0123456789"};
 
@@ -32,8 +32,9 @@ auto parse_items(Container &&items, Func &&parser) -> std::vector<
   static_assert(std::is_same<typename std::decay<Container>::type::value_type,
                              std::string>::value,
                 "container has to carry std::string");
-  std::vector<typename std::result_of<decltype(parser)(
-      const std::string &)>::type> ret_val(items.size());
+  std::vector<
+      typename std::result_of<decltype(parser)(const std::string &)>::type>
+      ret_val(items.size());
   std::transform(std::begin(items), std::end(items), std::begin(ret_val),
                  std::forward<Func>(parser));
   return ret_val;

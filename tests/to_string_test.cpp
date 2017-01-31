@@ -17,9 +17,9 @@
 #include "main.h"
 #include <string>
 
-#include "to_string.h"
-#include "spawn_process.h"
 #include "packet_test_utils.h"
+#include "spawn_process.h"
+#include "to_string.h"
 
 class To_string_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(To_string_test);

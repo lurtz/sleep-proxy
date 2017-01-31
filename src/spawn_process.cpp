@@ -15,12 +15,12 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "spawn_process.h"
+#include <cerrno>
+#include <cstdlib>
+#include <cstring>
+#include <stdexcept>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <cstring>
-#include <cstdlib>
-#include <cerrno>
-#include <stdexcept>
 
 uint8_t wait_until_pid_exits(const pid_t &pid) {
   int status;

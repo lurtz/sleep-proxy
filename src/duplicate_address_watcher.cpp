@@ -15,8 +15,8 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "duplicate_address_watcher.h"
-#include "log.h"
 #include "container_utils.h"
+#include "log.h"
 #include "spawn_process.h"
 #include <cctype>
 
@@ -170,7 +170,8 @@ Duplicate_address_watcher::~Duplicate_address_watcher() {
 
 typedef std::function<void(const std::string &, const IP_address &,
                            Is_ip_occupied const &, std::atomic_bool &,
-                           Pcap_wrapper &)> Main_Function_Type;
+                           Pcap_wrapper &)>
+    Main_Function_Type;
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
   Main_Function_Type const main_function =

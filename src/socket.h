@@ -16,13 +16,13 @@
 
 #pragma once
 
-#include <vector>
-#include <sys/socket.h>
 #include <cerrno>
 #include <cstring>
-#include <stdexcept>
 #include <linux/if.h>
 #include <netinet/ether.h>
+#include <stdexcept>
+#include <sys/socket.h>
+#include <vector>
 
 /** C++ wrapper to socket functions */
 struct Socket {

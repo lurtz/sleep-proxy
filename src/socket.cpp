@@ -15,13 +15,13 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "socket.h"
-#include <stdexcept>
-#include <unistd.h>
-#include <cstring>
-#include <sys/ioctl.h>
-#include "to_string.h"
 #include "log.h"
+#include "to_string.h"
+#include <cstring>
 #include <linux/if_ether.h>
+#include <stdexcept>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 Socket::Socket(int domain, int type, int protocol)
     : sock{socket(domain, type, protocol)} {
@@ -47,10 +47,7 @@ void Socket::ioctl(const unsigned long req_number, ifreq &ifr) const {
 
 ifreq get_ifreq(const std::string &iface) {
   struct ifreq ifr {
-    {
-      { 0 }
-    }
-    , {
+    {{0}}, {
       {
         0, { 0 }
       }

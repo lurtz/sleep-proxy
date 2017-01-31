@@ -14,11 +14,11 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include <string>
-#include <netinet/ether.h>
-#include <thread>
-#include "scope_guard.h"
 #include "pcap_wrapper.h"
+#include "scope_guard.h"
+#include <netinet/ether.h>
+#include <string>
+#include <thread>
 
 /** watches if someone else sends a magic wol packet */
 struct Wol_watcher {

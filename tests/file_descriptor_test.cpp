@@ -15,17 +15,17 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "main.h"
-#include <string>
-#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <string>
+#include <unistd.h>
 
 #include "file_descriptor.h"
-#include "to_string.h"
-#include "spawn_process.h"
-#include <container_utils.h>
 #include "packet_test_utils.h"
+#include "spawn_process.h"
+#include "to_string.h"
+#include <container_utils.h>
 
 class File_descriptor_test : public CppUnit::TestFixture {
   std::string const filename = "fdclosetestfile";

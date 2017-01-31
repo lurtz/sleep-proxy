@@ -14,10 +14,10 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "pcap_wrapper.h"
 #include "ethernet.h"
 #include "log.h"
 #include "packet_parser.h"
+#include "pcap_wrapper.h"
 
 /**
  * Writes time formatted into the stream

@@ -14,14 +14,14 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "ethernet.h"
 #include "main.h"
+#include "packet_test_utils.h"
 #include <cstring>
+#include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
-#include <netinet/in.h>
 #include <unistd.h>
-#include "packet_test_utils.h"
-#include "ethernet.h"
 
 #include "socket.h"
 
@@ -87,10 +87,7 @@ public:
     Socket s0(AF_INET, SOCK_DGRAM);
 
     struct ifreq ifreq {
-      {
-        { 0 }
-      }
-      , {
+      {{0}}, {
         {
           0, { 0 }
         }

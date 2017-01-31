@@ -16,11 +16,11 @@
 
 #pragma once
 
+#include "ip_address.h"
+#include <netinet/ether.h>
+#include <ostream>
 #include <string>
 #include <vector>
-#include <ostream>
-#include <netinet/ether.h>
-#include "ip_address.h"
 
 /**
  * Parses and checks the input of the command line arguments

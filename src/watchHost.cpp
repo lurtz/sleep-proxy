@@ -15,11 +15,11 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "args.h"
-#include "log.h"
 #include "libsleep_proxy.h"
-#include <future>
+#include "log.h"
 #include <algorithm>
 #include <csignal>
+#include <future>
 #include <thread>
 #include <type_traits>
 

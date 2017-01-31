@@ -15,9 +15,9 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "pcap_wrapper.h"
-#include <mutex>
 #include "log.h"
 #include "to_string.h"
+#include <mutex>
 #include <stdexcept>
 
 /** provides a bpf_programm instance in an exception safe way */

@@ -15,10 +15,10 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "ip_address.h"
-#include "to_string.h"
-#include "int_utils.h"
 #include "container_utils.h"
+#include "int_utils.h"
 #include "log.h"
+#include "to_string.h"
 #include <array>
 
 std::string IP_address::pure() const {

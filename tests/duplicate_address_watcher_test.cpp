@@ -16,15 +16,15 @@
 
 #include "main.h"
 
+#include "container_utils.h"
 #include "duplicate_address_watcher.h"
 #include "file_descriptor.h"
+#include "packet_test_utils.h"
+#include "spawn_process.h"
 #include "to_string.h"
+#include <algorithm>
 #include <atomic>
 #include <future>
-#include "spawn_process.h"
-#include "container_utils.h"
-#include "packet_test_utils.h"
-#include <algorithm>
 
 bool contains_mac_different_from_given(std::string mac,
                                        std::vector<std::string> const &lines);

@@ -16,9 +16,9 @@
 
 #pragma once
 
-#include <syslog.h>
-#include <string>
 #include "to_string.h"
+#include <string>
+#include <syslog.h>
 
 void setup_log(const std::string &ident, int option, int facility);
 

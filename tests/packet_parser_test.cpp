@@ -17,10 +17,10 @@
 #include "main.h"
 #include <string>
 
-#include "packet_parser.h"
 #include "container_utils.h"
 #include "ethernet.h"
 #include "int_utils.h"
+#include "packet_parser.h"
 
 #include "packet_test_utils.h"
 

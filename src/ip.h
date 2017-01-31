@@ -16,15 +16,15 @@
 
 #pragma once
 
-#include <string>
-#include <arpa/inet.h>
-#include <net/ethernet.h>
-#include <memory>
-#include <vector>
-#include <stdexcept>
 #include "container_utils.h"
 #include "ip_address.h"
 #include "log.h"
+#include <arpa/inet.h>
+#include <memory>
+#include <net/ethernet.h>
+#include <stdexcept>
+#include <string>
+#include <vector>
 
 struct ip {
   enum Version { ipv4 = ETHERTYPE_IP, ipv6 = ETHERTYPE_IPV6 };

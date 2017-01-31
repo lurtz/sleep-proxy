@@ -17,9 +17,9 @@
 #pragma once
 
 #include <cppunit/CompilerOutputter.h>
+#include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
 
 int main(int /* argc */, char ** /* argv */) {
   // Get the top level suite from the registry

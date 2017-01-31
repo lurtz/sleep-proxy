@@ -16,12 +16,12 @@
 
 #pragma once
 
-#include <functional>
-#include <algorithm>
-#include <mutex>
-#include <memory>
-#include "pcap_wrapper.h"
 #include "ip_address.h"
+#include "pcap_wrapper.h"
+#include <algorithm>
+#include <functional>
+#include <memory>
+#include <mutex>
 
 /** perform or reverse the modification */
 enum struct Action { add, del };

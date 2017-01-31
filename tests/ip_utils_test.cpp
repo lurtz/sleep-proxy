@@ -18,9 +18,9 @@
 #include <arpa/inet.h>
 #include <string>
 
-#include "ip_utils.h"
-#include "int_utils.h"
 #include "container_utils.h"
+#include "int_utils.h"
+#include "ip_utils.h"
 
 class Ip_utils_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Ip_utils_test);

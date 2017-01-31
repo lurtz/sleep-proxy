@@ -16,12 +16,12 @@
 
 #pragma once
 
-#include <string>
-#include <sstream>
-#include <vector>
 #include <algorithm>
 #include <iterator>
 #include <ostream>
+#include <sstream>
+#include <string>
+#include <vector>
 
 /**
  * Writes the items of a vector seperated by ", " into out

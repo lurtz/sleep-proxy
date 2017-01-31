@@ -14,11 +14,11 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include <string>
-#include "wol.h"
+#include "ethernet.h"
 #include "ip_utils.h"
 #include "log.h"
-#include "ethernet.h"
+#include "wol.h"
+#include <string>
 
 void print_help() { log_string(LOG_NOTICE, "usage: [-i iface] mac"); }
 

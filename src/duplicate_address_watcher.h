@@ -16,14 +16,14 @@
 
 #pragma once
 
-#include <string>
-#include <memory>
-#include <atomic>
-#include <thread>
+#include "file_descriptor.h"
 #include "ip_address.h"
 #include "pcap_wrapper.h"
 #include "scope_guard.h"
-#include "file_descriptor.h"
+#include <atomic>
+#include <memory>
+#include <string>
+#include <thread>
 
 std::string get_mac(std::string const &iface);
 

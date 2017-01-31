@@ -16,16 +16,16 @@
 
 #pragma once
 
-#include <ostream>
-#include <vector>
-#include <array>
-#include <arpa/inet.h>
-#include <sys/types.h> // needed by bpf.h after openwrt 15.05+
-#include <pcap/bpf.h>
-#include <memory>
-#include <netinet/ether.h>
 #include "container_utils.h"
 #include "to_string.h"
+#include <arpa/inet.h>
+#include <array>
+#include <memory>
+#include <netinet/ether.h>
+#include <ostream>
+#include <pcap/bpf.h>
+#include <sys/types.h> // needed by bpf.h after openwrt 15.05+
+#include <vector>
 
 struct Link_layer {
   size_t m_header_length;

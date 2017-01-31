@@ -16,8 +16,8 @@
 
 #pragma once
 
-#include <string>
 #include <netinet/ether.h>
+#include <string>
 #include <vector>
 
 /**

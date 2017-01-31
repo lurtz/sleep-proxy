@@ -17,8 +17,8 @@
 #pragma once
 
 #include <arpa/inet.h>
-#include <string>
 #include <ostream>
+#include <string>
 
 struct IP_address {
   int family;

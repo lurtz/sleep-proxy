@@ -16,13 +16,13 @@
 
 #pragma once
 
+#include "ethernet.h"
+#include "ip.h"
 #include "packet_parser.h"
 #include <memory>
 #include <pcap/pcap.h>
 #include <tuple>
 #include <vector>
-#include "ip.h"
-#include "ethernet.h"
 
 /**
  * Ethernet, IP and TCP/UDP header in one tuple

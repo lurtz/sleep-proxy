@@ -15,14 +15,14 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "scope_guard.h"
+#include "container_utils.h"
+#include "int_utils.h"
+#include "ip_utils.h"
+#include "log.h"
+#include "spawn_process.h"
+#include "to_string.h"
 #include <arpa/inet.h>
 #include <cerrno>
-#include "log.h"
-#include "ip_utils.h"
-#include "spawn_process.h"
-#include "container_utils.h"
-#include "to_string.h"
-#include "int_utils.h"
 
 Scope_guard::Scope_guard() : freed{true}, aquire_release{} {}
 

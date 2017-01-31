@@ -16,9 +16,9 @@
 
 #include "main.h"
 
-#include "libsleep_proxy.h"
 #include "container_utils.h"
 #include "ip_utils.h"
+#include "libsleep_proxy.h"
 #include <csignal>
 
 void reset_signaled();

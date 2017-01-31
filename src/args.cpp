@@ -15,11 +15,11 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "args.h"
-#include <fstream>
-#include "log.h"
-#include "ip_utils.h"
-#include "int_utils.h"
 #include "ethernet.h"
+#include "int_utils.h"
+#include "ip_utils.h"
+#include "log.h"
+#include <fstream>
 #include <getopt.h>
 #include <stdexcept>
 

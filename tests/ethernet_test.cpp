@@ -14,8 +14,8 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
 #include "ethernet.h"
+#include "main.h"
 #include "packet_test_utils.h"
 
 const std::string lcc_not_supported_ipv4_0_wireshark =

@@ -16,10 +16,10 @@
 
 #pragma once
 
-#include <string>
+#include "to_string.h"
 #include <limits>
 #include <stdexcept>
-#include "to_string.h"
+#include <string>
 
 // fallback because c++11 functions are not available
 namespace fallback {

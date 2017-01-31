@@ -14,12 +14,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
 #include "wol_watcher.h"
-#include "wol.h"
+#include "main.h"
 #include "packet_test_utils.h"
-#include <random>
+#include "wol.h"
 #include <limits>
+#include <random>
 
 bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac);
 
@@ -46,8 +46,7 @@ std::vector<uint8_t> gen_random_data(size_t const size) {
 
 pcap_pkthdr create_header(size_t packet_length) {
   const struct pcap_pkthdr header {
-    { 0, 0 }
-    , 0, static_cast<uint32_t>(packet_length)
+    {0, 0}, 0, static_cast<uint32_t>(packet_length)
   };
   return header;
 }

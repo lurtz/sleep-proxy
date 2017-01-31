@@ -14,26 +14,26 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include <string>
-#include <stdexcept>
-#include <vector>
-#include <tuple>
-#include <mutex>
-#include <csignal>
-#include <cstring>
-#include <atomic>
-#include "pcap_wrapper.h"
-#include "scope_guard.h"
-#include "ip_utils.h"
+#include "libsleep_proxy.h"
 #include "args.h"
 #include "container_utils.h"
-#include "libsleep_proxy.h"
+#include "duplicate_address_watcher.h"
+#include "ip_utils.h"
+#include "log.h"
+#include "packet_parser.h"
+#include "pcap_wrapper.h"
+#include "scope_guard.h"
 #include "spawn_process.h"
 #include "wol.h"
-#include "packet_parser.h"
-#include "duplicate_address_watcher.h"
-#include "log.h"
 #include "wol_watcher.h"
+#include <atomic>
+#include <csignal>
+#include <cstring>
+#include <mutex>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <vector>
 
 /*
  * Pretends to be a host, which has gone into standby and is startable via wake

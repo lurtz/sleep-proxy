@@ -16,9 +16,9 @@
 
 #pragma once
 
+#include <memory>
 #include <pcap/pcap.h>
 #include <string>
-#include <memory>
 #include <vector>
 
 /** Provide a nice interface to pcap and close the handle upon an exception */

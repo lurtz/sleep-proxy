@@ -15,14 +15,14 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "wol.h"
+#include "container_utils.h"
+#include "ethernet.h"
+#include "int_utils.h"
+#include "log.h"
+#include "socket.h"
 #include <arpa/inet.h>
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
-#include "int_utils.h"
-#include "socket.h"
-#include "container_utils.h"
-#include "log.h"
-#include "ethernet.h"
 
 std::vector<uint8_t> create_wol_payload(const ether_addr &mac) {
   const std::vector<uint8_t> binary_mac = to_vector(mac);
