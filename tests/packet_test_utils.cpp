@@ -1,12 +1,12 @@
 #include "packet_test_utils.h"
-#include <cppunit/CompilerOutputter.h>
-#include <cppunit/extensions/TestFactoryRegistry.h>
-#include <cppunit/ui/text/TestRunner.h>
-#include <cppunit/extensions/HelperMacros.h>
-#include <string.h>
-#include <unistd.h>
 #include "container_utils.h"
 #include "int_utils.h"
+#include <cppunit/CompilerOutputter.h>
+#include <cppunit/extensions/HelperMacros.h>
+#include <cppunit/extensions/TestFactoryRegistry.h>
+#include <cppunit/ui/text/TestRunner.h>
+#include <string.h>
+#include <unistd.h>
 
 void check_range(const int64_t val, const int64_t lower, const int64_t upper) {
   if (val < lower || val >= upper) {
@@ -165,4 +165,22 @@ Pcap_wrapper::Loop_end_reason Pcap_dummy::loop(
     const int /*count*/,
     std::function<void(const struct pcap_pkthdr *, const u_char *)> /*cb*/) {
   return loop_return;
+}
+
+std::string get_executable_path() {
+  std::array<char, 32> szTmp{{0}};
+  sprintf(szTmp.data(), "/proc/%d/exe", getpid());
+  std::array<char, 1000> buf{0};
+  if (-1 == readlink(szTmp.data(), buf.data(), buf.size())) {
+    throw std::runtime_error(std::string("readlink() failed at") +
+                             szTmp.data() + " with error " + strerror(errno));
+  }
+  return buf.data();
+}
+
+std::string get_executable_directory() {
+  std::string const exec_path = get_executable_path();
+  auto splitted = split(exec_path, '/');
+  splitted.pop_back();
+  return join(splitted, identity<std::string>, "/");
 }

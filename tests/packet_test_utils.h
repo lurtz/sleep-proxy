@@ -16,17 +16,17 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
-#include <ip.h>
-#include <ethernet.h>
-#include <ip_address.h>
-#include <file_descriptor.h>
-#include <tuple>
-#include <to_string.h>
-#include <spawn_process.h>
-#include <pcap_wrapper.h>
 #include <cppunit/extensions/HelperMacros.h>
+#include <ethernet.h>
+#include <file_descriptor.h>
+#include <ip.h>
+#include <ip_address.h>
+#include <memory>
+#include <pcap_wrapper.h>
+#include <spawn_process.h>
+#include <to_string.h>
+#include <tuple>
+#include <vector>
 
 std::vector<uint8_t> to_binary(const std::string &hex);
 
@@ -55,7 +55,8 @@ std::vector<std::tuple<typename Container0::value_type,
                        typename Container1::value_type>>
 cartesian_product(Container0 const &c0, Container1 const &c1) {
   std::vector<std::tuple<typename Container0::value_type,
-                         typename Container1::value_type>> retVal;
+                         typename Container1::value_type>>
+      retVal;
   for (auto const &c0item : c0) {
     for (auto const &c1item : c1) {
       retVal.emplace_back(std::make_tuple(c0item, c1item));
@@ -115,3 +116,7 @@ struct Pcap_dummy : public Pcap_wrapper {
        std::function<void(const struct pcap_pkthdr *, const u_char *)> cb)
       override;
 };
+
+std::string get_executable_path();
+
+std::string get_executable_directory();

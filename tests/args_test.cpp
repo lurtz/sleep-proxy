@@ -20,10 +20,10 @@
 #include <unistd.h>
 
 #include "args.h"
-#include "to_string.h"
 #include "ethernet.h"
 #include "ip_utils.h"
 #include "packet_test_utils.h"
+#include "to_string.h"
 
 void reset();
 void print_help();
@@ -80,7 +80,9 @@ public:
 
   std::vector<Args> get_args(const std::string &filename,
                              const bool with_syslog = false) const {
-    std::vector<std::string> params{"args_test", "-c", filename};
+    std::vector<std::string> params{get_executable_path(), "-c",
+                                    get_executable_directory() + "/" +
+                                        filename};
     if (with_syslog) {
       params.insert(std::begin(params) + 1, "-s");
     }
