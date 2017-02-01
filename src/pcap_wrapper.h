@@ -53,8 +53,8 @@ public:
 
   virtual ~Pcap_wrapper();
 
-  Pcap_wrapper& operator=(Pcap_wrapper const &) = default;
-  Pcap_wrapper& operator=(Pcap_wrapper &&) = default;
+  Pcap_wrapper &operator=(Pcap_wrapper const &) = default;
+  Pcap_wrapper &operator=(Pcap_wrapper &&) = default;
 
   /** tell if the first header is ethernet, unix socket, ... */
   int get_datalink() const;
