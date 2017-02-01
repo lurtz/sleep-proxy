@@ -66,6 +66,9 @@ Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen,
   log_string(LOG_INFO, "datalink " + get_verbose_datalink());
 }
 
+Pcap_wrapper::~Pcap_wrapper() {
+}
+
 int Pcap_wrapper::get_datalink() const {
   int datalink = pcap_datalink(pc.get());
   if (datalink == PCAP_ERROR_NOT_ACTIVATED) {

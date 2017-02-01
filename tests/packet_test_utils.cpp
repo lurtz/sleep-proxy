@@ -170,7 +170,7 @@ Pcap_wrapper::Loop_end_reason Pcap_dummy::loop(
 std::string get_executable_path() {
   std::array<char, 32> szTmp{{0}};
   sprintf(szTmp.data(), "/proc/%d/exe", getpid());
-  std::array<char, 1000> buf{0};
+  std::array<char, 1000> buf{{0}};
   if (-1 == readlink(szTmp.data(), buf.data(), buf.size())) {
     throw std::runtime_error(std::string("readlink() failed at") +
                              szTmp.data() + " with error " + strerror(errno));

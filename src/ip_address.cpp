@@ -23,7 +23,7 @@
 
 std::string IP_address::pure() const {
   std::array<char, INET6_ADDRSTRLEN> text{{0}};
-  inet_ntop(family, &address.ipv6, text.data(), text.size());
+  inet_ntop(family, &address.ipv6, text.data(), static_cast<socklen_t>(text.size()));
   return text.data();
 }
 
