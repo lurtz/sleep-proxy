@@ -152,21 +152,16 @@ Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee,
                                                      const IP_address ipp,
                                                      Pcap_wrapper &pc)
     : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc),
-      is_ip_occupied{Ip_neigh_checker{get_mac(iface)}}, watcher(nullptr),
-      loop(std::make_shared<std::atomic_bool>(false)) {}
+      is_ip_occupied{Ip_neigh_checker{get_mac(iface)}}, watcher(), loop{false} {
+}
 
 Duplicate_address_watcher::Duplicate_address_watcher(
     const std::string ifacee, const IP_address ipp, Pcap_wrapper &pc,
     Is_ip_occupied const is_ip_occupiedd)
     : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc),
-      is_ip_occupied{std::move(is_ip_occupiedd)}, watcher(nullptr),
-      loop(std::make_shared<std::atomic_bool>(false)) {}
+      is_ip_occupied{std::move(is_ip_occupiedd)}, watcher(), loop{false} {}
 
-Duplicate_address_watcher::~Duplicate_address_watcher() {
-  if (loop.use_count() == 1) {
-    stop_watcher();
-  }
-}
+Duplicate_address_watcher::~Duplicate_address_watcher() { stop_watcher(); }
 
 typedef std::function<void(const std::string &, const IP_address &,
                            Is_ip_occupied const &, std::atomic_bool &,
@@ -180,10 +175,9 @@ std::string Duplicate_address_watcher::operator()(const Action action) {
   if (Action::add == action) {
     log(LOG_INFO, "starting Duplicate_address_watcher for IP %s",
         ip.with_subnet().c_str());
-    *loop = true;
-    watcher =
-        std::make_shared<std::thread>(main_function, iface, ip, is_ip_occupied,
-                                      std::ref(*loop), std::ref(pcap));
+    loop = true;
+    watcher = std::thread(main_function, iface, ip, is_ip_occupied,
+                          std::ref(loop), std::ref(pcap));
   }
   if (Action::del == action) {
     log(LOG_INFO, "stopping Duplicate_address_watcher for IP %s",
@@ -194,9 +188,9 @@ std::string Duplicate_address_watcher::operator()(const Action action) {
 }
 
 void Duplicate_address_watcher::stop_watcher() {
-  *loop = false;
-  if (watcher != nullptr && watcher->joinable()) {
-    watcher->join();
+  loop = false;
+  if (watcher.joinable()) {
+    watcher.join();
   }
-  watcher = nullptr;
+  watcher = std::thread();
 }

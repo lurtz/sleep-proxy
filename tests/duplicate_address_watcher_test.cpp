@@ -72,7 +72,6 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Duplicate_address_watcher_test);
   CPPUNIT_TEST(test_duplicate_address_watcher_constructor);
   CPPUNIT_TEST(test_duplicate_address_watcher_destructor);
-  CPPUNIT_TEST(test_copy_constructor);
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv4_ip_not_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv4_ip_taken);
   CPPUNIT_TEST(test_duplicate_address_watcher_ipv6_ip_not_taken);
@@ -96,7 +95,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("eth0"), daw.iface);
     CPPUNIT_ASSERT_EQUAL(static_cast<Pcap_wrapper *>(&pcap), &daw.pcap);
     CPPUNIT_ASSERT_EQUAL(parse_ip("10.0.0.1/16"), daw.ip);
-    CPPUNIT_ASSERT_EQUAL(std::atomic_bool(false), *daw.loop);
+    CPPUNIT_ASSERT_EQUAL(std::atomic_bool(false), daw.loop);
     auto ip_neigh_ptr = daw.is_ip_occupied.target<Ip_neigh_checker>();
     CPPUNIT_ASSERT(ip_neigh_ptr != nullptr);
     CPPUNIT_ASSERT_EQUAL(get_mac("eth0"), ip_neigh_ptr->this_nodes_mac);
@@ -115,34 +114,15 @@ public:
     {
       Duplicate_address_watcher daw{"eth0", parse_ip("10.0.0.1/16"), pcap,
                                     ip_checker};
-      CPPUNIT_ASSERT(!*daw.loop);
-      CPPUNIT_ASSERT(daw.watcher == nullptr);
+      CPPUNIT_ASSERT(!daw.loop);
+      CPPUNIT_ASSERT(!daw.watcher.joinable());
       CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::add));
-      CPPUNIT_ASSERT(*daw.loop);
-      CPPUNIT_ASSERT(daw.watcher != nullptr);
+      CPPUNIT_ASSERT(daw.loop);
+      CPPUNIT_ASSERT(daw.watcher.joinable());
       CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::del));
-      CPPUNIT_ASSERT(!*daw.loop);
-      CPPUNIT_ASSERT(daw.watcher == nullptr);
+      CPPUNIT_ASSERT(!daw.loop);
+      CPPUNIT_ASSERT(!daw.watcher.joinable());
     }
-  }
-
-  Duplicate_address_watcher create() {
-    Duplicate_address_watcher daw{"eth0", parse_ip("127.0.0.1/32"), pcap,
-                                  ip_checker};
-    CPPUNIT_ASSERT_EQUAL(std::string(), daw(Action::add));
-    CPPUNIT_ASSERT(*daw.loop);
-    CPPUNIT_ASSERT(daw.watcher != nullptr);
-    // disable return value optimization
-    return std::move(daw);
-  }
-
-  void test_copy_constructor() {
-    Duplicate_address_watcher const first_one = create();
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    CPPUNIT_ASSERT(*first_one.loop);
-    CPPUNIT_ASSERT(first_one.watcher != nullptr);
-    CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset ==
-                   pcap.get_end_reason());
   }
 
   void test_duplicate_address_watcher_ipv4_ip_not_taken() {
@@ -204,12 +184,12 @@ public:
                                   Throwing_ip_occupied_dummy()};
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset ==
                    pcap.get_end_reason());
-    CPPUNIT_ASSERT(!*daw.loop);
+    CPPUNIT_ASSERT(!daw.loop);
     { daw(Action::add); }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::signal ==
                    pcap.get_end_reason());
-    CPPUNIT_ASSERT(!*daw.loop);
+    CPPUNIT_ASSERT(!daw.loop);
   }
 
   void test_daw_thread_main_ipv6() {

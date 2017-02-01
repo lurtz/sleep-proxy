@@ -21,7 +21,6 @@
 #include "pcap_wrapper.h"
 #include "scope_guard.h"
 #include <atomic>
-#include <memory>
 #include <string>
 #include <thread>
 
@@ -47,8 +46,8 @@ struct Duplicate_address_watcher {
   const IP_address ip;
   Pcap_wrapper &pcap;
   const Is_ip_occupied is_ip_occupied;
-  std::shared_ptr<std::thread> watcher;
-  std::shared_ptr<std::atomic_bool> loop;
+  std::thread watcher;
+  std::atomic_bool loop;
 
   Duplicate_address_watcher(const std::string ifacee, const IP_address ipp,
                             Pcap_wrapper &pc);
@@ -58,6 +57,13 @@ struct Duplicate_address_watcher {
                             Is_ip_occupied const is_ip_occupiedd);
 
   ~Duplicate_address_watcher();
+
+  Duplicate_address_watcher(Duplicate_address_watcher const &) = delete;
+  Duplicate_address_watcher(Duplicate_address_watcher &&) = delete;
+
+  Duplicate_address_watcher &
+  operator=(Duplicate_address_watcher const &) = delete;
+  Duplicate_address_watcher &operator=(Duplicate_address_watcher &&) = delete;
 
   std::string operator()(const Action action);
 

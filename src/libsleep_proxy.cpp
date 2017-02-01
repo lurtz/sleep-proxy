@@ -122,7 +122,8 @@ wait_and_listen(const Args &args) {
       make_copyable<Wol_watcher>(args.interface, args.mac, std::ref(pc)));
   guards.emplace_back(ptr_guard(pcaps, pcaps_mutex, pc));
   for (const auto &ip : args.address) {
-    guards.emplace_back(Duplicate_address_watcher{args.interface, ip, pc});
+    guards.emplace_back(make_copyable<Duplicate_address_watcher>(
+        args.interface, ip, std::ref(pc)));
   }
 
   const std::string bpf =
