@@ -20,6 +20,7 @@
 #include <pcap/pcap.h>
 #include <string>
 #include <vector>
+#include <functional>
 
 /** Provide a nice interface to pcap and close the handle upon an exception */
 struct Pcap_wrapper {

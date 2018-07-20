@@ -157,6 +157,7 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
       break;
     case 's':
       to_syslog = true;
+      break;
     case '?':
       log_string(LOG_ERR, std::string("got unknown option: ") +
                               static_cast<char>(optopt));
