@@ -17,11 +17,9 @@
 find_package(PCAP REQUIRED)
 find_package(Threads REQUIRED)
 
-set(sleep-proxy-files pcap_wrapper.cpp ethernet.cpp ip.cpp scope_guard.cpp ip_utils.cpp socket.cpp args.cpp to_string.cpp libsleep_proxy.cpp spawn_process.cpp int_utils.cpp wol.cpp packet_parser.cpp log.cpp ip_address.cpp file_descriptor.cpp duplicate_address_watcher.cpp wol_watcher.cpp)
-
-add_library(sleep-proxy SHARED ${sleep-proxy-files})
-target_link_libraries(sleep-proxy pcap::pcap Threads::Threads)
-target_include_directories(sleep-proxy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+add_library(sleep-proxy SHARED sleep-proxy/pcap_wrapper.cpp sleep-proxy/ethernet.cpp sleep-proxy/ip.cpp sleep-proxy/scope_guard.cpp sleep-proxy/ip_utils.cpp sleep-proxy/socket.cpp sleep-proxy/args.cpp sleep-proxy/to_string.cpp sleep-proxy/libsleep_proxy.cpp sleep-proxy/spawn_process.cpp sleep-proxy/int_utils.cpp sleep-proxy/wol.cpp sleep-proxy/packet_parser.cpp sleep-proxy/log.cpp sleep-proxy/ip_address.cpp sleep-proxy/file_descriptor.cpp sleep-proxy/duplicate_address_watcher.cpp sleep-proxy/wol_watcher.cpp)
+target_link_libraries(sleep-proxy PUBLIC pcap::pcap Threads::Threads)
+target_include_directories(sleep-proxy PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 set(main_programs emulateHost watchHost waker sniffer)
 
