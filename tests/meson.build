@@ -26,6 +26,14 @@ packet_test_utils_dep = declare_dependency(
         link_with : packet_test_utils_lib,
         dependencies : [sleep_proxy_dep, cppunit_dep, thread_dep])
 
+test_main_lib = static_library(
+        'test_main_lib',
+        'main.cpp',
+        dependencies: cppunit_dep)
+test_main_dep = declare_dependency(
+        link_with : test_main_lib,
+        dependencies : cppunit_dep)
+
 configure_file(input : 'watchhosts', output : 'watchhosts', configuration : configuration_data())
 configure_file(input : 'watchhosts-empty', output : 'watchhosts-empty', configuration : configuration_data())
 
@@ -34,7 +42,7 @@ tests = ['container_tests','int_utils_test','to_string_test','ip_utils_test','sc
 valgrind = find_program('valgrind', required : false)
 
 foreach te : tests
-        le_test = executable(te, '@0@.cpp'.format(te), dependencies : packet_test_utils_dep)
+        le_test = executable(te, '@0@.cpp'.format(te), dependencies : [packet_test_utils_dep, test_main_dep])
         test(te, le_test, timeout : 50)
         if valgrind.found()
                 test('@0@_valgrind'.format(te), valgrind, args : ['--leak-check=yes', '--suppressions=@0@/valgrind.supp'.format(meson.current_source_dir()), '--error-exitcode=9001', 'tests/@0@'.format(te)], timeout : 50)

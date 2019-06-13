@@ -14,17 +14,18 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
+#include "duplicate_address_watcher.h"
 
 #include "container_utils.h"
-#include "duplicate_address_watcher.h"
 #include "file_descriptor.h"
 #include "packet_test_utils.h"
 #include "spawn_process.h"
 #include "to_string.h"
+
 #include <algorithm>
 #include <atomic>
 #include <future>
+#include <cppunit/extensions/HelperMacros.h>
 
 bool contains_mac_different_from_given(std::string mac,
                                        std::vector<std::string> const &lines);

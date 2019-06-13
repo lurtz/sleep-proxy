@@ -14,15 +14,15 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
-#include <string>
+#include "packet_parser.h"
 
 #include "container_utils.h"
 #include "ethernet.h"
 #include "int_utils.h"
-#include "packet_parser.h"
-
 #include "packet_test_utils.h"
+
+#include <string>
+#include <cppunit/extensions/HelperMacros.h>
 
 const std::string ethernet_ipv4_tcp_wireshark =
     "00000000000000000000000008004500003c88d040004006b3e97f0000017f000001";

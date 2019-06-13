@@ -14,12 +14,13 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
+#include "libsleep_proxy.h"
 
 #include "container_utils.h"
 #include "ip_utils.h"
-#include "libsleep_proxy.h"
+
 #include <csignal>
+#include <cppunit/extensions/HelperMacros.h>
 
 void reset_signaled();
 

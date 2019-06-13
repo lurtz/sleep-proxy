@@ -29,7 +29,7 @@ enable_testing()
 function(make_test name)
         message(STATUS "adding test: " ${name})
         add_executable(${name} ${name}.cpp)
-        target_link_libraries(${name} ${CPPUNIT_LIBRARIES} ${ARGV1} ${ARGV2})
+        target_link_libraries(${name} test_main ${ARGV1} ${ARGV2})
         add_test(${name} ${name})
         if (VALGRIND_PROGRAM)
                 add_test(${name}_valgrind ${VALGRIND_PROGRAM} --leak-check=yes --suppressions=${CMAKE_CURRENT_SOURCE_DIR}/valgrind.supp --error-exitcode=9001 ./${name})
@@ -42,6 +42,9 @@ file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/watchhosts-empty" DESTINATION "${CMAKE_CU
 add_library(packet_test_utils SHARED packet_test_utils.cpp)
 target_link_libraries(packet_test_utils sleep-proxy)
 target_include_directories(packet_test_utils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library(test_main STATIC main.cpp)
+target_link_libraries(test_main PUBLIC ${CPPUNIT_LIBRARIES})
 
 make_test(container_tests sleep-proxy)
 make_test(int_utils_test sleep-proxy)

@@ -14,10 +14,11 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
-
 #include "ip_address.h"
+
 #include "to_string.h"
+
+#include <cppunit/extensions/HelperMacros.h>
 
 class Ip_address_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Ip_address_test);

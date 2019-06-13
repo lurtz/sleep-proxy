@@ -15,8 +15,10 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "ethernet.h"
-#include "main.h"
+
 #include "packet_test_utils.h"
+
+#include <cppunit/extensions/HelperMacros.h>
 
 const std::string lcc_not_supported_ipv4_0_wireshark =
     "00000305000600000000000000000800";

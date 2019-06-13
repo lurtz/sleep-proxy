@@ -15,12 +15,14 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "wol.h"
+
 #include "ethernet.h"
-#include "main.h"
 #include "packet_test_utils.h"
+
 #include <netinet/ether.h>
 #include <string>
 #include <vector>
+#include <cppunit/extensions/HelperMacros.h>
 
 class Wol_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Wol_test);

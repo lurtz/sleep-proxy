@@ -14,14 +14,15 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
+#include "spawn_process.h"
+
 #include "packet_test_utils.h"
+
 #include <string.h>
 #include <string>
 #include <thread>
 #include <unistd.h>
-
-#include "spawn_process.h"
+#include <cppunit/extensions/HelperMacros.h>
 
 class Spawn_process_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Spawn_process_test);

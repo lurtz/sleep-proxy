@@ -14,11 +14,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "to_string.h"
-#include "main.h"
-#include <string>
-
 #include "container_utils.h"
+
+#include "to_string.h"
+
+#include <string>
+#include <cppunit/extensions/HelperMacros.h>
 
 class Join_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Join_test);

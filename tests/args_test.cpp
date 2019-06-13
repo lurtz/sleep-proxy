@@ -14,16 +14,17 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
-#include <algorithm>
-#include <string>
-#include <unistd.h>
-
 #include "args.h"
+
 #include "ethernet.h"
 #include "ip_utils.h"
 #include "packet_test_utils.h"
 #include "to_string.h"
+
+#include <algorithm>
+#include <string>
+#include <unistd.h>
+#include <cppunit/extensions/HelperMacros.h>
 
 void reset();
 void print_help();

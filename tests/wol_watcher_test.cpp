@@ -15,11 +15,13 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "wol_watcher.h"
-#include "main.h"
+
 #include "packet_test_utils.h"
 #include "wol.h"
+
 #include <limits>
 #include <random>
+#include <cppunit/extensions/HelperMacros.h>
 
 bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac);
 

@@ -14,11 +14,12 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "to_string.h"
-#include "main.h"
-
 #include "scope_guard.h"
+
+#include "to_string.h"
 #include "spawn_process.h"
+
+#include <cppunit/extensions/HelperMacros.h>
 
 class Scope_guard_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Scope_guard_test);

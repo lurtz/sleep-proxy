@@ -14,13 +14,14 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-#include "main.h"
-#include <arpa/inet.h>
-#include <string>
+#include "ip_utils.h"
 
 #include "container_utils.h"
 #include "int_utils.h"
-#include "ip_utils.h"
+
+#include <arpa/inet.h>
+#include <string>
+#include <cppunit/extensions/HelperMacros.h>
 
 class Ip_utils_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Ip_utils_test);

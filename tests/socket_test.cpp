@@ -14,16 +14,17 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "socket.h"
+
 #include "ethernet.h"
-#include "main.h"
 #include "packet_test_utils.h"
+
 #include <cstring>
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
-
-#include "socket.h"
+#include <cppunit/extensions/HelperMacros.h>
 
 struct Socket_listen : public Socket {
   Socket_listen(int domain, int type, int protocol = 0)
