@@ -34,8 +34,8 @@ test_main_dep = declare_dependency(
         link_with : test_main_lib,
         dependencies : cppunit_dep)
 
-configure_file(input : 'watchhosts', output : 'watchhosts', configuration : configuration_data())
-configure_file(input : 'watchhosts-empty', output : 'watchhosts-empty', configuration : configuration_data())
+configure_file(input : 'watchhosts', output : 'watchhosts', copy : true)
+configure_file(input : 'watchhosts-empty', output : 'watchhosts-empty', copy : true)
 
 tests = ['container_tests','int_utils_test','to_string_test','ip_utils_test','scope_guard_test','args_test','spawn_process_test','log_test','libsleep_proxy_test','ethernet_test','wol_test','duplicate_address_watcher_test','ip_address_test','packet_parser_test','ip_test','socket_test','file_descriptor_test','wol_watcher_test']
 
