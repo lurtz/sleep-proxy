@@ -80,7 +80,8 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip"), get_path("ip"));
     CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables"), get_path("iptables"));
     CPPUNIT_ASSERT_EQUAL(std::string("/bin/sh"), get_path("sh"));
-    CPPUNIT_ASSERT_EQUAL(std::string("/usr/bin/make"), get_path("make"));
+    auto const make_path = get_path("make");
+    CPPUNIT_ASSERT(make_path == "/usr/bin/make" || make_path == "/bin/make");
     CPPUNIT_ASSERT_THROW(get_path("i_do_not_exist_fdasfd"), std::runtime_error);
   }
 

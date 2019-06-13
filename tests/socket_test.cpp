@@ -133,9 +133,11 @@ public:
     Socket s0(AF_INET, SOCK_DGRAM);
 
     CPPUNIT_ASSERT_EQUAL(1, s0.get_ifindex("lo"));
-    CPPUNIT_ASSERT(1 < s0.get_ifindex("eth0"));
-    const ether_addr ea = s0.get_hwaddr("eth0");
-    CPPUNIT_ASSERT("" != binary_to_mac(ea));
+    const ether_addr ea = s0.get_hwaddr("lo");
+    CPPUNIT_ASSERT_EQUAL(std::string("0:0:0:0:0:0"), binary_to_mac(ea));
+
+    CPPUNIT_ASSERT(1 < s0.get_ifindex("enp0s25"));
+    CPPUNIT_ASSERT_THROW(s0.get_ifindex("eth0"), std::runtime_error);
   }
 
   void test_set_sock_opt() {

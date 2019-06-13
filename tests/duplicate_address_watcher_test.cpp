@@ -64,8 +64,8 @@ class Duplicate_address_watcher_test : public CppUnit::TestFixture {
 
   Is_ip_occupied_dummy const ip_checker{
       std::vector<std::tuple<std::string, IP_address>>{
-          std::make_tuple("wlan0", parse_ip("192.168.1.1/24")),
-          std::make_tuple("wlan0", parse_ip("2001:470:1f15:df3::1/64"))}};
+          std::make_tuple("wlp3s0", parse_ip("192.168.1.1/24")),
+          std::make_tuple("wlp3s0", parse_ip("2001:470:1f15:df3::1/64"))}};
   Pcap_dummy pcap{};
   std::atomic_bool loop{true};
 
@@ -90,29 +90,29 @@ public:
   }
 
   void test_duplicate_address_watcher_constructor() {
-    Duplicate_address_watcher const daw{"eth0", parse_ip("10.0.0.1/16"), pcap};
+    Duplicate_address_watcher const daw{"enp0s25", parse_ip("10.0.0.1/16"), pcap};
 
-    CPPUNIT_ASSERT_EQUAL(std::string("eth0"), daw.iface);
+    CPPUNIT_ASSERT_EQUAL(std::string("enp0s25"), daw.iface);
     CPPUNIT_ASSERT_EQUAL(static_cast<Pcap_wrapper *>(&pcap), &daw.pcap);
     CPPUNIT_ASSERT_EQUAL(parse_ip("10.0.0.1/16"), daw.ip);
     CPPUNIT_ASSERT_EQUAL(std::atomic_bool(false), daw.loop);
     auto ip_neigh_ptr = daw.is_ip_occupied.target<Ip_neigh_checker>();
     CPPUNIT_ASSERT(ip_neigh_ptr != nullptr);
-    CPPUNIT_ASSERT_EQUAL(get_mac("eth0"), ip_neigh_ptr->this_nodes_mac);
+    CPPUNIT_ASSERT_EQUAL(get_mac("enp0s25"), ip_neigh_ptr->this_nodes_mac);
   }
 
   void test_duplicate_address_watcher_destructor() {
     {
-      Duplicate_address_watcher daw{"eth0", parse_ip("10.0.0.1/16"), pcap,
+      Duplicate_address_watcher daw{"enp0s25", parse_ip("10.0.0.1/16"), pcap,
                                     ip_checker};
     }
     {
-      Duplicate_address_watcher daw{"eth0", parse_ip("10.0.0.1/16"), pcap,
+      Duplicate_address_watcher daw{"enp0s25", parse_ip("10.0.0.1/16"), pcap,
                                     ip_checker};
       CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::add));
     }
     {
-      Duplicate_address_watcher daw{"eth0", parse_ip("10.0.0.1/16"), pcap,
+      Duplicate_address_watcher daw{"enp0s25", parse_ip("10.0.0.1/16"), pcap,
                                     ip_checker};
       CPPUNIT_ASSERT(!daw.loop);
       CPPUNIT_ASSERT(!daw.watcher.joinable());
@@ -127,7 +127,7 @@ public:
 
   void test_duplicate_address_watcher_ipv4_ip_not_taken() {
     // ip is not occupied by neighbours
-    Duplicate_address_watcher daw{"eth0", parse_ip("10.0.0.1/16"), pcap,
+    Duplicate_address_watcher daw{"enp0s25", parse_ip("10.0.0.1/16"), pcap,
                                   ip_checker};
     CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::add));
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -140,7 +140,7 @@ public:
 
   void test_duplicate_address_watcher_ipv4_ip_taken() {
     // ip is occupied by neighbours
-    Duplicate_address_watcher daw2{"wlan0", parse_ip("192.168.1.1/24"), pcap,
+    Duplicate_address_watcher daw2{"wlp3s0", parse_ip("192.168.1.1/24"), pcap,
                                    ip_checker};
     CPPUNIT_ASSERT_EQUAL(std::string(""), daw2(Action::add));
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -160,7 +160,7 @@ public:
   void test_duplicate_address_watcher_ipv6_ip_taken() {
     // detect ip which is occupied by router
     auto f = std::async(std::launch::async, timeout, std::ref(loop), 1000);
-    daw_thread_main_non_root("wlan0", parse_ip("2001:470:1f15:df3::1/64"),
+    daw_thread_main_non_root("wlp3s0", parse_ip("2001:470:1f15:df3::1/64"),
                              ip_checker, loop, pcap);
 
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address ==
@@ -171,7 +171,7 @@ public:
   void test_duplicate_address_watcher_ipv6_ip_not_taken() {
     // just timeout
     auto f = std::async(std::launch::async, timeout, std::ref(loop), 1000);
-    daw_thread_main_non_root("wlan0", parse_ip("2001:470:1f15:df3::DEAD/64"),
+    daw_thread_main_non_root("wlp3s0", parse_ip("2001:470:1f15:df3::DEAD/64"),
                              ip_checker, loop, pcap);
 
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset ==
@@ -180,7 +180,7 @@ public:
   }
 
   void test_duplicate_address_watcher_receives_exception_in_thread() {
-    Duplicate_address_watcher daw{"wlan0", parse_ip("192.168.1.1/24"), pcap,
+    Duplicate_address_watcher daw{"wlp3s0", parse_ip("192.168.1.1/24"), pcap,
                                   Throwing_ip_occupied_dummy()};
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset ==
                    pcap.get_end_reason());
@@ -194,7 +194,7 @@ public:
 
   void test_daw_thread_main_ipv6() {
     // is only executable as root
-    daw_thread_main_ipv6("eth0", parse_ip("2001:470:1f15:df3::1/64"),
+    daw_thread_main_ipv6("enp0s25", parse_ip("2001:470:1f15:df3::1/64"),
                          ip_checker, loop, pcap);
 
     CPPUNIT_ASSERT(!loop);
@@ -215,7 +215,7 @@ public:
     }
 
     // check for ips which are not present
-    std::set<std::string> ifaces{"eth0", "eth1", "wlan0", "wlan1"};
+    std::set<std::string> ifaces{"eth0", "eth1", "wlan0", "wlan1", "enp0s25", "wlp3s0"};
     std::set<IP_address> ips{parse_ip("10.1.2.3"), parse_ip("192.168.2.2"),
                              parse_ip("fe80::123"), parse_ip("dead::beef"),
                              parse_ip("fe80::dead:beef")};
