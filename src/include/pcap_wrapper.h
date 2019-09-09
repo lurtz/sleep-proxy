@@ -49,12 +49,12 @@ public:
   explicit Pcap_wrapper(const std::string iface, const int snaplen = 65000,
                         const bool promisc = false, const int timeout = 1000);
 
-  Pcap_wrapper(Pcap_wrapper const &) = default;
+  Pcap_wrapper(Pcap_wrapper const &) = delete;
   Pcap_wrapper(Pcap_wrapper &&) = default;
 
   virtual ~Pcap_wrapper();
 
-  Pcap_wrapper &operator=(Pcap_wrapper const &) = default;
+  Pcap_wrapper &operator=(Pcap_wrapper const &) = delete;
   Pcap_wrapper &operator=(Pcap_wrapper &&) = default;
 
   /** tell if the first header is ethernet, unix socket, ... */
