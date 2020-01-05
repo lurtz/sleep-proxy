@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <thread>
 
 /** Provide a nice interface to pcap and close the handle upon an exception */
 struct Pcap_wrapper {
@@ -37,6 +38,7 @@ private:
   std::array<char, PCAP_ERRBUF_SIZE> errbuf{{0}};
   /** pointer to the opened pcap_t struct with its close function */
   std::unique_ptr<pcap_t, std::function<void(pcap_t *)>> pc;
+  std::thread loop_thread;
 
 protected:
   Loop_end_reason loop_end_reason = Loop_end_reason::unset;
@@ -66,9 +68,8 @@ public:
   void set_filter(const std::string &filter);
 
   /** sniff count packets calling cb each time */
-  virtual Pcap_wrapper::Loop_end_reason
-  loop(const int count,
-       std::function<void(const struct pcap_pkthdr *, const u_char *)> cb);
+  using Callback_t = std::function<void(const struct pcap_pkthdr *, const u_char *)>;
+  virtual Pcap_wrapper::Loop_end_reason loop(const int count, Callback_t cb);
 
   void break_loop(const Loop_end_reason &ler);
 

@@ -15,10 +15,12 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "pcap_wrapper.h"
+
 #include "log.h"
 #include "to_string.h"
 #include <mutex>
 #include <stdexcept>
+#include <pthread.h>
 
 /** provides a bpf_programm instance in an exception safe way */
 struct BPF {
@@ -103,16 +105,21 @@ void Pcap_wrapper::set_filter(const std::string &filter) {
  */
 void callback_wrapper(u_char *args, const struct pcap_pkthdr *header,
                       const u_char *packet) {
-  auto const cb = reinterpret_cast<
-      std::function<void(const struct pcap_pkthdr *, const u_char *)> *>(args);
+  auto const cb = reinterpret_cast<Pcap_wrapper::Callback_t *>(args);
   (*cb)(header, packet);
 }
 
-Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(
-    const int count,
-    std::function<void(const struct pcap_pkthdr *, const u_char *)> cb) {
-  const int ret_val = pcap_loop(pc.get(), count, callback_wrapper,
-                                reinterpret_cast<u_char *>(&cb));
+Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count,
+                Callback_t cb) {
+  auto ret_val = int{1};
+  auto loop_f = [&ret_val](pcap_t * const pcc, const int count, Callback_t cb){
+    auto const args = reinterpret_cast<u_char * const>(&cb);
+    ret_val = pcap_loop(pcc, count, callback_wrapper, args);
+  };
+
+  loop_thread = std::thread{loop_f, pc.get(), count, std::move(cb)};
+  loop_thread.join();
+
   switch (ret_val) {
   case 0:
     loop_end_reason = Loop_end_reason::packets_captured;
@@ -132,6 +139,9 @@ void Pcap_wrapper::break_loop(const Loop_end_reason &ler) {
   loop_end_reason = ler;
   if (pc != nullptr) {
     pcap_breakloop(pc.get());
+  }
+  if (loop_thread.joinable()) {
+    pthread_cancel(loop_thread.native_handle());
   }
 }
 
