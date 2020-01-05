@@ -21,13 +21,8 @@
 #include <stdexcept>
 #include <string>
 
-// fallback because c++11 functions are not available
-namespace fallback {
-namespace std {
-int64_t stoll(const ::std::string &s, const int base = 10);
-uint64_t stoull(const ::std::string &s, const int base = 10);
-} // namespace std
-} // namespace fallback
+int64_t stoll_with_checks(const std::string &s, const int base = 10);
+uint64_t stoull_with_checks(const std::string &s, const int base = 10);
 
 /** range check for signed target types */
 template <typename R, typename T,
@@ -48,14 +43,14 @@ bool within_bounds(const T &val) noexcept {
 template <typename T,
           typename std::enable_if<std::is_signed<T>::value>::type * = nullptr>
 int64_t str_to_integral_helper(const std::string &string) {
-  return fallback::std::stoll(string);
+  return stoll_with_checks(string);
 }
 
 /** convert to unsigned types */
 template <typename T,
           typename std::enable_if<std::is_unsigned<T>::value>::type * = nullptr>
 uint64_t str_to_integral_helper(const std::string &string) {
-  return fallback::std::stoull(string);
+  return stoull_with_checks(string);
 }
 
 /** converts string to any integral type */
