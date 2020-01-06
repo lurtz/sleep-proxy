@@ -23,41 +23,14 @@
 #include <thread>
 #include <type_traits>
 
-/** with std::async this code is not able to build on openwrt. this is a
- * replacement */
-struct Pseudo_future {
-  const std::string iface_;
-  const IP_address ip_;
-  const unsigned int tries_;
-  std::thread thread;
-  bool result;
-
-  Pseudo_future(const std::string iface, const IP_address ip,
-                const unsigned int tries)
-      : iface_(std::move(iface)), ip_(std::move(ip)), tries_(std::move(tries)),
-        thread([&]() { result = ping_and_wait(iface_, ip_, tries_); }),
-        result{false} {}
-
-  Pseudo_future(Pseudo_future &&pf) = default;
-
-  ~Pseudo_future() { get(); }
-
-  bool get() {
-    if (thread.joinable()) {
-      thread.join();
-    }
-    return result;
-  }
-};
-
 template <typename Container>
 bool ping_ips(const std::string &iface, const Container &ips) {
-  std::vector<Pseudo_future> futures;
+  std::vector<std::future<bool>> futures;
   for (const auto &ip : ips) {
-    futures.emplace_back(iface, ip, 1);
+    futures.emplace_back(std::async(ping_and_wait, iface, ip, 1));
   }
   return std::any_of(std::begin(futures), std::end(futures),
-                     [](Pseudo_future &f) { return f.get(); });
+                     [](std::future<bool> &f) { return f.get(); });
 }
 
 void thread_main(const Args args) {
