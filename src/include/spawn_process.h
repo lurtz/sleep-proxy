@@ -40,5 +40,3 @@ uint8_t spawn(Container &&cmd, File_descriptor const &in = File_descriptor(),
 
   return spawn_wrapper(ch_ptr2, in, out);
 }
-
-std::string get_path(const std::string command);

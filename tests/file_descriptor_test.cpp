@@ -53,7 +53,7 @@ public:
 
   void tearDown() override {
     if (file_exists(filename)) {
-      std::vector<std::string> cmd{get_path("rm"), filename};
+      std::vector<std::string> cmd{"rm", filename};
       CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), spawn(cmd));
     }
     CPPUNIT_ASSERT(!file_exists(filename));

@@ -169,7 +169,7 @@ wait_and_listen(const Args &args) {
 
 std::string get_ping_cmd(const IP_address &ip) {
   std::string const pingcmd = ip.family == AF_INET ? "ping" : "ping6";
-  return get_path(pingcmd);
+  return pingcmd;
 }
 
 std::string get_bindable_ip(const std::string &iface, const std::string &ip) {

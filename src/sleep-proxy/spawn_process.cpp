@@ -78,7 +78,7 @@ uint8_t spawn_wrapper(std::vector<char *> params,
   file_actions.add_dup2(in, stdin);
   file_actions.add_dup2(out, stdout);
 
-  auto const rc = posix_spawn(&pid, command.data(), &file_actions.fa, nullptr, params.data(), nullptr);
+  auto const rc = posix_spawnp(&pid, command.data(), &file_actions.fa, nullptr, params.data(), nullptr);
   if (0 != rc) {
     throw std::system_error{rc, std::system_category(), "posix_spawn()"};
   }
@@ -89,18 +89,4 @@ uint8_t spawn_wrapper(std::vector<char *> params,
   }
 
   return exit_status;
-}
-
-const std::array<std::string, 4> paths{
-    {"/sbin", "/usr/sbin", "/bin", "/usr/bin"}};
-
-std::string get_path(const std::string command) {
-  for (const auto &p : paths) {
-    const std::string fn = p + '/' + command;
-    if (file_exists(fn)) {
-      return fn;
-    }
-  }
-  throw std::runtime_error("unable to find path for file: " + command);
-  return "";
 }

@@ -59,7 +59,7 @@ void Scope_guard::take_action(const Action a) const {
 
 std::string Temp_ip::operator()(const Action action) const {
   const std::string saction{action == Action::add ? "add" : "del"};
-  return get_path("ip") + " addr " + saction + " " + ip.with_subnet() +
+  return std::string{"ip"} + " addr " + saction + " " + ip.with_subnet() +
          " dev " + iface;
 }
 
@@ -69,7 +69,7 @@ std::string Temp_ip::operator()(const Action action) const {
  */
 std::string get_iptables_cmd(const IP_address &ip) {
   std::string const iptcmd{ip.family == AF_INET ? "iptables" : "ip6tables"};
-  return get_path(iptcmd);
+  return iptcmd;
 }
 
 std::string iptables_action(const Action &action) {

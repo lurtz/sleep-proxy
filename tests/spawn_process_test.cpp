@@ -28,7 +28,6 @@ class Spawn_process_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Spawn_process_test);
   CPPUNIT_TEST(test_wait_until_pid_exits);
   CPPUNIT_TEST(test_fork_exec);
-  CPPUNIT_TEST(test_get_path);
   CPPUNIT_TEST(test_direct_output_to_self_pipes);
   CPPUNIT_TEST_SUITE_END();
 
@@ -73,23 +72,14 @@ public:
     test_with_exceptions();
   }
 
-  void test_get_path() {
-    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/ip"), get_path("ip"));
-    CPPUNIT_ASSERT_EQUAL(std::string("/sbin/iptables"), get_path("iptables"));
-    CPPUNIT_ASSERT_EQUAL(std::string("/bin/sh"), get_path("sh"));
-    auto const make_path = get_path("make");
-    CPPUNIT_ASSERT(make_path == "/usr/bin/make" || make_path == "/bin/make");
-    CPPUNIT_ASSERT_THROW(get_path("i_do_not_exist_fdasfd"), std::runtime_error);
-  }
-
   void test_direct_output_to_self_pipes() {
     auto const self_pipes = get_self_pipes(false);
-    std::vector<std::string> const cmd{get_path("echo"), "blablabla12"};
+    std::vector<std::string> const cmd{"echo", "blablabla12"};
     auto const status = spawn(cmd, File_descriptor(), std::get<1>(self_pipes));
     CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
     auto const content = std::get<0>(self_pipes).read();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), content.size());
-    CPPUNIT_ASSERT_EQUAL(std::string("blablabla12"), content.at(0));
+    CPPUNIT_ASSERT_EQUAL(std::string{"blablabla12"}, content.at(0));
   }
 };
 

@@ -92,7 +92,7 @@ bool operator<(IP_address const &lhs, IP_address const &rhs) {
 
 std::vector<std::string> get_ip_neigh_output() {
   auto const out_in = get_self_pipes(false);
-  std::vector<std::string> const cmd{get_path("ip"), "neigh"};
+  std::vector<std::string> const cmd{"ip", "neigh"};
   auto const status = spawn(cmd, File_descriptor(), std::get<1>(out_in));
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
   return std::get<0>(out_in).read();

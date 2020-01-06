@@ -21,7 +21,7 @@
 #include <cctype>
 
 std::string get_mac(std::string const &iface) {
-  auto const cmd = split(get_path("ip") + " a show dev " + iface, ' ');
+  auto const cmd = std::vector<std::string>{"ip", "a", "show", "dev", iface};
   auto const out_in = get_self_pipes(false);
   auto const status = spawn(cmd, File_descriptor(), std::get<1>(out_in));
   if (status != 0) {
@@ -52,11 +52,11 @@ bool contains_mac_different_from_given(std::string mac,
 
 std::vector<std::string> const get_cmd_ipv4() {
   return std::vector<std::string>{
-      get_path("arping"), "-q", "-D", "-c", "1", "-I"};
+          "arping", "-q", "-D", "-c", "1", "-I"};
 }
 
 std::vector<std::string> get_cmd_ipv6() {
-  return std::vector<std::string>{get_path("ndisc6"), "-q", "-n", "-m"};
+  return std::vector<std::string>{"ndisc6", "-q", "-n", "-m"};
 }
 
 Ip_neigh_checker::Ip_neigh_checker(std::string mac)
