@@ -61,9 +61,10 @@ public:
   std::vector<Args> get_args(std::vector<std::string> &params) const {
     // reset getopt() to the start
     optind = 0;
+    auto vs = to_vector_strings(params);
     return read_commandline(
         static_cast<int>(params.size()),
-        const_cast<char *const *>(get_c_string_array(params).data()));
+        const_cast<char *const *>(get_c_string_array(vs).data()));
   }
 
   std::vector<Args> get_args_vec() const {

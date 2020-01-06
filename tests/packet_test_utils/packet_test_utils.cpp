@@ -93,8 +93,7 @@ bool operator<(IP_address const &lhs, IP_address const &rhs) {
 std::vector<std::string> get_ip_neigh_output() {
   auto const out_in = get_self_pipes(false);
   std::vector<std::string> const cmd{get_path("ip"), "neigh"};
-  pid_t const pid = spawn(cmd, File_descriptor(), std::get<1>(out_in));
-  const uint8_t status = wait_until_pid_exits(pid);
+  auto const status = spawn(cmd, File_descriptor(), std::get<1>(out_in));
   CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
   return std::get<0>(out_in).read();
 }
@@ -135,6 +134,15 @@ void write(File_descriptor const &fd, std::string const &text) {
   ssize_t const written_bytes = ::write(fd, text.c_str(), text.size());
   CPPUNIT_ASSERT(-1 != written_bytes);
   CPPUNIT_ASSERT_EQUAL(text.size(), static_cast<size_t>(written_bytes));
+}
+
+int duplicate_file_descriptors(int const from, int const to) {
+  int const status = dup2(from, to);
+  if (-1 == status) {
+    throw std::runtime_error(std::string("cannot duplicate file descriptor: ") +
+                             strerror(errno));
+  }
+  return status;
 }
 
 Fd_restore::Fd_restore(int const fd)

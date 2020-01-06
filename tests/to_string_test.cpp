@@ -75,10 +75,10 @@ public:
   }
 
   void compare(const std::vector<std::string> &strings,
-               const std::vector<const char *> &c_strings) {
+               const std::vector<char *> &c_strings) {
     auto c_strings_iter = std::begin(c_strings);
     for (const auto &string : strings) {
-      CPPUNIT_ASSERT_EQUAL(string.c_str(), *c_strings_iter);
+      CPPUNIT_ASSERT_EQUAL(string, std::string{*c_strings_iter});
       c_strings_iter++;
     }
     CPPUNIT_ASSERT(nullptr == *c_strings_iter);
@@ -86,9 +86,11 @@ public:
 
   void test_get_c_string_array() {
     std::vector<std::string> strings;
-    compare(strings, get_c_string_array(strings));
+    auto vs = to_vector_strings(strings);
+    compare(strings, get_c_string_array(vs));
     std::vector<std::string> strings1{"bla", "foo", "bar"};
-    compare(strings1, get_c_string_array(strings1));
+    vs = to_vector_strings(strings1);
+    compare(strings1, get_c_string_array(vs));
   }
 };
 

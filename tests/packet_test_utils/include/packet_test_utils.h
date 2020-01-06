@@ -84,6 +84,8 @@ int dup_exception(int const fd);
 
 void write(File_descriptor const &fd, std::string const &text);
 
+int duplicate_file_descriptors(int const from, int const to);
+
 struct Fd_restore {
   int const m_fd;
   int const m_backup_fd;

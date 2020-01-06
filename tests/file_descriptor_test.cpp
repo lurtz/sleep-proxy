@@ -43,9 +43,6 @@ class File_descriptor_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_fd_read);
   CPPUNIT_TEST(test_fd_read_from_self_pipe);
   CPPUNIT_TEST(test_fd_self_pipe_without_close_on_exec);
-  CPPUNIT_TEST(test_fd_remap);
-  CPPUNIT_TEST(test_fd_remap_fd_is_negative);
-  CPPUNIT_TEST(test_fd_remap_throws);
   CPPUNIT_TEST(test_get_fd_from_stream);
   CPPUNIT_TEST(test_duplicate_file_descriptors);
   CPPUNIT_TEST(test_flush_file_nullptr);
@@ -57,8 +54,7 @@ public:
   void tearDown() override {
     if (file_exists(filename)) {
       std::vector<std::string> cmd{get_path("rm"), filename};
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0),
-                           wait_until_pid_exits(spawn(cmd)));
+      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), spawn(cmd));
     }
     CPPUNIT_ASSERT(!file_exists(filename));
   }
@@ -216,37 +212,6 @@ public:
       int const mode = fcntl(std::get<1>(out_in), F_GETFD);
       CPPUNIT_ASSERT(!(mode & FD_CLOEXEC));
     }
-  }
-
-  void test_fd_remap() {
-    auto const out_in = get_self_pipes();
-    Fd_restore const fdr(get_fd_from_stream(stdout));
-    std::get<1>(out_in).remap(stdout);
-    std::cout << "blabla" << std::endl;
-    auto const text = std::get<0>(out_in).read();
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), text.size());
-    CPPUNIT_ASSERT_EQUAL(std::string("blabla"), text.at(0));
-  }
-
-  void test_fd_remap_fd_is_negative() {
-    File_descriptor fd(42);
-
-    // precondition
-    CPPUNIT_ASSERT_EQUAL(42, fd.fd);
-    CPPUNIT_ASSERT_EQUAL(1, get_fd_from_stream(stdout));
-
-    fd.fd = -1;
-    fd.remap(stdout);
-
-    // postcondition
-    CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
-    CPPUNIT_ASSERT_EQUAL(1, get_fd_from_stream(stdout));
-  }
-
-  void test_fd_remap_throws() {
-    File_descriptor fd(42);
-    CPPUNIT_ASSERT_THROW(fd.remap(nullptr), std::domain_error);
-    fd.fd = -1;
   }
 
   void test_get_fd_from_stream() {

@@ -124,18 +124,6 @@ void flush_file(FILE *const stream) {
   }
 }
 
-void File_descriptor::remap(FILE *const stream) const {
-  if (nullptr == stream) {
-    throw std::domain_error("given FILE input is nullptr");
-  }
-  if (fd < 0) {
-    return;
-  }
-  flush_file(stream);
-  int const old_fd = get_fd_from_stream(stream);
-  duplicate_file_descriptors(fd, old_fd);
-}
-
 bool file_exists(const std::string &filename) {
   struct stat stats;
   const auto errno_save = errno;
@@ -175,11 +163,3 @@ int get_fd_from_stream(FILE *const stream) {
   return fd;
 }
 
-int duplicate_file_descriptors(int const from, int const to) {
-  int const status = dup2(from, to);
-  if (-1 == status) {
-    throw std::runtime_error(std::string("cannot duplicate file descriptor: ") +
-                             strerror(errno));
-  }
-  return status;
-}

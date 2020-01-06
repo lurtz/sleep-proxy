@@ -21,6 +21,7 @@
 #include <stdexcept>
 #include <sys/wait.h>
 #include <unistd.h>
+#include <spawn.h>
 
 uint8_t wait_until_pid_exits(const pid_t &pid) {
   int status;
@@ -37,40 +38,57 @@ uint8_t wait_until_pid_exits(const pid_t &pid) {
   return static_cast<uint8_t>(WEXITSTATUS(status));
 }
 
-pid_t fork_exec_pipes(const std::vector<const char *> &command,
-                      File_descriptor const &in, File_descriptor const &out) {
-  std::tuple<File_descriptor, File_descriptor> pipes = get_self_pipes();
+struct File_actions {
+  posix_spawn_file_actions_t fa;
 
-  pid_t child = fork();
-  switch (child) {
-  case -1:
-    throw std::runtime_error(std::string("fork() failed with error: ") +
-                             strerror(errno));
-  case 0:
-    // child
-    in.remap(stdin);
-    out.remap(stdout);
-    std::get<0>(pipes).close();
-    execv(command.at(0), const_cast<char **>(command.data()));
-    write(std::get<1>(pipes), &errno, sizeof(int));
-    _exit(0);
-  default: {
-    // parent
-    std::get<1>(pipes).close();
-    ssize_t count;
-    int err;
-    while ((count = read(std::get<0>(pipes), &err, sizeof(err))) == -1 &&
-           (errno == EAGAIN || errno == EINTR)) {
-      ;
-    }
-    std::get<0>(pipes).close();
-    if (count) {
-      // something bad happend in the child process
-      throw std::runtime_error(std::string("execv() failed: ") + strerror(err));
+  File_actions() {
+    auto const rc = posix_spawn_file_actions_init(&fa);
+    if (0 != rc) {
+      throw std::system_error{rc, std::system_category(), "posix_spawn_file_actions_init()"};
     }
   }
+
+  File_actions(File_actions const&) = delete;
+  File_actions(File_actions &&) = delete;
+
+  ~File_actions() {
+    posix_spawn_file_actions_destroy(&fa);
   }
-  return child;
+
+  File_actions& operator=(File_actions const&) = delete;
+  File_actions& operator=(File_actions &&) = delete;
+
+  void add_dup2(File_descriptor const& src, FILE * const dest) {
+    if (src.fd < 0) {
+      return;
+    }
+    auto const old_fd = get_fd_from_stream(dest);
+    auto const rc = posix_spawn_file_actions_adddup2(&fa, src.fd, old_fd);
+    if (0 != rc) {
+      throw std::system_error{rc, std::system_category(), "posix_spawn_file_actions_adddup2()"};
+    }
+  }
+};
+
+uint8_t spawn_wrapper(std::vector<char *> params,
+                      File_descriptor const &in, File_descriptor const &out) {
+  auto pid = pid_t{};
+  auto const command = std::string{params.at(0)};
+  File_actions file_actions{};
+  file_actions.add_dup2(in, stdin);
+  file_actions.add_dup2(out, stdout);
+
+  auto const rc = posix_spawn(&pid, command.data(), &file_actions.fa, nullptr, params.data(), nullptr);
+  if (0 != rc) {
+    throw std::system_error{rc, std::system_category(), "posix_spawn()"};
+  }
+
+  auto const exit_status = wait_until_pid_exits(pid);
+  if (127 == exit_status) {
+    throw std::runtime_error{"failed to spawn process: " + command};
+  }
+
+  return exit_status;
 }
 
 const std::array<std::string, 4> paths{

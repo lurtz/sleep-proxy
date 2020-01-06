@@ -185,8 +185,7 @@ bool ping_and_wait(const std::string &iface, const IP_address &ip,
   const std::string cmd{ipcmd + " -c 1 " + get_bindable_ip(iface, ip.pure())};
   uint8_t ret_val = 1;
   for (unsigned int i = 0; i < tries && !is_signaled() && ret_val != 0; i++) {
-    const pid_t pid = spawn(split(cmd, ' '));
-    ret_val = wait_until_pid_exits(pid);
+    ret_val = spawn(split(cmd, ' '));
   }
   if (ret_val != 0) {
     log(LOG_ERR, "failed to ping ip %s after %d ping attempts",

@@ -24,20 +24,21 @@
 
 uint8_t wait_until_pid_exits(const pid_t &pid);
 
-pid_t fork_exec_pipes(const std::vector<const char *> &command,
-                      File_descriptor const &in, File_descriptor const &out);
+uint8_t spawn_wrapper(std::vector<char *> params,
+                    File_descriptor const &in, File_descriptor const &out);
 
 template <typename Container>
-pid_t spawn(Container &&cmd, File_descriptor const &in = File_descriptor(),
+uint8_t spawn(Container &&cmd, File_descriptor const &in = File_descriptor(),
             File_descriptor const &out = File_descriptor()) {
   static_assert(std::is_same<typename std::decay<Container>::type::value_type,
                              std::string>::value,
                 "container has to carry std::string");
 
   // get char * of each string
-  std::vector<const char *> ch_ptr = get_c_string_array(cmd);
+  auto cmd_vectors = to_vector_strings(cmd);
+  auto ch_ptr2 = get_c_string_array(cmd_vectors);
 
-  return fork_exec_pipes(ch_ptr, in, out);
+  return spawn_wrapper(ch_ptr2, in, out);
 }
 
 std::string get_path(const std::string command);
