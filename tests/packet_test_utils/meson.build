@@ -14,11 +14,9 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-cppunit_dep = dependency('cppunit')
-
 packet_test_utils_include = include_directories('include')
 packet_test_utils_lib = shared_library(
-        'packet_test_utils_lib',
+        'packet_test_utils',
         'packet_test_utils.cpp',
         dependencies : [sleep_proxy_dep, cppunit_dep],
         include_directories : packet_test_utils_include)

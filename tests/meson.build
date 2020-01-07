@@ -16,8 +16,6 @@
 
 subdir('packet_test_utils')
 
-cppunit_dep = dependency('cppunit')
-
 test_main_lib = static_library(
         'test_main_lib',
         'main.cpp',

@@ -30,6 +30,13 @@ sleep_proxy_dep = declare_dependency(
         include_directories : sleep_proxy_include,
         dependencies: thread_dep)
 
+pkg_mod = import('pkgconfig')
+pkg_mod.generate(libraries : sleep_proxy_lib,
+                 version : '0.0.1',
+                 name : 'sleep_proxy',
+                 filebase : 'sleep_proxy',
+                 description : 'A Library to barnicate your foos.')
+
 programs = ['emulateHost', 'waker', 'sniffer', 'watchHost']
 
 foreach pr : programs

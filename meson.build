@@ -27,11 +27,3 @@ cppunit_dep = dependency('cppunit', required: false)
 if cppunit_dep.found()
   subdir('tests')
 endif
-
-pkg_mod = import('pkgconfig')
-pkg_mod.generate(libraries : sleep_proxy_lib,
-                 version : '0.0.1',
-                 name : 'libsleep_proxy',
-                 filebase : 'sleep_proxy',
-                 description : 'A Library to barnicate your foos.')
-
