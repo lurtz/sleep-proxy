@@ -35,7 +35,7 @@ define Package/sleep-proxy
   CATEGORY:=Network
   DEFAULT:=m
   TITLE:=Sleep Proxy
-  URL:=https://bitbucket.org/cg2/sleep-proxy
+  URL:=https://github.com/lurtz/sleep-proxy
   DEPENDS:=+libstdcpp +libpthread +libpcap +ip +iptables +ip6tables +ndisc6
 endef
 
