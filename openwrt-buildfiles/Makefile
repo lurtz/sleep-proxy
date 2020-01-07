@@ -26,9 +26,11 @@ PKG_SOURCE_VERSION:=HEAD
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION)
 
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
+PKG_BUILD_DEPENDS:=meson/host
+PKG_BUILD_MESON_DIR:=$(PKG_BUILD_DIR)/openwrt-build
 
 include $(INCLUDE_DIR)/package.mk
-include $(INCLUDE_DIR)/cmake.mk
+include $(INCLUDE_DIR)/../feeds/packages/devel/meson/meson.mk
 
 define Package/sleep-proxy
   SECTION:=net
@@ -50,10 +52,10 @@ define Package/sleep-proxy/install
 	$(INSTALL_DIR) $(1)/usr/bin
 	$(INSTALL_DIR) $(1)/usr/lib
 	$(INSTALL_DIR) $(1)/etc/init.d
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/watchHost $(1)/usr/bin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/emulateHost $(1)/usr/bin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/waker $(1)/usr/bin/
-	$(INSTALL_BIN) $(PKG_BUILD_DIR)/src/libsleep-proxy.so $(1)/usr/lib/
+	$(INSTALL_BIN) $(PKG_BUILD_MESON_DIR)/src/watchHost $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_MESON_DIR)/src/emulateHost $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_MESON_DIR)/src/waker $(1)/usr/bin/
+	$(INSTALL_BIN) $(PKG_BUILD_MESON_DIR)/src/libsleep-proxy.so $(1)/usr/lib/
 	$(INSTALL_DATA) $(PKG_BUILD_DIR)/config/watchHost.conf $(1)/etc/
 	$(CP) files/watchHost.init $(1)/etc/init.d/watchHost
 endef
