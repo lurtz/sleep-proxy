@@ -20,7 +20,11 @@ project('sleep proxy', 'cpp',
 add_global_arguments(language : 'cpp')
 
 subdir('src')
-subdir('tests')
+
+cppunit_dep = dependency('cppunit', required: false)
+if cppunit_dep.found()
+  subdir('tests')
+endif
 
 pkg_mod = import('pkgconfig')
 pkg_mod.generate(libraries : sleep_proxy_lib,
