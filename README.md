@@ -13,39 +13,28 @@ C++11.
 
 To build install pcap with its development files and run:
 
-  mkdir build
-
-  cd build
-
-  cmake -DCMAKE_BUILD_TYPE=Release ..
-
-  make
+    mkdir build
+    cd build
+    meson ..
+    ninja
 
 BUILDING ON OPENWRT
 ===================
 
-Clone the main repository as described here:
-
-http://wiki.openwrt.org/doc/howto/buildroot.exigence
+Setup the OpenWrt SDK as described at
+[Using the SDK](https://openwrt.org/docs/guide-developer/using_the_sdk).
 
 Make sure all openwrt build dependencies are met an run:
 
-  mkdir $OPENWRT_ROOT/packages/sleep-proxy
+    mkdir $OPENWRT_SDK/packages/sleep-proxy
+    cp -r $SLEEP_PROXY_ROOT/openwrt-cmake/* $OPENWRT_SDK/packages/sleep-proxy
+    cd $OPENWRT_SDK
 
-  cp -r $SLEEP_PROXY_ROOT/openwrt-cmake/* $OPENWRT_ROOT/packages/sleep-proxy
-
-  cd $OPENWRT_ROOT
-
-  # configure your target router, make sure Network/sleep-proxy is selected
-
-  make menuconfig
-
-  make
+    # configure your target router, make sure Network/sleep-proxy is selected
+    make menuconfig
+    make
 
 You will get your package from bin/*/packages.
-
-There should also be other methods to build this for openwrt, e.g. using a
-SDK.
 
 EXECUTING
 =========
@@ -78,12 +67,12 @@ The following will fake the ip 192.168.1.123 and fe80::123 with ports 22 and
 80 open. Upon an incoming connection the machine with mac aa:bb:cc:dd:ee:ff
 will be started:
 
-  watchHost -i eth0 -a 192.168.1.123,fe80::123 -p 22,80 -m aa:bb:cc:dd:ee:ff
+    watchHost -i eth0 -a 192.168.1.123,fe80::123 -p 22,80 -m aa:bb:cc:dd:ee:ff
 
 This will take the configuration given in watchHost.conf and print messages to
 syslog. This mode is intended to be used by init daemons.
 
-  watchHost -c watchHost.conf --syslog
+    watchHost -c watchHost.conf --syslog
 
 BUGS
 ====
