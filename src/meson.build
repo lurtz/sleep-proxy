@@ -21,7 +21,7 @@ thread_dep = dependency('threads')
 
 sleep_proxy_include = include_directories('include')
 sleep_proxy_lib = shared_library(
-        'sleep_proxy_lib',
+        'sleep-proxy',
          sleep_proxy_sources,
          dependencies : [pcap_dep, thread_dep],
          include_directories : sleep_proxy_include)
