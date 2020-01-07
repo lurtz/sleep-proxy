@@ -16,7 +16,9 @@
 
 project('sleep proxy', 'cpp',
   version : '0.0.1',
-  license : 'GPL')
+  license : 'GPL',
+  default_options : ['warning_level=3']
+)
 add_global_arguments(language : 'cpp')
 
 subdir('src')

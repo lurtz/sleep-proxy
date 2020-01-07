@@ -113,7 +113,7 @@ Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count,
                 Callback_t cb) {
   auto ret_val = int{1};
   auto loop_f = [&ret_val](pcap_t * const pcc, const int count, Callback_t cb){
-    auto const args = reinterpret_cast<u_char * const>(&cb);
+    auto const args = reinterpret_cast<u_char *>(&cb);
     ret_val = pcap_loop(pcc, count, callback_wrapper, args);
   };
 
