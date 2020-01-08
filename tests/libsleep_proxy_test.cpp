@@ -19,8 +19,8 @@
 #include "container_utils.h"
 #include "ip_utils.h"
 
-#include <csignal>
 #include <cppunit/extensions/HelperMacros.h>
+#include <csignal>
 
 void reset_signaled();
 

@@ -19,9 +19,9 @@
 #include "packet_test_utils.h"
 #include "wol.h"
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <limits>
 #include <random>
-#include <cppunit/extensions/HelperMacros.h>
 
 bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac);
 

@@ -16,12 +16,12 @@
 
 #pragma once
 
+#include <functional>
 #include <memory>
 #include <pcap/pcap.h>
 #include <string>
-#include <vector>
-#include <functional>
 #include <thread>
+#include <vector>
 
 /** Provide a nice interface to pcap and close the handle upon an exception */
 struct Pcap_wrapper {
@@ -68,7 +68,8 @@ public:
   void set_filter(const std::string &filter);
 
   /** sniff count packets calling cb each time */
-  using Callback_t = std::function<void(const struct pcap_pkthdr *, const u_char *)>;
+  using Callback_t =
+      std::function<void(const struct pcap_pkthdr *, const u_char *)>;
   virtual Pcap_wrapper::Loop_end_reason loop(const int count, Callback_t cb);
 
   void break_loop(const Loop_end_reason &ler);

@@ -16,8 +16,8 @@
 
 #include "int_utils.h"
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
 class Str_to_integral_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Str_to_integral_test);
@@ -45,10 +45,8 @@ public:
   void outofposbounds() { str_to_integral<uint8_t>("256"); }
 
   void test_stoll() {
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(123),
-                         stoll_with_checks("123"));
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(-123),
-                         stoll_with_checks("-123"));
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(123), stoll_with_checks("123"));
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(-123), stoll_with_checks("-123"));
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), stoll_with_checks("0"));
     CPPUNIT_ASSERT_THROW(stoll_with_checks("1234567890123456789123456789"),
                          std::out_of_range);
@@ -56,26 +54,20 @@ public:
                          std::out_of_range);
     CPPUNIT_ASSERT_THROW(stoll_with_checks("fdasfd"), std::invalid_argument);
 
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0),
-                         stoll_with_checks("0", 16));
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(10),
-                         stoll_with_checks("a", 16));
-    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(15),
-                         stoll_with_checks("F", 16));
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), stoll_with_checks("0", 16));
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(10), stoll_with_checks("a", 16));
+    CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(15), stoll_with_checks("F", 16));
   }
 
   void test_stoull() {
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(123),
-                         stoull_with_checks("123"));
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(123), stoull_with_checks("123"));
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), stoull_with_checks("0"));
     CPPUNIT_ASSERT_THROW(stoull_with_checks("-123"), std::out_of_range);
     CPPUNIT_ASSERT_THROW(stoull_with_checks("12345678901234567890123456789"),
                          std::out_of_range);
-    CPPUNIT_ASSERT_THROW(stoull_with_checks("fdasfd"),
-                         std::invalid_argument);
+    CPPUNIT_ASSERT_THROW(stoull_with_checks("fdasfd"), std::invalid_argument);
 
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0),
-                         stoull_with_checks("0", 16));
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), stoull_with_checks("0", 16));
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(10),
                          stoull_with_checks("a", 16));
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(15),

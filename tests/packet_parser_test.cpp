@@ -21,8 +21,8 @@
 #include "int_utils.h"
 #include "packet_test_utils.h"
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
 const std::string ethernet_ipv4_tcp_wireshark =
     "00000000000000000000000008004500003c88d040004006b3e97f0000017f000001";

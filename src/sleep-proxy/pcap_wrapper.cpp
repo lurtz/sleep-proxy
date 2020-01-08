@@ -19,8 +19,8 @@
 #include "log.h"
 #include "to_string.h"
 #include <mutex>
-#include <stdexcept>
 #include <pthread.h>
+#include <stdexcept>
 
 /** provides a bpf_programm instance in an exception safe way */
 struct BPF {
@@ -49,9 +49,9 @@ Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen,
     throw std::runtime_error(errbuf.data());
   }
   if (pcap_set_snaplen(pc.get(), snaplen) == PCAP_ERROR_ACTIVATED) {
-    throw std::runtime_error("interface: " + iface +
-                             " can't set snaphot length: " +
-                             to_string(snaplen));
+    throw std::runtime_error(
+        "interface: " + iface +
+        " can't set snaphot length: " + to_string(snaplen));
   }
   if (pcap_set_promisc(pc.get(), promisc) != 0) {
     throw std::runtime_error("interface: " + iface +
@@ -110,9 +110,9 @@ void callback_wrapper(u_char *args, const struct pcap_pkthdr *header,
 }
 
 Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count,
-                Callback_t cb) {
+                                                 Callback_t cb) {
   auto ret_val = int{1};
-  auto loop_f = [&ret_val](pcap_t * const pcc, const int count, Callback_t cb){
+  auto loop_f = [&ret_val](pcap_t *const pcc, const int count, Callback_t cb) {
     auto const args = reinterpret_cast<u_char *>(&cb);
     ret_val = pcap_loop(pcc, count, callback_wrapper, args);
   };

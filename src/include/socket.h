@@ -18,8 +18,8 @@
 
 #include <cerrno>
 #include <cstring>
-#include <netinet/ether.h>
 #include <linux/if.h>
+#include <netinet/ether.h>
 #include <stdexcept>
 #include <sys/socket.h>
 #include <vector>

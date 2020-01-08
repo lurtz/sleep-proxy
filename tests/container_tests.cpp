@@ -18,8 +18,8 @@
 
 #include "to_string.h"
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
 class Join_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Join_test);

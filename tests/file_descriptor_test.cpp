@@ -21,12 +21,12 @@
 #include "to_string.h"
 #include <container_utils.h>
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <string>
 #include <unistd.h>
-#include <cppunit/extensions/HelperMacros.h>
 
 class File_descriptor_test : public CppUnit::TestFixture {
   std::string const filename = "fdclosetestfile";

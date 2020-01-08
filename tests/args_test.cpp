@@ -22,9 +22,9 @@
 #include "to_string.h"
 
 #include <algorithm>
+#include <cppunit/extensions/HelperMacros.h>
 #include <string>
 #include <unistd.h>
-#include <cppunit/extensions/HelperMacros.h>
 
 void reset();
 void print_help();

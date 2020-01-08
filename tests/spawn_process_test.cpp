@@ -18,11 +18,11 @@
 
 #include "packet_test_utils.h"
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <string.h>
 #include <string>
 #include <thread>
 #include <unistd.h>
-#include <cppunit/extensions/HelperMacros.h>
 
 class Spawn_process_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Spawn_process_test);

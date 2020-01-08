@@ -18,10 +18,10 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <spawn.h>
 #include <stdexcept>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <spawn.h>
 
 uint8_t wait_until_pid_exits(const pid_t &pid) {
   int status;
@@ -44,41 +44,42 @@ struct File_actions {
   File_actions() {
     auto const rc = posix_spawn_file_actions_init(&fa);
     if (0 != rc) {
-      throw std::system_error{rc, std::system_category(), "posix_spawn_file_actions_init()"};
+      throw std::system_error{rc, std::system_category(),
+                              "posix_spawn_file_actions_init()"};
     }
   }
 
-  File_actions(File_actions const&) = delete;
+  File_actions(File_actions const &) = delete;
   File_actions(File_actions &&) = delete;
 
-  ~File_actions() {
-    posix_spawn_file_actions_destroy(&fa);
-  }
+  ~File_actions() { posix_spawn_file_actions_destroy(&fa); }
 
-  File_actions& operator=(File_actions const&) = delete;
-  File_actions& operator=(File_actions &&) = delete;
+  File_actions &operator=(File_actions const &) = delete;
+  File_actions &operator=(File_actions &&) = delete;
 
-  void add_dup2(File_descriptor const& src, FILE * const dest) {
+  void add_dup2(File_descriptor const &src, FILE *const dest) {
     if (src.fd < 0) {
       return;
     }
     auto const old_fd = get_fd_from_stream(dest);
     auto const rc = posix_spawn_file_actions_adddup2(&fa, src.fd, old_fd);
     if (0 != rc) {
-      throw std::system_error{rc, std::system_category(), "posix_spawn_file_actions_adddup2()"};
+      throw std::system_error{rc, std::system_category(),
+                              "posix_spawn_file_actions_adddup2()"};
     }
   }
 };
 
-uint8_t spawn_wrapper(std::vector<char *> params,
-                      File_descriptor const &in, File_descriptor const &out) {
+uint8_t spawn_wrapper(std::vector<char *> params, File_descriptor const &in,
+                      File_descriptor const &out) {
   auto pid = pid_t{};
   auto const command = std::string{params.at(0)};
   File_actions file_actions{};
   file_actions.add_dup2(in, stdin);
   file_actions.add_dup2(out, stdout);
 
-  auto const rc = posix_spawnp(&pid, command.data(), &file_actions.fa, nullptr, params.data(), nullptr);
+  auto const rc = posix_spawnp(&pid, command.data(), &file_actions.fa, nullptr,
+                               params.data(), nullptr);
   if (0 != rc) {
     throw std::system_error{rc, std::system_category(), "posix_spawn()"};
   }

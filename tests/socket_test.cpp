@@ -19,12 +19,12 @@
 #include "ethernet.h"
 #include "packet_test_utils.h"
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <cstring>
 #include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <cppunit/extensions/HelperMacros.h>
 
 struct Socket_listen : public Socket {
   Socket_listen(int domain, int type, int protocol = 0)

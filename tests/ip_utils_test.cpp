@@ -20,8 +20,8 @@
 #include "int_utils.h"
 
 #include <arpa/inet.h>
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
 class Ip_utils_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Ip_utils_test);

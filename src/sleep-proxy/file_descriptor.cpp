@@ -162,4 +162,3 @@ int get_fd_from_stream(FILE *const stream) {
   }
   return fd;
 }
-

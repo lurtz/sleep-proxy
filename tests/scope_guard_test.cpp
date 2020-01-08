@@ -16,8 +16,8 @@
 
 #include "scope_guard.h"
 
-#include "to_string.h"
 #include "spawn_process.h"
+#include "to_string.h"
 
 #include <cppunit/extensions/HelperMacros.h>
 
@@ -157,59 +157,55 @@ public:
     IP_address ip = parse_ip("10.0.0.1/16");
     uint16_t port{1234};
     Drop_port op{ip, port};
-    CPPUNIT_ASSERT_EQUAL("iptables -w -I INPUT -d " + ip.pure() +
-                             " -p tcp --syn --dport " +
-                             std::to_string(static_cast<uint32_t>(port)) +
-                             " -j DROP",
-                         op(Action::add));
-    CPPUNIT_ASSERT_EQUAL("iptables -w -D INPUT -d " + ip.pure() +
-                             " -p tcp --syn --dport " +
-                             std::to_string(static_cast<uint32_t>(port)) +
-                             " -j DROP",
-                         op(Action::del));
+    CPPUNIT_ASSERT_EQUAL(
+        "iptables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
+            std::to_string(static_cast<uint32_t>(port)) + " -j DROP",
+        op(Action::add));
+    CPPUNIT_ASSERT_EQUAL(
+        "iptables -w -D INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
+            std::to_string(static_cast<uint32_t>(port)) + " -j DROP",
+        op(Action::del));
 
     ip = parse_ip("fe80::affe");
     port = 666;
     Drop_port op2{ip, port};
-    CPPUNIT_ASSERT_EQUAL("ip6tables -w -I INPUT -d " + ip.pure() +
-                             " -p tcp --syn --dport " +
-                             std::to_string(static_cast<uint32_t>(port)) +
-                             " -j DROP",
-                         op2(Action::add));
-    CPPUNIT_ASSERT_EQUAL("ip6tables -w -D INPUT -d " + ip.pure() +
-                             " -p tcp --syn --dport " +
-                             std::to_string(static_cast<uint32_t>(port)) +
-                             " -j DROP",
-                         op2(Action::del));
+    CPPUNIT_ASSERT_EQUAL(
+        "ip6tables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
+            std::to_string(static_cast<uint32_t>(port)) + " -j DROP",
+        op2(Action::add));
+    CPPUNIT_ASSERT_EQUAL(
+        "ip6tables -w -D INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
+            std::to_string(static_cast<uint32_t>(port)) + " -j DROP",
+        op2(Action::del));
   }
 
   void test_reject_tp() {
     IP_address ip = parse_ip("10.0.0.1/16");
 
     Reject_tp rt{ip, Reject_tp::TP::UDP};
-    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -I INPUT -d " +
-                                     ip.pure() + " -p udp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -I INPUT -d " + ip.pure() +
+                                     " -p udp -j REJECT"),
                          rt(Action::add));
-    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -D INPUT -d " +
-                                     ip.pure() + " -p udp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -D INPUT -d " + ip.pure() +
+                                     " -p udp -j REJECT"),
                          rt(Action::del));
 
     ip = parse_ip("10.0.0.1/16");
     Reject_tp rt2{ip, Reject_tp::TP::TCP};
-    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -I INPUT -d " +
-                                     ip.pure() + " -p tcp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -I INPUT -d " + ip.pure() +
+                                     " -p tcp -j REJECT"),
                          rt2(Action::add));
-    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -D INPUT -d " +
-                                     ip.pure() + " -p tcp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -D INPUT -d " + ip.pure() +
+                                     " -p tcp -j REJECT"),
                          rt2(Action::del));
 
     ip = parse_ip("2001::dead:affe/16");
     Reject_tp rt3{ip, Reject_tp::TP::TCP};
-    CPPUNIT_ASSERT_EQUAL(std::string("ip6tables -w -I INPUT -d " +
-                                     ip.pure() + " -p tcp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL(std::string("ip6tables -w -I INPUT -d " + ip.pure() +
+                                     " -p tcp -j REJECT"),
                          rt3(Action::add));
-    CPPUNIT_ASSERT_EQUAL(std::string("ip6tables -w -D INPUT -d " +
-                                     ip.pure() + " -p tcp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL(std::string("ip6tables -w -D INPUT -d " + ip.pure() +
+                                     " -p tcp -j REJECT"),
                          rt3(Action::del));
   }
 
@@ -307,9 +303,8 @@ public:
   }
 
   void test_take_action_failed_command() {
-    CPPUNIT_ASSERT_THROW(
-        Scope_guard{[](const Action &) { return "false"; }},
-        std::runtime_error);
+    CPPUNIT_ASSERT_THROW(Scope_guard{[](const Action &) { return "false"; }},
+                         std::runtime_error);
   }
 
   void test_take_action_non_existing_command() {

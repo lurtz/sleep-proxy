@@ -19,10 +19,10 @@
 #include "ethernet.h"
 #include "packet_test_utils.h"
 
+#include <cppunit/extensions/HelperMacros.h>
 #include <netinet/ether.h>
 #include <string>
 #include <vector>
-#include <cppunit/extensions/HelperMacros.h>
 
 class Wol_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Wol_test);

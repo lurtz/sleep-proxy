@@ -19,8 +19,8 @@
 #include "packet_test_utils.h"
 #include "spawn_process.h"
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
 class To_string_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(To_string_test);

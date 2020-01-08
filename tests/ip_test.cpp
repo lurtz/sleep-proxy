@@ -18,8 +18,8 @@
 
 #include "packet_test_utils.h"
 
-#include <string>
 #include <cppunit/extensions/HelperMacros.h>
+#include <string>
 
 // src 141.76.2.4 dst 10.38.4.225 tcp 20 bytes dont fragment
 const std::string ipv4_tcp_wireshark =

@@ -24,8 +24,8 @@
 
 #include <algorithm>
 #include <atomic>
-#include <future>
 #include <cppunit/extensions/HelperMacros.h>
+#include <future>
 
 bool contains_mac_different_from_given(std::string mac,
                                        std::vector<std::string> const &lines);
@@ -91,7 +91,8 @@ public:
   }
 
   void test_duplicate_address_watcher_constructor() {
-    Duplicate_address_watcher const daw{"enp0s25", parse_ip("10.0.0.1/16"), pcap};
+    Duplicate_address_watcher const daw{"enp0s25", parse_ip("10.0.0.1/16"),
+                                        pcap};
 
     CPPUNIT_ASSERT_EQUAL(std::string("enp0s25"), daw.iface);
     CPPUNIT_ASSERT_EQUAL(static_cast<Pcap_wrapper *>(&pcap), &daw.pcap);
@@ -216,7 +217,8 @@ public:
     }
 
     // check for ips which are not present
-    std::set<std::string> ifaces{"eth0", "eth1", "wlan0", "wlan1", "enp0s25", "wlp3s0"};
+    std::set<std::string> ifaces{"eth0",  "eth1",    "wlan0",
+                                 "wlan1", "enp0s25", "wlp3s0"};
     std::set<IP_address> ips{parse_ip("10.1.2.3"), parse_ip("192.168.2.2"),
                              parse_ip("fe80::123"), parse_ip("dead::beef"),
                              parse_ip("fe80::dead:beef")};

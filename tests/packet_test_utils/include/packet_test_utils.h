@@ -113,7 +113,8 @@ struct Pcap_dummy : public Pcap_wrapper {
 
   void set_loop_return(Pcap_wrapper::Loop_end_reason const &ler);
 
-  Pcap_wrapper::Loop_end_reason loop(const int count,
+  Pcap_wrapper::Loop_end_reason
+  loop(const int count,
        std::function<void(const struct pcap_pkthdr *, const u_char *)> cb)
       override;
 };

@@ -51,8 +51,7 @@ bool contains_mac_different_from_given(std::string mac,
 }
 
 std::vector<std::string> const get_cmd_ipv4() {
-  return std::vector<std::string>{
-          "arping", "-q", "-D", "-c", "1", "-I"};
+  return std::vector<std::string>{"arping", "-q", "-D", "-c", "1", "-I"};
 }
 
 std::vector<std::string> get_cmd_ipv6() {
@@ -148,15 +147,16 @@ void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
 Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee,
                                                      const IP_address ipp,
                                                      Pcap_wrapper &pc)
-    : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc),
-      is_ip_occupied{Ip_neigh_checker{get_mac(iface)}}, watcher(), loop{false} {
-}
+    : iface(std::move(ifacee)), ip(std::move(ipp)),
+      pcap(pc), is_ip_occupied{Ip_neigh_checker{get_mac(iface)}},
+      watcher(), loop{false} {}
 
 Duplicate_address_watcher::Duplicate_address_watcher(
     const std::string ifacee, const IP_address ipp, Pcap_wrapper &pc,
     Is_ip_occupied const is_ip_occupiedd)
-    : iface(std::move(ifacee)), ip(std::move(ipp)), pcap(pc),
-      is_ip_occupied{std::move(is_ip_occupiedd)}, watcher(), loop{false} {}
+    : iface(std::move(ifacee)), ip(std::move(ipp)),
+      pcap(pc), is_ip_occupied{std::move(is_ip_occupiedd)},
+      watcher(), loop{false} {}
 
 Duplicate_address_watcher::~Duplicate_address_watcher() { stop_watcher(); }
 

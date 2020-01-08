@@ -49,32 +49,34 @@ std::string test_characters(const std::string &input,
                             const std::string &valid_chars,
                             std::string error_message);
 
-template<typename Container>
-std::vector<std::vector<std::string::value_type>> to_vector_strings(Container&& cont) {
-  auto const conv = [](std::string const & s){
-    auto result = std::vector<std::string::value_type>(std::begin(s), std::end(s));
+template <typename Container>
+std::vector<std::vector<std::string::value_type>>
+to_vector_strings(Container &&cont) {
+  auto const conv = [](std::string const &s) {
+    auto result =
+        std::vector<std::string::value_type>(std::begin(s), std::end(s));
     result.emplace_back(0);
     return result;
   };
 
   auto result = std::vector<std::vector<std::string::value_type>>{};
   result.reserve(cont.size());
-  std::transform(std::begin(cont), std::end(cont), std::back_inserter(result), conv);
+  std::transform(std::begin(cont), std::end(cont), std::back_inserter(result),
+                 conv);
   return result;
 }
 
 template <typename Container>
-std::vector<char *> get_c_string_array(Container & cont) {
+std::vector<char *> get_c_string_array(Container &cont) {
   static_assert(std::is_same<typename std::decay<Container>::type::value_type,
                              std::vector<std::string::value_type>>::value,
                 "container has to carry std::vector<std::string::value_type>");
   std::vector<std::string::value_type *> ch_ptr;
   ch_ptr.reserve(cont.size());
-  std::transform(std::begin(cont), std::end(cont),
-                 std::back_inserter(ch_ptr),
-                 [](std::vector<std::string::value_type> &s) { return s.data(); });
+  std::transform(
+      std::begin(cont), std::end(cont), std::back_inserter(ch_ptr),
+      [](std::vector<std::string::value_type> &s) { return s.data(); });
   // null termination
   ch_ptr.push_back(nullptr);
   return ch_ptr;
 }
-

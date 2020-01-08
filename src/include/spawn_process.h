@@ -24,12 +24,12 @@
 
 uint8_t wait_until_pid_exits(const pid_t &pid);
 
-uint8_t spawn_wrapper(std::vector<char *> params,
-                    File_descriptor const &in, File_descriptor const &out);
+uint8_t spawn_wrapper(std::vector<char *> params, File_descriptor const &in,
+                      File_descriptor const &out);
 
 template <typename Container>
 uint8_t spawn(Container &&cmd, File_descriptor const &in = File_descriptor(),
-            File_descriptor const &out = File_descriptor()) {
+              File_descriptor const &out = File_descriptor()) {
   static_assert(std::is_same<typename std::decay<Container>::type::value_type,
                              std::string>::value,
                 "container has to carry std::string");
