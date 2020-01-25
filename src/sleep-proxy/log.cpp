@@ -31,6 +31,7 @@ struct Syslog {
 std::unique_ptr<Syslog> logger{nullptr};
 
 void setup_log(const std::string &ident, int option, int facility) {
+  logger = nullptr;
   logger = std::unique_ptr<Syslog>(new Syslog(ident, option, facility));
 }
 
