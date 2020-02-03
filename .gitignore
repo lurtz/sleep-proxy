@@ -4,3 +4,4 @@ atbuild
 *.swo
 *~
 *.orig
+.clangd
