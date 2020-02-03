@@ -18,13 +18,19 @@
 
 #include "args.h"
 #include "ip_address.h"
-#include "libsleep_proxy.h"
 #include <exception>
 #include <string>
 
 void setup_signals();
 
 bool is_signaled();
+
+void reset_signaled();
+
+std::string get_bindable_ip(const std::string &iface, const std::string &ip);
+
+std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
+                                            const std::vector<uint16_t> &ports);
 
 bool ping_and_wait(const std::string &iface, const IP_address &ip,
                    const unsigned int tries);

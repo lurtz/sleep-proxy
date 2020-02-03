@@ -24,6 +24,54 @@
 #include <arpa/inet.h>
 #include <cerrno>
 
+namespace {
+/**
+ * ipv4 and ipv6 have different iptables commands. return the one matching
+ * the version of ip
+ */
+std::string get_iptables_cmd(const IP_address &ip) {
+  std::string const iptcmd{ip.family == AF_INET ? "iptables" : "ip6tables"};
+  return iptcmd;
+}
+
+std::string iptables_action(const Action &action) {
+  return action == Action::add ? "I" : "D";
+}
+
+/**
+ * in iptables the icmp parameter is differenct for IPv4 and IPv6. return
+ * the correct one according to the ip version
+ */
+std::string get_icmp_version(const IP_address &ip) {
+  return ip.family == AF_INET ? "icmp" : "icmpv6";
+}
+
+std::string ipv6_to_u32_rule(IP_address const &ip) {
+  if (ip.family != AF_INET6) {
+    throw std::runtime_error(
+        "cannot convert ipv4 address into u32 ip6tables rule");
+  }
+
+  // only up to 9 && are allored in a --u32 rule, do it as 32bit integers
+  // from fe80::123
+  // to   -m u32 --u32 48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123
+
+  uint32_t const base = 48;
+  uint32_t const step = 4;
+  uint32_t pos = 0;
+  auto const address_int_to_rule = [&](uint32_t ipv6_int) {
+    return to_string(base + step * (pos++)) + "=0x" +
+           uint32_t_to_eight_hex_chars(ipv6_int);
+  };
+  std::vector<uint32_t> const ipv6_address{
+      std::begin(ip.address.ipv6.s6_addr32),
+      std::end(ip.address.ipv6.s6_addr32)};
+  std::string const rule = join(ipv6_address, address_int_to_rule, "&&");
+
+  return " -m u32 --u32 " + rule;
+}
+} // namespace
+
 Scope_guard::Scope_guard() : freed{true}, aquire_release{} {}
 
 Scope_guard::Scope_guard(Aquire_release &&aquire_release_arg)
@@ -63,19 +111,6 @@ std::string Temp_ip::operator()(const Action action) const {
          " dev " + iface;
 }
 
-/**
- * ipv4 and ipv6 have different iptables commands. return the one matching
- * the version of ip
- */
-std::string get_iptables_cmd(const IP_address &ip) {
-  std::string const iptcmd{ip.family == AF_INET ? "iptables" : "ip6tables"};
-  return iptcmd;
-}
-
-std::string iptables_action(const Action &action) {
-  return action == Action::add ? "I" : "D";
-}
-
 std::string Drop_port::operator()(const Action action) const {
   const std::string saction{iptables_action(action)};
   const std::string iptcmd = get_iptables_cmd(ip);
@@ -93,14 +128,6 @@ std::string Reject_tp::operator()(const Action action) const {
          " -j REJECT";
 }
 
-/**
- * in iptables the icmp parameter is differenct for IPv4 and IPv6. return
- * the correct one according to the ip version
- */
-std::string get_icmp_version(const IP_address &ip) {
-  return ip.family == AF_INET ? "icmp" : "icmpv6";
-}
-
 std::string Block_icmp::operator()(const Action action) const {
   const std::string saction{iptables_action(action)};
   const std::string iptcmd = get_iptables_cmd(ip);
@@ -109,33 +136,8 @@ std::string Block_icmp::operator()(const Action action) const {
          icmpv + " --" + icmpv + "-type destination-unreachable -j DROP";
 }
 
-std::string ipv6_to_u32_rule(IP_address const &ip) {
-  if (ip.family != AF_INET6) {
-    throw std::runtime_error(
-        "cannot convert ipv4 address into u32 ip6tables rule");
-  }
-
-  // only up to 9 && are allored in a --u32 rule, do it as 32bit integers
-  // from fe80::123
-  // to   -m u32 --u32 48=0xfe800000 && 52=0x0 && 56=0x0 && 60=0x123
-
-  uint32_t const base = 48;
-  uint32_t const step = 4;
-  uint32_t pos = 0;
-  auto const address_int_to_rule = [&](uint32_t ipv6_int) {
-    return to_string(base + step * (pos++)) + "=0x" +
-           uint32_t_to_eight_hex_chars(ipv6_int);
-  };
-  std::vector<uint32_t> const ipv6_address{
-      std::begin(ip.address.ipv6.s6_addr32),
-      std::end(ip.address.ipv6.s6_addr32)};
-  std::string const rule = join(ipv6_address, address_int_to_rule, "&&");
-
-  return " -m u32 --u32 " + rule;
-}
-
-std::string Block_ipv6_neighbor_solicitation::
-operator()(const Action action) const {
+std::string
+Block_ipv6_neighbor_solicitation::operator()(const Action action) const {
   const std::string saction{iptables_action(action)};
   const std::string iptcmd{get_iptables_cmd(ip)};
   const std::string ip_rule{ipv6_to_u32_rule(ip)};

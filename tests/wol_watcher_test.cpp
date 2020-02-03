@@ -23,16 +23,7 @@
 #include <limits>
 #include <random>
 
-bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac);
-
-void break_on_magic_packet(const struct pcap_pkthdr *header,
-                           const u_char *packet, ether_addr const &mac,
-                           Pcap_wrapper &waiting_for_wol);
-
-void wol_watcher_thread_main(ether_addr const &mac,
-                             Pcap_wrapper &waiting_for_wol,
-                             Pcap_wrapper &waiting_for_syn);
-
+namespace {
 std::vector<uint8_t> gen_random_data(size_t const size) {
   std::default_random_engine generator;
   std::uniform_int_distribution<uint8_t> distribution(
@@ -52,6 +43,7 @@ pcap_pkthdr create_header(size_t packet_length) {
   };
   return header;
 }
+} // namespace
 
 class Wol_watcher_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Wol_watcher_test);

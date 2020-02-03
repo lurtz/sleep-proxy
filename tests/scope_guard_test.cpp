@@ -136,21 +136,17 @@ public:
     IP_address ip = parse_ip("10.0.0.1/16");
     std::string iface{"eth0"};
     Temp_ip ti{iface, ip};
-    CPPUNIT_ASSERT_EQUAL(
-        std::string("ip addr add " + ip.with_subnet() + " dev " + iface),
-        ti(Action::add));
-    CPPUNIT_ASSERT_EQUAL(
-        std::string("ip addr del " + ip.with_subnet() + " dev " + iface),
-        ti(Action::del));
+    CPPUNIT_ASSERT_EQUAL("ip addr add " + ip.with_subnet() + " dev " + iface,
+                         ti(Action::add));
+    CPPUNIT_ASSERT_EQUAL("ip addr del " + ip.with_subnet() + " dev " + iface,
+                         ti(Action::del));
 
     iface = "even more randomness";
     Temp_ip ti2{iface, ip};
-    CPPUNIT_ASSERT_EQUAL(
-        std::string("ip addr add " + ip.with_subnet() + " dev " + iface),
-        ti2(Action::add));
-    CPPUNIT_ASSERT_EQUAL(
-        std::string("ip addr del " + ip.with_subnet() + " dev " + iface),
-        ti2(Action::del));
+    CPPUNIT_ASSERT_EQUAL("ip addr add " + ip.with_subnet() + " dev " + iface,
+                         ti2(Action::add));
+    CPPUNIT_ASSERT_EQUAL("ip addr del " + ip.with_subnet() + " dev " + iface,
+                         ti2(Action::del));
   }
 
   void test_drop_port() {
@@ -183,29 +179,29 @@ public:
     IP_address ip = parse_ip("10.0.0.1/16");
 
     Reject_tp rt{ip, Reject_tp::TP::UDP};
-    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -I INPUT -d " + ip.pure() +
-                                     " -p udp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL("iptables -w -I INPUT -d " + ip.pure() +
+                             " -p udp -j REJECT",
                          rt(Action::add));
-    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -D INPUT -d " + ip.pure() +
-                                     " -p udp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL("iptables -w -D INPUT -d " + ip.pure() +
+                             " -p udp -j REJECT",
                          rt(Action::del));
 
     ip = parse_ip("10.0.0.1/16");
     Reject_tp rt2{ip, Reject_tp::TP::TCP};
-    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -I INPUT -d " + ip.pure() +
-                                     " -p tcp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL("iptables -w -I INPUT -d " + ip.pure() +
+                             " -p tcp -j REJECT",
                          rt2(Action::add));
-    CPPUNIT_ASSERT_EQUAL(std::string("iptables -w -D INPUT -d " + ip.pure() +
-                                     " -p tcp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL("iptables -w -D INPUT -d " + ip.pure() +
+                             " -p tcp -j REJECT",
                          rt2(Action::del));
 
     ip = parse_ip("2001::dead:affe/16");
     Reject_tp rt3{ip, Reject_tp::TP::TCP};
-    CPPUNIT_ASSERT_EQUAL(std::string("ip6tables -w -I INPUT -d " + ip.pure() +
-                                     " -p tcp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL("ip6tables -w -I INPUT -d " + ip.pure() +
+                             " -p tcp -j REJECT",
                          rt3(Action::add));
-    CPPUNIT_ASSERT_EQUAL(std::string("ip6tables -w -D INPUT -d " + ip.pure() +
-                                     " -p tcp -j REJECT"),
+    CPPUNIT_ASSERT_EQUAL("ip6tables -w -D INPUT -d " + ip.pure() +
+                             " -p tcp -j REJECT",
                          rt3(Action::del));
   }
 

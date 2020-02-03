@@ -26,6 +26,34 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+namespace {
+auto const byte_vector_to_string = [](std::vector<uint8_t> const &v) {
+  return std::string(std::begin(v), std::end(v));
+};
+
+std::vector<std::string>
+byte_vector_to_strings(std::vector<uint8_t> const &data) {
+  std::vector<std::vector<uint8_t>> const splitted_data = split(data, '\n');
+  std::vector<std::string> lines(splitted_data.size());
+  std::transform(std::begin(splitted_data), std::end(splitted_data),
+                 std::begin(lines), byte_vector_to_string);
+  return lines;
+}
+
+bool is_data_ready_to_read(int const fd) {
+  pollfd fds{fd, POLLIN, 0};
+
+  int retval = poll(&fds, 1, 0);
+
+  if (-1 == retval) {
+    throw std::runtime_error(std::string("File_descriptor::poll() failed: ") +
+                             strerror(errno));
+  }
+
+  return retval != 0;
+}
+} // namespace
+
 File_descriptor::File_descriptor() : fd(-1) {}
 
 File_descriptor::File_descriptor(const int fdd) : fd(fdd) {
@@ -67,32 +95,6 @@ void File_descriptor::close() {
     throw std::runtime_error(std::string("File_descriptor::close() failed: ") +
                              strerror(errno));
   }
-}
-
-auto const byte_vector_to_string = [](std::vector<uint8_t> const &v) {
-  return std::string(std::begin(v), std::end(v));
-};
-
-std::vector<std::string>
-byte_vector_to_strings(std::vector<uint8_t> const &data) {
-  std::vector<std::vector<uint8_t>> const splitted_data = split(data, '\n');
-  std::vector<std::string> lines(splitted_data.size());
-  std::transform(std::begin(splitted_data), std::end(splitted_data),
-                 std::begin(lines), byte_vector_to_string);
-  return lines;
-}
-
-bool is_data_ready_to_read(int const fd) {
-  pollfd fds{fd, POLLIN, 0};
-
-  int retval = poll(&fds, 1, 0);
-
-  if (-1 == retval) {
-    throw std::runtime_error(std::string("File_descriptor::poll() failed: ") +
-                             strerror(errno));
-  }
-
-  return retval != 0;
 }
 
 std::vector<std::string> File_descriptor::read() const {

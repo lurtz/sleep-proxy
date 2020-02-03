@@ -23,34 +23,7 @@
 #include <getopt.h>
 #include <stdexcept>
 
-bool to_syslog = false;
-
-void reset() { to_syslog = false; }
-
-Args::Args()
-    : interface{}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0},
-      syslog(to_syslog) {}
-
-Args::Args(const std::string interface_,
-           const std::vector<std::string> addresss_,
-           const std::vector<std::string> ports_, const std::string mac_,
-           const std::string hostname_, const std::string ping_tries_)
-    : interface(validate_iface(std::move(interface_))),
-      address(parse_items(std::move(addresss_), parse_ip)),
-      ports(parse_items(std::move(ports_), str_to_integral<uint16_t>)),
-      mac(mac_to_binary(std::move(mac_))),
-      hostname(test_characters(hostname_, iface_chars + "-",
-                               "invalid token in hostname: " + hostname_)),
-      ping_tries(str_to_integral<unsigned int>(ping_tries_)),
-      syslog(to_syslog) {
-  if (address.size() == 0) {
-    throw std::runtime_error("no ip address given");
-  }
-  if (ports.size() == 0) {
-    throw std::runtime_error("no port given");
-  }
-}
-
+namespace {
 const std::string def_iface = "lo";
 const std::string def_address_ipv4 = "10.0.0.1/16";
 const std::string def_address_ipv6 = "fe80::123/64";
@@ -60,20 +33,7 @@ const std::string def_mac = "01:12:34:45:67:89";
 const std::string def_hostname = "";
 const std::string def_ping_tries = "5";
 
-void print_help() {
-  log_string(LOG_INFO, "usage: emulateHost [-h] [-s] [-c CONFIG]");
-  log_string(LOG_INFO, "emulates a host, which went standby and wakes it upon "
-                       "an incoming connection");
-  log_string(LOG_INFO, "optional arguments:");
-  log_string(LOG_INFO,
-             "  -h, --help            show this help message and exit");
-  log_string(LOG_INFO, "  -c CONFIG, --config CONFIG");
-  log_string(
-      LOG_INFO,
-      "                        read config file, should be the last argument");
-  log_string(LOG_INFO, "  -s, --syslog");
-  log_string(LOG_INFO, "                        print messages to syslog");
-}
+bool to_syslog = false;
 
 Args read_args(std::ifstream &file) {
   std::string interface = def_iface;
@@ -127,12 +87,53 @@ std::vector<Args> read_file(const std::string &filename) {
   std::vector<Args> ret_val;
   std::string line;
   while (std::getline(file, line) && line.substr(0, 4) != "host") {
-    ;
   }
   while (file) {
     ret_val.emplace_back(read_args(file));
   }
   return ret_val;
+}
+} // namespace
+
+void reset() { to_syslog = false; }
+
+Args::Args()
+    : interface{}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0},
+      syslog(to_syslog) {}
+
+Args::Args(const std::string interface_,
+           const std::vector<std::string> addresss_,
+           const std::vector<std::string> ports_, const std::string mac_,
+           const std::string hostname_, const std::string ping_tries_)
+    : interface(validate_iface(std::move(interface_))),
+      address(parse_items(std::move(addresss_), parse_ip)),
+      ports(parse_items(std::move(ports_), str_to_integral<uint16_t>)),
+      mac(mac_to_binary(std::move(mac_))),
+      hostname(test_characters(hostname_, iface_chars + "-",
+                               "invalid token in hostname: " + hostname_)),
+      ping_tries(str_to_integral<unsigned int>(ping_tries_)),
+      syslog(to_syslog) {
+  if (address.size() == 0) {
+    throw std::runtime_error("no ip address given");
+  }
+  if (ports.size() == 0) {
+    throw std::runtime_error("no port given");
+  }
+}
+
+void print_help() {
+  log_string(LOG_INFO, "usage: emulateHost [-h] [-s] [-c CONFIG]");
+  log_string(LOG_INFO, "emulates a host, which went standby and wakes it upon "
+                       "an incoming connection");
+  log_string(LOG_INFO, "optional arguments:");
+  log_string(LOG_INFO,
+             "  -h, --help            show this help message and exit");
+  log_string(LOG_INFO, "  -c CONFIG, --config CONFIG");
+  log_string(
+      LOG_INFO,
+      "                        read config file, should be the last argument");
+  log_string(LOG_INFO, "  -s, --syslog");
+  log_string(LOG_INFO, "                        print messages to syslog");
 }
 
 std::vector<Args> read_commandline(const int argc, char *const argv[]) {
@@ -151,7 +152,6 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
     case 'h':
       print_help();
       exit(0);
-      break;
     case 'c':
       ret_val = read_file(optarg);
       break;

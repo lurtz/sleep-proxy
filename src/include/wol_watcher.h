@@ -20,6 +20,16 @@
 #include <string>
 #include <thread>
 
+bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac);
+
+void break_on_magic_packet(const struct pcap_pkthdr *header,
+                           const u_char *packet, ether_addr const &mac,
+                           Pcap_wrapper &waiting_for_wol);
+
+void wol_watcher_thread_main(ether_addr const &mac,
+                             Pcap_wrapper &waiting_for_wol,
+                             Pcap_wrapper &waiting_for_syn);
+
 /** watches if someone else sends a magic wol packet */
 struct Wol_watcher {
   ether_addr const mac;

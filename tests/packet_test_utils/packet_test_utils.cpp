@@ -25,6 +25,7 @@
 #include <string.h>
 #include <unistd.h>
 
+namespace {
 void check_range(const int64_t val, const int64_t lower, const int64_t upper) {
   if (val < lower || val >= upper) {
     throw std::out_of_range(to_string(val) + " is not in range [" +
@@ -42,6 +43,7 @@ uint8_t two_hex_chars_to_byte(const char a, const char b) {
   check_range(right, 0, 16);
   return static_cast<uint8_t>(left << 4 | right);
 }
+} // namespace
 
 std::vector<uint8_t> to_binary(const std::string &hex) {
   std::vector<uint8_t> binary;

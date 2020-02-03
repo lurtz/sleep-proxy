@@ -18,7 +18,6 @@
 
 #include "ethernet.h"
 #include "ip.h"
-#include "packet_parser.h"
 #include <memory>
 #include <pcap/pcap.h>
 #include <tuple>
@@ -27,8 +26,8 @@
 /**
  * Ethernet, IP and TCP/UDP header in one tuple
  * */
-typedef std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>>
-    basic_headers;
+using basic_headers =
+    std::tuple<std::unique_ptr<Link_layer>, std::unique_ptr<ip>>;
 
 /**
  * Prints the headers to stdout

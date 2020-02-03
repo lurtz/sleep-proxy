@@ -41,7 +41,7 @@ uint8_t wait_until_pid_exits(const pid_t &pid) {
 struct File_actions {
   posix_spawn_file_actions_t fa;
 
-  File_actions() {
+  File_actions() : fa{} {
     auto const rc = posix_spawn_file_actions_init(&fa);
     if (0 != rc) {
       throw std::system_error{rc, std::system_category(),

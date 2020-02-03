@@ -22,6 +22,9 @@
 #include <string>
 #include <vector>
 
+void reset();
+void print_help();
+
 /**
  * Parses and checks the input of the command line arguments
  */

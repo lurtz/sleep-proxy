@@ -20,6 +20,7 @@
 #include "wol.h"
 #include <string>
 
+namespace {
 void print_help() { log_string(LOG_NOTICE, "usage: [-i iface] mac"); }
 
 void check_arguments(const int argc, const int count) {
@@ -28,6 +29,7 @@ void check_arguments(const int argc, const int count) {
     exit(1);
   }
 }
+} // namespace
 
 int main(int argc, char *argv[]) {
   int count = 2;

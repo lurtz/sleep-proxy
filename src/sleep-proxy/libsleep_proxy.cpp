@@ -45,6 +45,7 @@
  * firewall rules to filter RST packets to the clients.
  */
 
+namespace {
 /** used to break the loop using a signal handler */
 std::mutex pcaps_mutex;
 std::vector<Pcap_wrapper *> pcaps;
@@ -66,18 +67,6 @@ void set_signal(const int signum, const struct sigaction &sa) {
   }
 }
 
-void setup_signals() {
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(struct sigaction));
-  sa.sa_handler = signal_handler;
-  set_signal(SIGTERM, sa);
-  set_signal(SIGINT, sa);
-}
-
-bool is_signaled() { return signaled; }
-
-void reset_signaled() { signaled = false; }
-
 /**
  * Adds from args the IPs to the machine and setups the firewall
  */
@@ -95,15 +84,6 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args &args) {
     guards.emplace_back(Temp_ip{args.interface, ip});
   }
   return guards;
-}
-
-std::string
-rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
-                                const std::vector<uint16_t> &ports) {
-  std::string bpf = "tcp[tcpflags] == tcp-syn";
-  bpf += " and dst host (" + join(ips, get_pure_ip, " or ") + ")";
-  bpf += " and dst port (" + join(ports, identity<uint16_t>, " or ") + ")";
-  return bpf;
 }
 
 /**
@@ -147,6 +127,12 @@ wait_and_listen(const Args &args) {
   case Pcap_wrapper::Loop_end_reason::unset:
     log_string(LOG_ERR, "no reason given why pcap has been stopped");
     break;
+  case Pcap_wrapper::Loop_end_reason::error:
+    // error handled via excpetion
+    break;
+  case Pcap_wrapper::Loop_end_reason::packets_captured:
+    // success, no error handling needed
+    break;
   default:
     break;
   }
@@ -172,6 +158,48 @@ std::string get_ping_cmd(const IP_address &ip) {
   return pingcmd;
 }
 
+void replay_data(const std::string &iface, const int type,
+                 const std::vector<uint8_t> &data,
+                 const ether_addr &target_mac) {
+  log_string(LOG_INFO, "replaing SYN packet");
+  basic_headers headers = get_headers(type, data);
+  const std::unique_ptr<Link_layer> &ll = std::get<0>(headers);
+  if (ll == nullptr) {
+    return;
+  }
+  const uint16_t payload_type = std::get<1>(headers)->version();
+  auto data_iter = std::begin(data);
+  std::advance(data_iter, ll->header_length());
+  const std::vector<uint8_t> payload =
+      create_ethernet_header(target_mac, ll->source(), payload_type) +
+      std::vector<uint8_t>(data_iter, std::end(data));
+  Pcap_wrapper pc(iface);
+  pc.inject(payload);
+}
+
+} // namespace
+
+void setup_signals() {
+  struct sigaction sa;
+  memset(&sa, 0, sizeof(struct sigaction));
+  sa.sa_handler = signal_handler;
+  set_signal(SIGTERM, sa);
+  set_signal(SIGINT, sa);
+}
+
+bool is_signaled() { return signaled; }
+
+void reset_signaled() { signaled = false; }
+
+std::string
+rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
+                                const std::vector<uint16_t> &ports) {
+  std::string bpf = "tcp[tcpflags] == tcp-syn";
+  bpf += " and dst host (" + join(ips, get_pure_ip, " or ") + ")";
+  bpf += " and dst port (" + join(ports, identity<uint16_t>, " or ") + ")";
+  return bpf;
+}
+
 std::string get_bindable_ip(const std::string &iface, const std::string &ip) {
   if (ip.find("fe80") == 0) {
     return ip + '%' + iface;
@@ -192,25 +220,6 @@ bool ping_and_wait(const std::string &iface, const IP_address &ip,
         ip.pure().c_str(), tries);
   }
   return ret_val == 0;
-}
-
-void replay_data(const std::string &iface, const int type,
-                 const std::vector<uint8_t> &data,
-                 const ether_addr &target_mac) {
-  log_string(LOG_INFO, "replaing SYN packet");
-  basic_headers headers = get_headers(type, data);
-  const std::unique_ptr<Link_layer> &ll = std::get<0>(headers);
-  if (ll == nullptr) {
-    return;
-  }
-  const uint16_t payload_type = std::get<1>(headers)->version();
-  auto data_iter = std::begin(data);
-  std::advance(data_iter, ll->header_length());
-  const std::vector<uint8_t> payload =
-      create_ethernet_header(target_mac, ll->source(), payload_type) +
-      std::vector<uint8_t>(data_iter, std::end(data));
-  Pcap_wrapper pc(iface);
-  pc.inject(payload);
 }
 
 /**

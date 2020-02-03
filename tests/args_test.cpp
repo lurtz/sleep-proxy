@@ -26,9 +26,6 @@
 #include <string>
 #include <unistd.h>
 
-void reset();
-void print_help();
-
 class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Args_test);
   CPPUNIT_TEST(test_default_constructor);

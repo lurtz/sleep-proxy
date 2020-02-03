@@ -22,6 +22,29 @@
 #include <pthread.h>
 #include <stdexcept>
 
+namespace {
+/**
+ * provide a way to pass std::function objects as an callback to the C++
+ * interface. this function is called inside the C library and calls the C++
+ * functor
+ */
+void callback_wrapper(u_char *args, const struct pcap_pkthdr *header,
+                      const u_char *packet) {
+  auto const cb = reinterpret_cast<Pcap_wrapper::Callback_t *>(args);
+  (*cb)(header, packet);
+}
+
+std::function<void(pcap_t *const, int const, Pcap_wrapper::Callback_t)>
+create_loop(int &ret_val) {
+  auto loop_f = [&ret_val](pcap_t *const pcc, const int count,
+                           Pcap_wrapper::Callback_t cb) {
+    auto const args = reinterpret_cast<u_char *>(&cb);
+    ret_val = pcap_loop(pcc, count, callback_wrapper, args);
+  };
+  return loop_f;
+}
+} // namespace
+
 /** provides a bpf_programm instance in an exception safe way */
 struct BPF {
   bpf_program bpf;
@@ -40,11 +63,11 @@ struct BPF {
   ~BPF() { pcap_freecode(&bpf); }
 };
 
-Pcap_wrapper::Pcap_wrapper() : pc(nullptr) {}
+Pcap_wrapper::Pcap_wrapper() : pc(nullptr), loop_thread{} {}
 
 Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen,
                            const bool promisc, const int timeout)
-    : pc(pcap_create(iface.c_str(), errbuf.data()), pcap_close) {
+    : pc(pcap_create(iface.c_str(), errbuf.data()), pcap_close), loop_thread{} {
   if (pc == nullptr) {
     throw std::runtime_error(errbuf.data());
   }
@@ -98,24 +121,10 @@ void Pcap_wrapper::set_filter(const std::string &filter) {
   }
 }
 
-/**
- * provide a way to pass std::function objects as an callback to the C++
- * interface. this function is called inside the C library and calls the C++
- * functor
- */
-void callback_wrapper(u_char *args, const struct pcap_pkthdr *header,
-                      const u_char *packet) {
-  auto const cb = reinterpret_cast<Pcap_wrapper::Callback_t *>(args);
-  (*cb)(header, packet);
-}
-
 Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count,
                                                  Callback_t cb) {
   auto ret_val = int{1};
-  auto loop_f = [&ret_val](pcap_t *const pcc, const int count, Callback_t cb) {
-    auto const args = reinterpret_cast<u_char *>(&cb);
-    ret_val = pcap_loop(pcc, count, callback_wrapper, args);
-  };
+  auto loop_f = create_loop(ret_val);
 
   loop_thread = std::thread{loop_f, pc.get(), count, std::move(cb)};
   loop_thread.join();
@@ -128,7 +137,6 @@ Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count,
     loop_end_reason = Loop_end_reason::error;
     throw std::runtime_error(std::string("error while captching data: ") +
                              pcap_geterr(pc.get()));
-    break;
   default:
     break;
   }

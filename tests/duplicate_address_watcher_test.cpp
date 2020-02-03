@@ -27,17 +27,6 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <future>
 
-bool contains_mac_different_from_given(std::string mac,
-                                       std::vector<std::string> const &lines);
-
-void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
-                              Is_ip_occupied const &is_ip_occupied,
-                              std::atomic_bool &loop, Pcap_wrapper &pc);
-
-void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
-                          Is_ip_occupied const &is_ip_occupied,
-                          std::atomic_bool &loop, Pcap_wrapper &pc);
-
 struct Is_ip_occupied_dummy {
   std::vector<std::tuple<std::string, IP_address>> const occupied;
 
@@ -57,7 +46,6 @@ struct Throwing_ip_occupied_dummy {
   bool operator()(std::string const & /*unused*/,
                   IP_address const & /*unused*/) const {
     throw std::runtime_error("throwing ip occupied dummy throws");
-    return false;
   }
 };
 
@@ -246,7 +234,7 @@ public:
       std::string tmp_mac;
       try {
         tmp_mac = get_mac(std::get<0>(iface_ip));
-      } catch (std::exception const &e) {
+      } catch (std::exception const & /*e*/) {
         tmp_mac = "de:ad:be:ef:af:fe";
       }
       Ip_neigh_checker const checker{tmp_mac};

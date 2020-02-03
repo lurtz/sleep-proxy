@@ -22,7 +22,7 @@
 /**
  * Writes time formatted into the stream
  * */
-std::ostream &operator<<(std::ostream &out, struct timeval time) {
+inline std::ostream &operator<<(std::ostream &out, struct timeval time) {
   out << time.tv_sec << "." << time.tv_usec << " s";
   return out;
 }
@@ -30,12 +30,13 @@ std::ostream &operator<<(std::ostream &out, struct timeval time) {
 /**
  * Writes hdr formatted into the stream
  */
-std::ostream &operator<<(std::ostream &out, const pcap_pkthdr &hdr) {
+inline std::ostream &operator<<(std::ostream &out, const pcap_pkthdr &hdr) {
   out << "[" << hdr.ts << "]: length:" << hdr.len
       << ", supposed length: " << hdr.caplen;
   return out;
 }
 
+namespace {
 /**
  * If used as pcap callback prints some info about the received data
  * */
@@ -54,6 +55,7 @@ struct Got_packet {
 };
 
 void print_help() { log_string(LOG_NOTICE, "usage: iface bpf_filter"); }
+} // namespace
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {

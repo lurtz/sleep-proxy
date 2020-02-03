@@ -34,10 +34,8 @@ int64_t stoll_with_checks(const std::string &s, const int base) {
     break;
   case ERANGE:
     throw std::out_of_range("stoll() failed to convert:" + s);
-    break;
   default:
     throw std::invalid_argument("stoll() failed to convert: " + s);
-    break;
   }
   errno = errno_save;
   return ret_val;
@@ -58,10 +56,8 @@ uint64_t stoull_with_checks(const std::string &s, const int base) {
     break;
   case ERANGE:
     throw std::out_of_range("stoull() failed to convert:" + s);
-    break;
   default:
     throw std::invalid_argument("stoull() failed to convert: " + s);
-    break;
   }
   errno = errno_save;
   return ret_val;

@@ -18,7 +18,7 @@
 #include "to_string.h"
 #include <arpa/inet.h>
 
-std::ostream &operator<<(std::ostream &out, const ip::Version &v) {
+inline std::ostream &operator<<(std::ostream &out, const ip::Version &v) {
   switch (v) {
   case ip::Version::ipv4:
     out << 4;

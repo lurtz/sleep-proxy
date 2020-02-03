@@ -23,6 +23,20 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+namespace {
+ifreq get_ifreq(const std::string &iface) {
+  struct ifreq ifr {
+    {{0}}, {
+      {
+        0, { 0 }
+      }
+    }
+  };
+  std::copy(std::begin(iface), std::end(iface), std::begin(ifr.ifr_name));
+  return ifr;
+}
+} // namespace
+
 Socket::Socket(int domain, int type, int protocol)
     : sock{socket(domain, type, protocol)} {
   if (sock < 0) {
@@ -43,18 +57,6 @@ void Socket::ioctl(const unsigned long req_number, ifreq &ifr) const {
     throw std::runtime_error(std::string("ioctl() failed with request ") +
                              to_string(req_number) + ": " + strerror(errno));
   }
-}
-
-ifreq get_ifreq(const std::string &iface) {
-  struct ifreq ifr {
-    {{0}}, {
-      {
-        0, { 0 }
-      }
-    }
-  };
-  std::copy(std::begin(iface), std::end(iface), std::begin(ifr.ifr_name));
-  return ifr;
 }
 
 int Socket::get_ifindex(const std::string &iface) const {

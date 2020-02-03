@@ -23,6 +23,7 @@
 #include <thread>
 #include <type_traits>
 
+namespace {
 template <typename Container>
 bool ping_ips(const std::string &iface, const Container &ips) {
   std::vector<std::future<bool>> futures;
@@ -58,6 +59,7 @@ void thread_main(const Args args) {
   }
   log_string(LOG_INFO, "finished watching " + args.hostname);
 }
+} // namespace
 
 int main(int argc, char *argv[]) {
   try {

@@ -26,8 +26,19 @@
 
 std::string get_mac(std::string const &iface);
 
-typedef std::function<bool(std::string const &, IP_address const &)>
-    Is_ip_occupied;
+using Is_ip_occupied =
+    std::function<bool(std::string const &, IP_address const &)>;
+
+bool contains_mac_different_from_given(std::string mac,
+                                       std::vector<std::string> const &lines);
+
+void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
+                          Is_ip_occupied const &is_ip_occupied,
+                          std::atomic_bool &loop, Pcap_wrapper &pc);
+
+void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
+                              Is_ip_occupied const &is_ip_occupied,
+                              std::atomic_bool &loop, Pcap_wrapper &pc);
 
 struct Ip_neigh_checker {
   std::string const this_nodes_mac;

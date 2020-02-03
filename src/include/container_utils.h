@@ -27,8 +27,8 @@ template <typename T> T identity(const T &t) { return t; }
 
 template <typename Container, typename Func>
 std::string join(Container c, Func fun, std::string sep) {
-  typedef typename std::result_of<decltype(fun)(
-      typename Container::value_type)>::type input_type;
+  using input_type = typename std::result_of<decltype(fun)(
+      typename Container::value_type)>::type;
   std::stringstream ss;
   std::ostream_iterator<input_type> iter(ss, sep.c_str());
   if (std::begin(c) != std::end(c)) {

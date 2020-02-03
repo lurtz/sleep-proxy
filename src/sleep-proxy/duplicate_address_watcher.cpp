@@ -20,19 +20,15 @@
 #include "spawn_process.h"
 #include <cctype>
 
-std::string get_mac(std::string const &iface) {
-  auto const cmd = std::vector<std::string>{"ip", "a", "show", "dev", iface};
-  auto const out_in = get_self_pipes(false);
-  auto const status = spawn(cmd, File_descriptor(), std::get<1>(out_in));
-  if (status != 0) {
-    throw std::runtime_error(std::string("get_mac(): ip a show dev ") + iface +
-                             " did not succeed");
-  }
-  auto const lines = std::get<0>(out_in).read();
-  auto const line = lines.at(1);
-  auto const splitted_line = split(line, ' ');
-  return splitted_line.at(5);
+namespace {
+std::vector<std::string> const get_cmd_ipv4() {
+  return std::vector<std::string>{"arping", "-q", "-D", "-c", "1", "-I"};
 }
+
+std::vector<std::string> get_cmd_ipv6() {
+  return std::vector<std::string>{"ndisc6", "-q", "-n", "-m"};
+}
+} // namespace
 
 bool contains_mac_different_from_given(std::string mac,
                                        std::vector<std::string> const &lines) {
@@ -50,12 +46,18 @@ bool contains_mac_different_from_given(std::string mac,
   return std::any_of(std::begin(lines), std::end(lines), macs_are_not_equal);
 }
 
-std::vector<std::string> const get_cmd_ipv4() {
-  return std::vector<std::string>{"arping", "-q", "-D", "-c", "1", "-I"};
-}
-
-std::vector<std::string> get_cmd_ipv6() {
-  return std::vector<std::string>{"ndisc6", "-q", "-n", "-m"};
+std::string get_mac(std::string const &iface) {
+  auto const cmd = std::vector<std::string>{"ip", "a", "show", "dev", iface};
+  auto const out_in = get_self_pipes(false);
+  auto const status = spawn(cmd, File_descriptor(), std::get<1>(out_in));
+  if (status != 0) {
+    throw std::runtime_error(std::string("get_mac(): ip a show dev ") + iface +
+                             " did not succeed");
+  }
+  auto const lines = std::get<0>(out_in).read();
+  auto const line = lines.at(1);
+  auto const splitted_line = split(line, ' ');
+  return splitted_line.at(5);
 }
 
 Ip_neigh_checker::Ip_neigh_checker(std::string mac)
@@ -160,10 +162,9 @@ Duplicate_address_watcher::Duplicate_address_watcher(
 
 Duplicate_address_watcher::~Duplicate_address_watcher() { stop_watcher(); }
 
-typedef std::function<void(const std::string &, const IP_address &,
-                           Is_ip_occupied const &, std::atomic_bool &,
-                           Pcap_wrapper &)>
-    Main_Function_Type;
+using Main_Function_Type = std::function<void(
+    const std::string &, const IP_address &, Is_ip_occupied const &,
+    std::atomic_bool &, Pcap_wrapper &)>;
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
   Main_Function_Type const main_function =

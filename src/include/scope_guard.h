@@ -31,7 +31,7 @@ enum struct Action { add, del };
  * reverse this modification.
  */
 struct Scope_guard {
-  typedef std::function<std::string(const Action)> Aquire_release;
+  using Aquire_release = std::function<std::string(const Action)>;
 
 private:
   /** if the consumed resource or modification is freed */

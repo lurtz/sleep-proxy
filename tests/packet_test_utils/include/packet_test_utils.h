@@ -46,7 +46,7 @@ bool operator<(IP_address const &lhs, IP_address const &rhs);
 
 std::vector<std::string> get_ip_neigh_output();
 
-typedef std::vector<std::tuple<std::string, IP_address>> Iface_Ips;
+using Iface_Ips = std::vector<std::tuple<std::string, IP_address>>;
 
 Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content);
 

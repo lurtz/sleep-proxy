@@ -19,6 +19,7 @@
 #include <memory>
 #include <mutex>
 
+namespace {
 struct Syslog {
   const std::string identifier;
   Syslog(const std::string ident, int option, int facility)
@@ -29,6 +30,7 @@ struct Syslog {
 };
 
 std::unique_ptr<Syslog> logger{nullptr};
+} // namespace
 
 void setup_log(const std::string &ident, int option, int facility) {
   logger = nullptr;

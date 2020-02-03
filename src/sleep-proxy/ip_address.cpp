@@ -21,24 +21,7 @@
 #include "to_string.h"
 #include <array>
 
-std::string IP_address::pure() const {
-  std::array<char, INET6_ADDRSTRLEN> text{{0}};
-  inet_ntop(family, &address.ipv6, text.data(),
-            static_cast<socklen_t>(text.size()));
-  return text.data();
-}
-
-std::string IP_address::with_subnet() const {
-  return pure() + "/" + to_string(static_cast<int>(subnet));
-}
-
-bool IP_address::operator==(const IP_address &rhs) const {
-  bool equal = family == rhs.family;
-  equal &= subnet == rhs.subnet;
-  equal &= pure() == rhs.pure();
-  return equal;
-}
-
+namespace {
 int get_af(const std::string &ip) {
   in6_addr ipv6;
   if (inet_pton(AF_INET, ip.c_str(), &ipv6) == 1) {
@@ -49,7 +32,6 @@ int get_af(const std::string &ip) {
   }
   throw std::runtime_error("ip " + ip +
                            " is not as IPv4 or IPv6 recognizeable");
-  return -1;
 }
 
 uint8_t get_subnet(const int version,
@@ -72,6 +54,25 @@ uint8_t get_subnet(const int version,
     throw std::invalid_argument(ss);
   }
   return subnet;
+}
+} // namespace
+
+std::string IP_address::pure() const {
+  std::array<char, INET6_ADDRSTRLEN> text{{0}};
+  inet_ntop(family, &address.ipv6, text.data(),
+            static_cast<socklen_t>(text.size()));
+  return text.data();
+}
+
+std::string IP_address::with_subnet() const {
+  return pure() + "/" + to_string(static_cast<int>(subnet));
+}
+
+bool IP_address::operator==(const IP_address &rhs) const {
+  bool equal = family == rhs.family;
+  equal &= subnet == rhs.subnet;
+  equal &= pure() == rhs.pure();
+  return equal;
 }
 
 static const std::string ip_chars{
