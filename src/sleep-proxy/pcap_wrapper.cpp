@@ -48,7 +48,7 @@ create_loop(int &ret_val) {
 /** provides a bpf_programm instance in an exception safe way */
 struct BPF {
   bpf_program bpf;
-  BPF(std::unique_ptr<pcap_t, std::function<void(pcap_t *)>> &pc,
+  BPF(std::unique_ptr<pcap_t, void(*)(pcap_t *)> &pc,
       const std::string &filter)
       : bpf{0, nullptr} {
     // pcap_compile is not thread safe
@@ -63,7 +63,7 @@ struct BPF {
   ~BPF() { pcap_freecode(&bpf); }
 };
 
-Pcap_wrapper::Pcap_wrapper() : pc(nullptr), loop_thread{} {}
+Pcap_wrapper::Pcap_wrapper() : pc(nullptr, pcap_close), loop_thread{} {}
 
 Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen,
                            const bool promisc, const int timeout)

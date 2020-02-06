@@ -37,7 +37,7 @@ private:
   /** error buffer */
   std::array<char, PCAP_ERRBUF_SIZE> errbuf{{0}};
   /** pointer to the opened pcap_t struct with its close function */
-  std::unique_ptr<pcap_t, std::function<void(pcap_t *)>> pc;
+  std::unique_ptr<pcap_t, void(*)(pcap_t *)> pc;
   std::thread loop_thread;
 
 protected:
