@@ -34,7 +34,7 @@ public:
 
   void tearDown() override {}
 
-  void test_validate_iface() {
+  static void test_validate_iface() {
     CPPUNIT_ASSERT_EQUAL(std::string("eth0"), validate_iface("eth0"));
     CPPUNIT_ASSERT_EQUAL(std::string("wlan1"), validate_iface("wlan1"));
     CPPUNIT_ASSERT_EQUAL(std::string("br2"), validate_iface("br2"));
@@ -45,15 +45,15 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string(""), validate_iface(""));
   }
 
-  void test_parse_items() {
+  static void test_parse_items() {
     std::vector<std::string> strings{"1", "2", "3", "4"};
     std::vector<int> ints{1, 2, 3, 4};
     CPPUNIT_ASSERT(ints == parse_items(split(std::string("1,2,3,4"), ','),
                                        str_to_integral<int>));
     CPPUNIT_ASSERT(ints == parse_items(strings, str_to_integral<int>));
     CPPUNIT_ASSERT(strings == parse_items(strings, identity<std::string>));
-    CPPUNIT_ASSERT(std::vector<int>() == parse_items(std::vector<std::string>(),
-                                                     str_to_integral<int>));
+    CPPUNIT_ASSERT(
+        parse_items(std::vector<std::string>(), str_to_integral<int>).empty());
 
     CPPUNIT_ASSERT_THROW(
         parse_items(std::vector<std::string>{""}, str_to_integral<int>),

@@ -21,8 +21,8 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <cppunit/extensions/TestFactoryRegistry.h>
 #include <cppunit/ui/text/TestRunner.h>
+#include <cstring>
 #include <int_utils.h>
-#include <string.h>
 #include <unistd.h>
 
 namespace {
@@ -100,7 +100,7 @@ std::vector<std::string> get_ip_neigh_output() {
   return std::get<0>(out_in).read();
 }
 
-Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content) {
+Iface_Ips get_iface_ips(std::vector<std::string> const &ip_neigh_content) {
   auto const is_ip_not_stale = [](std::string const &line) {
     return line.find("STALE") == std::string::npos &&
            line.find("DELAY") == std::string::npos &&
@@ -179,10 +179,6 @@ std::ostream &operator<<(std::ostream &out, ether_addr const &ether_addr) {
 }
 
 Pcap_dummy::Pcap_dummy() : loop_return{Pcap_wrapper::Loop_end_reason::unset} {}
-
-Pcap_wrapper::Loop_end_reason Pcap_dummy::get_end_reason() const {
-  return loop_end_reason;
-}
 
 void Pcap_dummy::set_loop_return(Pcap_wrapper::Loop_end_reason const &ler) {
   loop_return = ler;

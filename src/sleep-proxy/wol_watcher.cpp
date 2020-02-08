@@ -18,6 +18,7 @@
 #include "ethernet.h"
 #include "log.h"
 #include "wol.h"
+#include <iterator>
 
 bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac) {
   // 1. put the magic pattern into a string
@@ -37,7 +38,9 @@ void break_on_magic_packet(const struct pcap_pkthdr *header,
     return;
   }
 
-  std::vector<uint8_t> const data{packet, packet + header->len};
+  auto end_iter = packet;
+  std::advance(end_iter, header->len);
+  std::vector<uint8_t> const data{packet, end_iter};
   if (is_magic_packet(data, mac)) {
     waiting_for_wol.break_loop(
         Pcap_wrapper::Loop_end_reason::duplicate_address);
@@ -61,8 +64,8 @@ void wol_watcher_thread_main(ether_addr const &mac,
 
 Wol_watcher::Wol_watcher(std::string const &iface, ether_addr macc,
                          Pcap_wrapper &waiting_for_synn)
-    : mac(std::move(macc)), waiting_for_syn(waiting_for_synn),
-      waiting_for_wol{iface}, wol_listener{} {
+    : mac(macc), waiting_for_syn(waiting_for_synn), waiting_for_wol{iface},
+      wol_listener{} {
   std::string const filter =
       "udp port 0 or udp port 7 or udp port 9 or ether proto 0x0842 ";
   waiting_for_wol.set_filter(filter);

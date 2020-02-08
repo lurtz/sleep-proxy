@@ -17,7 +17,7 @@
 #include "ip_utils.h"
 #include "to_string.h"
 
-std::string validate_iface(const std::string iface) {
+std::string validate_iface(const std::string &iface) {
   test_characters(iface, iface_chars,
                   "iface contains invalid characters: " + iface);
   return iface;

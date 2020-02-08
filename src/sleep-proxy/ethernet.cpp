@@ -25,9 +25,9 @@ std::ostream &operator<<(std::ostream &out, const Link_layer &ll) {
 }
 
 Link_layer::Link_layer(size_t const header_length, ether_addr const source,
-                       uint16_t const payload_protocol, std::string const info)
+                       uint16_t const payload_protocol, std::string info)
     : m_header_length(header_length), m_source(source),
-      m_payload_protocol(payload_protocol), m_info(info) {}
+      m_payload_protocol(payload_protocol), m_info(std::move(info)) {}
 
 size_t Link_layer::header_length() const { return m_header_length; }
 
@@ -38,9 +38,8 @@ std::string Link_layer::get_info() const { return m_info; }
 ether_addr Link_layer::source() const { return m_source; }
 
 std::vector<uint8_t> to_vector(const ether_addr &mac) {
-  return std::vector<uint8_t>(mac.ether_addr_octet,
-                              mac.ether_addr_octet +
-                                  sizeof(mac.ether_addr_octet));
+  return std::vector<uint8_t>(std::begin(mac.ether_addr_octet),
+                              std::end(mac.ether_addr_octet));
 }
 
 std::vector<uint8_t> create_ethernet_header(const ether_addr &dmac,
@@ -61,7 +60,7 @@ ether_addr mac_to_binary(const std::string &mac) {
 }
 
 std::string binary_to_mac(const ether_addr &mac) {
-  char canon_mac[12 + 5 + 1] = {0};
-  ether_ntoa_r(&mac, canon_mac);
-  return canon_mac;
+  auto canon_mac = std::array<char, 12 + 5 + 1>{};
+  ether_ntoa_r(&mac, canon_mac.data());
+  return canon_mac.data();
 }

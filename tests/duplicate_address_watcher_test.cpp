@@ -192,7 +192,7 @@ public:
                    pcap.get_end_reason());
   }
 
-  void test_ip_neigh_checker() {
+  static void test_ip_neigh_checker() {
     std::vector<std::string> const ip_neigh_content = get_ip_neigh_output();
     Iface_Ips const iface_ips = get_iface_ips(ip_neigh_content);
 
@@ -242,7 +242,7 @@ public:
     }
   }
 
-  void test_contains_mac_different_from_given() {
+  static void test_contains_mac_different_from_given() {
     std::string const mac0 = "aA:bB:cc:DD:Ee:Ff";
     std::string const mac00 = "aa:bb:cc:dd:ee:ff";
     std::string const mac01 = "AA:BB:CC:DD:EE:FF";
@@ -273,7 +273,7 @@ public:
         mac2, std::vector<std::string>{mac0, mac1, mac2}));
   }
 
-  void test_get_mac() {
+  static void test_get_mac() {
     CPPUNIT_ASSERT_EQUAL(std::string("00:00:00:00:00:00"), get_mac("lo"));
   }
 };

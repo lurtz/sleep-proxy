@@ -36,9 +36,8 @@ struct ip {
   IP_address m_destination;
   uint8_t m_payload_protocol;
 
-  ip(ip::Version const version, size_t const header_length,
-     IP_address const source, IP_address const destination,
-     uint8_t const payload_protocol);
+  ip(ip::Version version, size_t header_length, IP_address source,
+     IP_address destination, uint8_t payload_protocol);
 
   /** which IP version */
   Version version() const;
@@ -65,7 +64,7 @@ bool ethernet_payload_and_ip_version_dont_match(uint16_t const type,
   static_assert(std::is_same<typename iterator::value_type, uint8_t>::value,
                 "container has to carry u_char or uint8_t");
 
-  uint8_t const version = static_cast<uint8_t>(*data >> 4);
+  auto const version = static_cast<uint8_t>(*data >> 4);
   bool const result = (type == ip::Version::ipv4 && version != 4) ||
                       (type == ip::Version::ipv6 && version != 6);
   if (result) {
@@ -84,12 +83,14 @@ std::unique_ptr<ip> parse_ipv4(iterator data, iterator end) {
   std::advance(data, 9);
   uint8_t const ip_p = *data;
   std::advance(data, 3);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   struct in_addr const ip_src = *reinterpret_cast<in_addr const *>(&(*data));
   std::advance(data, 4);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   struct in_addr const ip_dst = *reinterpret_cast<in_addr const *>(&(*data));
-  return std::unique_ptr<ip>(new ip(ip::ipv4, header_length,
-                                    IP_address{AF_INET, {ip_src}, 32},
-                                    IP_address{AF_INET, {ip_dst}, 32}, ip_p));
+  return std::make_unique<ip>(ip::ipv4, header_length,
+                              IP_address{AF_INET, {ip_src}, 32},
+                              IP_address{AF_INET, {ip_dst}, 32}, ip_p);
 }
 
 template <typename iterator>
@@ -99,14 +100,14 @@ std::unique_ptr<ip> parse_ipv6(iterator data, iterator end) {
   std::advance(data, 6);
   uint8_t const next_header = *data;
   std::advance(data, 2);
-  in6_addr source_address;
+  in6_addr source_address{};
   std::copy(data, data + 16, source_address.s6_addr);
   std::advance(data, 16);
-  in6_addr dest_address;
+  in6_addr dest_address{};
   std::copy(data, data + 16, dest_address.s6_addr);
-  return std::unique_ptr<ip>(
-      new ip(ip::ipv6, ipv6_header_size, get_ipv6_address(source_address),
-             get_ipv6_address(dest_address), next_header));
+  return std::make_unique<ip>(ip::ipv6, ipv6_header_size,
+                              get_ipv6_address(source_address),
+                              get_ipv6_address(dest_address), next_header);
 }
 
 template <typename iterator>

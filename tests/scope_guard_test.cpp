@@ -43,7 +43,7 @@ public:
 
   void tearDown() override {}
 
-  void test_scope_guard_constructor() {
+  static void test_scope_guard_constructor() {
     {
       Scope_guard sg;
       sg.free();
@@ -68,7 +68,7 @@ public:
     }
   }
 
-  void test_scope_guard() {
+  static void test_scope_guard() {
     std::mutex ints_mutex;
     std::vector<int *> ints;
     int x = 123;
@@ -114,7 +114,7 @@ public:
     }
   }
 
-  void test_ptr_guard() {
+  static void test_ptr_guard() {
     std::mutex ints_mutex;
     std::vector<int *> ints;
     int x = 123;
@@ -132,7 +132,7 @@ public:
     CPPUNIT_ASSERT_THROW(guard(Action::del), std::runtime_error);
   }
 
-  void test_temp_ip() {
+  static void test_temp_ip() {
     IP_address ip = parse_ip("10.0.0.1/16");
     std::string iface{"eth0"};
     Temp_ip ti{iface, ip};
@@ -149,7 +149,7 @@ public:
                          ti2(Action::del));
   }
 
-  void test_drop_port() {
+  static void test_drop_port() {
     IP_address ip = parse_ip("10.0.0.1/16");
     uint16_t port{1234};
     Drop_port op{ip, port};
@@ -175,7 +175,7 @@ public:
         op2(Action::del));
   }
 
-  void test_reject_tp() {
+  static void test_reject_tp() {
     IP_address ip = parse_ip("10.0.0.1/16");
 
     Reject_tp rt{ip, Reject_tp::TP::UDP};
@@ -205,7 +205,7 @@ public:
                          rt3(Action::del));
   }
 
-  void test_block_icmp() {
+  static void test_block_icmp() {
     IP_address ip = parse_ip("10.0.0.1/16");
 
     Block_icmp bi{ip};
@@ -230,8 +230,9 @@ public:
         bi2(Action::del));
   }
 
-  std::string block_ipv6_neighbor_solicitation_cmd(std::string const &action,
-                                                   std::string const &rule) {
+  static std::string
+  block_ipv6_neighbor_solicitation_cmd(std::string const &action,
+                                       std::string const &rule) {
     std::string const binary{"ip6tables -w -"};
     std::string const options{" INPUT -s :: -p icmpv6 --icmpv6-type "
                               "neighbour-solicitation -m u32 --u32 "};
@@ -239,7 +240,7 @@ public:
     return binary + action + options + rule + jump;
   }
 
-  void test_block_ipv6_neighbor_solicitation_link_local() {
+  static void test_block_ipv6_neighbor_solicitation_link_local() {
     Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("fe80::123")};
 
     std::string const rule{"48=0xfe800000&&"
@@ -255,7 +256,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
   }
 
-  void test_block_ipv6_neighbor_solicitation_global_address() {
+  static void test_block_ipv6_neighbor_solicitation_global_address() {
     Block_ipv6_neighbor_solicitation const bipv6ns{
         parse_ip("2a00:1450:4005:800::1004")};
 
@@ -272,7 +273,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(expected_delete, bipv6ns(Action::del));
   }
 
-  void test_block_ipv6_neighbor_solicitation_with_ipv4() {
+  static void test_block_ipv6_neighbor_solicitation_with_ipv4() {
     Block_ipv6_neighbor_solicitation const bipv6ns{parse_ip("192.168.6.6")};
 
     CPPUNIT_ASSERT_THROW(bipv6ns(Action::add), std::runtime_error);
@@ -288,7 +289,7 @@ public:
     }
   };
 
-  void test_take_action() {
+  static void test_take_action() {
     const std::string filename{"/tmp/take_action_test_testfile"};
     CPPUNIT_ASSERT(!file_exists(filename));
     {
@@ -298,12 +299,12 @@ public:
     CPPUNIT_ASSERT(!file_exists(filename));
   }
 
-  void test_take_action_failed_command() {
+  static void test_take_action_failed_command() {
     CPPUNIT_ASSERT_THROW(Scope_guard{[](const Action &) { return "false"; }},
                          std::runtime_error);
   }
 
-  void test_take_action_non_existing_command() {
+  static void test_take_action_non_existing_command() {
     CPPUNIT_ASSERT_THROW(
         Scope_guard{[](const Action &) { return "falsefalsefalsefalse"; }},
         std::runtime_error);

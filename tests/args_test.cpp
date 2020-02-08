@@ -55,20 +55,19 @@ public:
     compare(get_args());
   }
 
-  std::vector<Args> get_args(std::vector<std::string> &params) const {
+  static std::vector<Args> get_args(std::vector<std::string> &params) {
     // reset getopt() to the start
     optind = 0;
     auto vs = to_vector_strings(params);
-    return read_commandline(
-        static_cast<int>(params.size()),
-        const_cast<char *const *>(get_c_string_array(vs).data()));
+    return read_commandline(static_cast<int>(params.size()),
+                            get_c_string_array(vs).data());
   }
 
   std::vector<Args> get_args_vec() const {
     std::vector<std::string> params{"args_test"};
     if (syslog__) {
       std::cout << "syslog" << std::endl;
-      params.push_back("--syslog");
+      params.emplace_back("--syslog");
     }
     return get_args(params);
   }
@@ -77,8 +76,8 @@ public:
     return Args(interface, addresses, ports, mac, hostname, ping_tries);
   }
 
-  std::vector<Args> get_args(const std::string &filename,
-                             const bool with_syslog = false) const {
+  static std::vector<Args> get_args(const std::string &filename,
+                                    const bool with_syslog = false) {
     std::vector<std::string> params{get_executable_path(), "-c",
                                     get_executable_directory() + "/" +
                                         filename};
@@ -116,7 +115,7 @@ public:
 
   void tearDown() override {}
 
-  void test_default_constructor() {
+  static void test_default_constructor() {
     Args args;
 
     CPPUNIT_ASSERT_EQUAL(ether_addr{{0}}, args.mac);
@@ -238,7 +237,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(true, args3.at(1).syslog);
   }
 
-  void test_print_help() {
+  static void test_print_help() {
     auto out_in = get_self_pipes();
     {
       Tmp_fd_remap const out_remap(std::get<1>(out_in),
@@ -250,7 +249,7 @@ public:
     CPPUNIT_ASSERT(help_text.size() > 7);
   }
 
-  void test_ostream_operator() {
+  static void test_ostream_operator() {
     Args args;
     std::stringstream ss;
     ss << args;
@@ -260,7 +259,7 @@ public:
         ss.str());
   }
 
-  void test_read_command_line_weird_option() {
+  static void test_read_command_line_weird_option() {
     auto out_in = get_self_pipes();
 
     {

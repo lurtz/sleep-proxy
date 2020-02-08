@@ -40,9 +40,16 @@ struct Wol_watcher {
 
   Wol_watcher(std::string const &iface, ether_addr mac,
               Pcap_wrapper &waiting_for_synn);
+
+  Wol_watcher(Wol_watcher const &) = delete;
+  Wol_watcher(Wol_watcher &&) = delete;
+
   ~Wol_watcher();
 
-  std::string operator()(const Action action);
+  Wol_watcher &operator=(Wol_watcher const &) = delete;
+  Wol_watcher &operator=(Wol_watcher &&) = delete;
+
+  std::string operator()(Action action);
 
   void stop();
 };

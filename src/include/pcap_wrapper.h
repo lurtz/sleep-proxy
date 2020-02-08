@@ -39,17 +39,18 @@ private:
   /** pointer to the opened pcap_t struct with its close function */
   std::unique_ptr<pcap_t, void (*)(pcap_t *)> pc;
   std::thread loop_thread;
-
-protected:
   Loop_end_reason loop_end_reason = Loop_end_reason::unset;
 
+protected:
   /** this is only present to run tests as non-root, do not use */
   Pcap_wrapper();
 
+  Loop_end_reason get_end_reason() const;
+
 public:
   /** open a pcap instance on iface */
-  explicit Pcap_wrapper(const std::string iface, const int snaplen = 65000,
-                        const bool promisc = false, const int timeout = 1000);
+  explicit Pcap_wrapper(std::string const &iface, int snaplen = 65000,
+                        bool promisc = false, int timeout = 1000);
 
   Pcap_wrapper(Pcap_wrapper const &) = delete;
   Pcap_wrapper(Pcap_wrapper &&) = default;
@@ -70,7 +71,7 @@ public:
   /** sniff count packets calling cb each time */
   using Callback_t =
       std::function<void(const struct pcap_pkthdr *, const u_char *)>;
-  virtual Pcap_wrapper::Loop_end_reason loop(const int count, Callback_t cb);
+  virtual Pcap_wrapper::Loop_end_reason loop(int count, Callback_t cb);
 
   void break_loop(const Loop_end_reason &ler);
 

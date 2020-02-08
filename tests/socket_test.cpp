@@ -32,7 +32,8 @@ struct Socket_listen : public Socket {
 
   template <typename Sockaddr> void bind(Sockaddr &&sockaddr) {
     const int ret_val =
-        ::bind(sock, reinterpret_cast<const struct sockaddr *>(&sockaddr),
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
+        ::bind(fd(), reinterpret_cast<const struct sockaddr *>(&sockaddr),
                sizeof(Sockaddr));
     if (ret_val != 0) {
       throw std::runtime_error(std::string("bind() failed: ") +
@@ -42,7 +43,7 @@ struct Socket_listen : public Socket {
 
   std::vector<uint8_t> recv(size_t len = 2000) {
     std::vector<uint8_t> data(len);
-    ssize_t read_data = ::recv(sock, data.data(), len, 0);
+    ssize_t read_data = ::recv(fd(), data.data(), len, 0);
     if (read_data == -1) {
       throw std::runtime_error(std::string("recv() failed: ") +
                                strerror(errno));
@@ -54,7 +55,7 @@ struct Socket_listen : public Socket {
   template <typename Optval> Optval get_sock_opt(int level, int optname) const {
     Optval optval;
     socklen_t optlen = sizeof(Optval);
-    const int ret_val = getsockopt(sock, level, optname, &optval, &optlen);
+    const int ret_val = getsockopt(fd(), level, optname, &optval, &optlen);
     if (ret_val) {
       throw std::runtime_error(std::string("getsockopt() failed: ") +
                                strerror(errno));
@@ -62,7 +63,7 @@ struct Socket_listen : public Socket {
     return optval;
   }
 
-  void close_early() { close(sock); }
+  void close_early() { close(fd()); }
 };
 
 class Socket_test : public CppUnit::TestFixture {
@@ -80,11 +81,11 @@ public:
 
   void tearDown() override {}
 
-  void test_constructor_throws() {
+  static void test_constructor_throws() {
     CPPUNIT_ASSERT_THROW(Socket(-1, -1), std::runtime_error);
   }
 
-  void test_ioctl_throws() {
+  static void test_ioctl_throws() {
     Socket s0(AF_INET, SOCK_DGRAM);
 
     struct ifreq ifreq {
@@ -98,7 +99,7 @@ public:
     CPPUNIT_ASSERT_THROW(s0.ioctl(0, ifreq), std::runtime_error);
   }
 
-  void test_send_to() {
+  static void test_send_to() {
     sockaddr_in addr{0, 0, {0}, {0}};
     addr.sin_family = AF_INET;
     addr.sin_port = 31337;
@@ -129,7 +130,7 @@ public:
     CPPUNIT_ASSERT_THROW(s1.send_to(data, 0, broken_addr), std::runtime_error);
   }
 
-  void test_get_ifindex() {
+  static void test_get_ifindex() {
     // Socket(int domain, int type, int protocol = 0)
     Socket s0(AF_INET, SOCK_DGRAM);
 
@@ -141,7 +142,7 @@ public:
     CPPUNIT_ASSERT_THROW(s0.get_ifindex("eth0"), std::runtime_error);
   }
 
-  void test_set_sock_opt() {
+  static void test_set_sock_opt() {
     Socket_listen sock(AF_INET, SOCK_DGRAM);
     CPPUNIT_ASSERT_EQUAL(0, sock.get_sock_opt<int>(SOL_SOCKET, SO_BROADCAST));
     sock.set_sock_opt(SOL_SOCKET, SO_BROADCAST, 1);
@@ -152,7 +153,7 @@ public:
     CPPUNIT_ASSERT_THROW(sock.set_sock_opt(-1, -1, -1), std::runtime_error);
   }
 
-  void test_destructor() {
+  static void test_destructor() {
     auto out_in = get_self_pipes();
     {
       Tmp_fd_remap const out_remap(std::get<1>(out_in),

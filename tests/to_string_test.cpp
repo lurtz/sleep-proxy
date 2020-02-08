@@ -35,7 +35,7 @@ public:
 
   void tearDown() override {}
 
-  void test_vector_stream() {
+  static void test_vector_stream() {
     std::vector<int> vi;
     std::stringstream ss;
     ss << vi;
@@ -57,7 +57,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("blaa"), ss.str());
   }
 
-  void test_to_string() {
+  static void test_to_string() {
     CPPUNIT_ASSERT_EQUAL(std::string("1"), to_string(1));
     CPPUNIT_ASSERT_EQUAL(std::string("0.1"), to_string(0.1));
     std::string test{"blabla"};
@@ -65,7 +65,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string(""), to_string(""));
   }
 
-  void test_test_characters() {
+  static void test_test_characters() {
     std::string valid_chars{"abcdefgh"};
     test_characters(valid_chars, valid_chars, "should not fail");
     test_characters("abc", valid_chars, "should not fail");
@@ -74,8 +74,8 @@ public:
                          std::runtime_error);
   }
 
-  void compare(const std::vector<std::string> &strings,
-               const std::vector<char *> &c_strings) {
+  static void compare(const std::vector<std::string> &strings,
+                      const std::vector<char *> &c_strings) {
     auto c_strings_iter = std::begin(c_strings);
     for (const auto &string : strings) {
       CPPUNIT_ASSERT_EQUAL(string, std::string{*c_strings_iter});
@@ -84,7 +84,7 @@ public:
     CPPUNIT_ASSERT(nullptr == *c_strings_iter);
   }
 
-  void test_get_c_string_array() {
+  static void test_get_c_string_array() {
     std::vector<std::string> strings;
     auto vs = to_vector_strings(strings);
     compare(strings, get_c_string_array(vs));

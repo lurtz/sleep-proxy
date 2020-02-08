@@ -180,7 +180,7 @@ void replay_data(const std::string &iface, const int type,
 } // namespace
 
 void setup_signals() {
-  struct sigaction sa;
+  struct sigaction sa {};
   memset(&sa, 0, sizeof(struct sigaction));
   sa.sa_handler = signal_handler;
   set_signal(SIGTERM, sa);

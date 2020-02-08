@@ -23,7 +23,7 @@
 
 namespace {
 int get_af(const std::string &ip) {
-  in6_addr ipv6;
+  in6_addr ipv6{};
   if (inet_pton(AF_INET, ip.c_str(), &ipv6) == 1) {
     return AF_INET;
   }
@@ -92,7 +92,7 @@ IP_address parse_ip(const std::string &ip) {
   // e.g. when the ip is ill formatted
   const auto ip_subnet = split(split(ip, '%').at(0), '/');
   const int version = get_af(ip_subnet.at(0));
-  IP_address ipa;
+  IP_address ipa{};
   ipa.family = version;
   ipa.subnet = get_subnet(version, ip_subnet);
   inet_pton(version, ip_subnet.at(0).c_str(), &ipa.address.ipv6);

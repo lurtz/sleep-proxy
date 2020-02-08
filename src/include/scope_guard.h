@@ -42,7 +42,7 @@ private:
   /**
    * Consume or free the resource
    */
-  void take_action(const Action a) const;
+  void take_action(Action a) const;
 
 public:
   /**
@@ -54,7 +54,7 @@ public:
    * consume the resource or perform modification using
    * aquire_release_arg
    */
-  explicit Scope_guard(Aquire_release &&aquire_release_arg);
+  explicit Scope_guard(Aquire_release aquire_release_arg);
 
   /**
    * Move constructor
@@ -73,6 +73,8 @@ public:
    */
   Scope_guard &operator=(const Scope_guard &) = delete;
 
+  Scope_guard &operator=(Scope_guard &&) = delete;
+
   /**
    * Checks if the resource is already freed and frees them if not
    */
@@ -84,7 +86,7 @@ struct Temp_ip {
   const std::string iface;
   const IP_address ip;
 
-  std::string operator()(const Action action) const;
+  std::string operator()(Action action) const;
 };
 
 /** Adds a firewall rule to open port for ip */
@@ -92,7 +94,7 @@ struct Drop_port {
   const IP_address ip;
   const uint16_t port;
 
-  std::string operator()(const Action action) const;
+  std::string operator()(Action action) const;
 };
 
 /** Adds a firewall rule to reject either TCP or UDP packets */
@@ -101,20 +103,20 @@ struct Reject_tp {
   const IP_address ip;
   const TP tcp_udp;
 
-  std::string operator()(const Action action) const;
+  std::string operator()(Action action) const;
 };
 
 /** Adds a firewall rule to block ICMP messages directed to ip */
 struct Block_icmp {
   const IP_address ip;
 
-  std::string operator()(const Action action) const;
+  std::string operator()(Action action) const;
 };
 
 struct Block_ipv6_neighbor_solicitation {
   const IP_address ip;
 
-  std::string operator()(const Action action) const;
+  std::string operator()(Action action) const;
 };
 
 /** adds and removes an element of type T to container of type Cont */

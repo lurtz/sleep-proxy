@@ -32,7 +32,7 @@ class Join_test : public CppUnit::TestFixture {
 public:
   void setUp() override {}
   void tearDown() override {}
-  void testConstructor() {
+  static void testConstructor() {
     std::string result = join(std::vector<int>(), identity<int>, ",");
     CPPUNIT_ASSERT_EQUAL(std::string(""), result);
     std::vector<int> ints{1, 2, 3, 4};
@@ -46,16 +46,15 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("10;20;30"), result);
   }
 
-  void test_vector_addition() {
+  static void test_vector_addition() {
     std::vector<int> v0{1, 2, 3};
     std::vector<int> v1{4, 5, 6};
     std::vector<int> r0{1, 2, 3, 4, 5, 6};
     CPPUNIT_ASSERT(r0 == std::move(v0) + v1);
-    CPPUNIT_ASSERT(std::vector<int>() ==
-                   std::vector<int>() + std::vector<int>());
+    CPPUNIT_ASSERT((std::vector<int>() + std::vector<int>()).empty());
   }
 
-  void test_split() {
+  static void test_split() {
     std::vector<std::vector<std::string>> const empty_result =
         split(std::vector<std::string>(), "");
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), empty_result.size());
@@ -69,7 +68,7 @@ public:
     CPPUNIT_ASSERT_EQUAL((std::vector<int>{5, 6, 7, 8}), result.at(2));
   }
 
-  void test_split_string() {
+  static void test_split_string() {
     std::vector<std::string> result0{"a", "b", "c"};
     CPPUNIT_ASSERT(result0 == split(std::string("a,b,c"), ','));
     std::vector<std::string> result1{"a,b,c"};

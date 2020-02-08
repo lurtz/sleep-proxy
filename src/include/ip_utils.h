@@ -24,7 +24,7 @@
 
 static const std::string iface_chars{"qwertzuiopasdfghjklyxcvbnm.-0123456789"};
 
-std::string validate_iface(const std::string iface);
+std::string validate_iface(std::string const &iface);
 
 template <typename Container, typename Func>
 auto parse_items(Container &&items, Func &&parser) -> std::vector<

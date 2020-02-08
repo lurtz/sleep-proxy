@@ -30,6 +30,7 @@ namespace {
  */
 void callback_wrapper(u_char *args, const struct pcap_pkthdr *header,
                       const u_char *packet) {
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   auto const cb = reinterpret_cast<Pcap_wrapper::Callback_t *>(args);
   (*cb)(header, packet);
 }
@@ -38,6 +39,7 @@ std::function<void(pcap_t *const, int const, Pcap_wrapper::Callback_t)>
 create_loop(int &ret_val) {
   auto loop_f = [&ret_val](pcap_t *const pcc, const int count,
                            Pcap_wrapper::Callback_t cb) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
     auto const args = reinterpret_cast<u_char *>(&cb);
     ret_val = pcap_loop(pcc, count, callback_wrapper, args);
   };
@@ -55,17 +57,25 @@ struct BPF {
     // see http://seclists.org/tcpdump/2012/q2/22
     static std::mutex pcap_compile_mutex;
     std::lock_guard<std::mutex> const lock(pcap_compile_mutex);
-    if (pcap_compile(pc.get(), &bpf, filter.c_str(), false,
-                     PCAP_NETMASK_UNKNOWN) == -1) {
+    if (pcap_compile(pc.get(), &bpf, filter.c_str(), 0, PCAP_NETMASK_UNKNOWN) ==
+        -1) {
       throw std::runtime_error("Can't compile bpf filter " + filter);
     }
   }
+  BPF(BPF const &) = delete;
+  BPF(BPF &&) = delete;
   ~BPF() { pcap_freecode(&bpf); }
+  BPF &operator=(BPF const &) = delete;
+  BPF &operator=(BPF &&) = delete;
 };
 
 Pcap_wrapper::Pcap_wrapper() : pc(nullptr, pcap_close), loop_thread{} {}
 
-Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen,
+Pcap_wrapper::Loop_end_reason Pcap_wrapper::get_end_reason() const {
+  return loop_end_reason;
+}
+
+Pcap_wrapper::Pcap_wrapper(const std::string &iface, const int snaplen,
                            const bool promisc, const int timeout)
     : pc(pcap_create(iface.c_str(), errbuf.data()), pcap_close), loop_thread{} {
   if (pc == nullptr) {
@@ -76,7 +86,7 @@ Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen,
         "interface: " + iface +
         " can't set snaphot length: " + to_string(snaplen));
   }
-  if (pcap_set_promisc(pc.get(), promisc) != 0) {
+  if (pcap_set_promisc(pc.get(), static_cast<int>(promisc)) != 0) {
     throw std::runtime_error("interface: " + iface +
                              " can't deactivate promiscuous mode");
   }
@@ -91,7 +101,7 @@ Pcap_wrapper::Pcap_wrapper(const std::string iface, const int snaplen,
   log_string(LOG_INFO, "datalink " + get_verbose_datalink());
 }
 
-Pcap_wrapper::~Pcap_wrapper() {}
+Pcap_wrapper::~Pcap_wrapper() = default;
 
 int Pcap_wrapper::get_datalink() const {
   int datalink = pcap_datalink(pc.get());

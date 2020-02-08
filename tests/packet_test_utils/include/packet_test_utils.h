@@ -30,13 +30,13 @@
 
 std::vector<uint8_t> to_binary(const std::string &hex);
 
-void test_ll(const std::unique_ptr<Link_layer> &ll, const size_t length,
-             const std::string &src, const ip::Version payload_protocol,
+void test_ll(const std::unique_ptr<Link_layer> &ll, size_t length,
+             const std::string &src, ip::Version payload_protocol,
              const std::string &info);
 
-void test_ip(const std::unique_ptr<ip> &ip, const ip::Version v,
+void test_ip(const std::unique_ptr<ip> &ip, ip::Version v,
              const std::string &src, const std::string &dst,
-             const size_t header_length, const ip::Payload pl_type);
+             size_t header_length, ip::Payload pl_type);
 
 bool operator==(const Link_layer &lhs, const Link_layer &rhs);
 
@@ -48,7 +48,7 @@ std::vector<std::string> get_ip_neigh_output();
 
 using Iface_Ips = std::vector<std::tuple<std::string, IP_address>>;
 
-Iface_Ips get_iface_ips(std::vector<std::string> const ip_neigh_content);
+Iface_Ips get_iface_ips(std::vector<std::string> const &ip_neigh_content);
 
 template <typename Container0, typename Container1>
 std::vector<std::tuple<typename Container0::value_type,
@@ -80,24 +80,29 @@ void check_header(Iterator &&iter, End_iter &&end, const unsigned char start,
   CPPUNIT_ASSERT(iter != end);
 }
 
-int dup_exception(int const fd);
+int dup_exception(int fd);
 
 void write(File_descriptor const &fd, std::string const &text);
 
-int duplicate_file_descriptors(int const from, int const to);
+int duplicate_file_descriptors(int from, int to);
 
 struct Fd_restore {
   int const m_fd;
   int const m_backup_fd;
-  explicit Fd_restore(int const fd);
+  explicit Fd_restore(int fd);
+  Fd_restore(Fd_restore const &) = delete;
+  Fd_restore(Fd_restore &&) = delete;
 
   ~Fd_restore();
+
+  Fd_restore &operator=(Fd_restore const &) = delete;
+  Fd_restore &operator=(Fd_restore &&) = delete;
 };
 
 struct Tmp_fd_remap {
   Fd_restore const m_restore;
 
-  Tmp_fd_remap(int const from_fd, int const to_fd);
+  Tmp_fd_remap(int from_fd, int to_fd);
 };
 
 bool operator==(ether_addr const &lhs, ether_addr const &rhs);
@@ -109,12 +114,12 @@ struct Pcap_dummy : public Pcap_wrapper {
 
   Pcap_dummy();
 
-  Pcap_wrapper::Loop_end_reason get_end_reason() const;
+  using Pcap_wrapper::get_end_reason;
 
   void set_loop_return(Pcap_wrapper::Loop_end_reason const &ler);
 
   Pcap_wrapper::Loop_end_reason
-  loop(const int count,
+  loop(int count,
        std::function<void(const struct pcap_pkthdr *, const u_char *)> cb)
       override;
 };

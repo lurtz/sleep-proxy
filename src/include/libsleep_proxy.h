@@ -33,7 +33,7 @@ std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
                                             const std::vector<uint16_t> &ports);
 
 bool ping_and_wait(const std::string &iface, const IP_address &ip,
-                   const unsigned int tries);
+                   unsigned int tries);
 
 enum class Emulate_host_status {
   success,

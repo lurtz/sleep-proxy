@@ -33,8 +33,8 @@ struct Link_layer {
   uint16_t m_payload_protocol;
   std::string m_info;
 
-  Link_layer(size_t const header_length, ether_addr const source,
-             uint16_t const payload_protocol, std::string const info);
+  Link_layer(size_t header_length, ether_addr source, uint16_t payload_protocol,
+             std::string info);
 
   size_t header_length() const;
 
@@ -49,7 +49,7 @@ std::ostream &operator<<(std::ostream &out, const Link_layer &ll);
 
 std::vector<uint8_t> create_ethernet_header(const ether_addr &dmac,
                                             const ether_addr &smac,
-                                            const uint16_t type);
+                                            uint16_t type);
 
 std::vector<uint8_t> to_vector(const ether_addr &mac);
 
@@ -64,6 +64,7 @@ std::unique_ptr<Link_layer> parse_linux_cooked_capture(iterator data,
   check_type_and_range(data, end, header_size);
   std::advance(data, 2);
   uint16_t const device_type =
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
   if (device_type != ARPHRD_ETHER && device_type != ARPHRD_LOOPBACK) {
     throw std::runtime_error(
@@ -72,41 +73,44 @@ std::unique_ptr<Link_layer> parse_linux_cooked_capture(iterator data,
   }
   std::advance(data, 2);
   uint16_t const ll_address_length =
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
   if (ll_address_length != ETHER_ADDR_LEN) {
     throw std::length_error("invalid link address size");
   }
   std::advance(data, 2);
-  ether_addr ether_shost;
+  ether_addr ether_shost{};
   std::copy(data, data + ETHER_ADDR_LEN,
             std::begin(ether_shost.ether_addr_octet));
   std::advance(data, 8);
   uint16_t const payload_type =
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
   std::string const info =
       "Linux cooked capture: src: " + binary_to_mac(ether_shost);
-  return std::unique_ptr<Link_layer>(
-      new Link_layer(header_size, ether_shost, payload_type, info));
+  return std::make_unique<Link_layer>(header_size, ether_shost, payload_type,
+                                      info);
 }
 
 template <typename iterator>
 std::unique_ptr<Link_layer> parse_ethernet(iterator data, iterator end) {
   size_t const header_size = 14;
   check_type_and_range(data, end, header_size);
-  ether_addr ether_dhost;
+  ether_addr ether_dhost{};
   std::copy(data, data + ETHER_ADDR_LEN,
             std::begin(ether_dhost.ether_addr_octet));
   std::advance(data, ETHER_ADDR_LEN);
-  ether_addr ether_shost;
+  ether_addr ether_shost{};
   std::copy(data, data + ETHER_ADDR_LEN,
             std::begin(ether_shost.ether_addr_octet));
   std::advance(data, ETHER_ADDR_LEN);
   uint16_t const ether_type =
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
   std::string const info = "Ethernet: dst = " + binary_to_mac(ether_dhost) +
                            ", src = " + binary_to_mac(ether_shost);
-  return std::unique_ptr<Link_layer>(
-      new Link_layer(header_size, ether_shost, ether_type, info));
+  return std::make_unique<Link_layer>(header_size, ether_shost, ether_type,
+                                      info);
 }
 
 template <typename iterator>
@@ -115,10 +119,11 @@ std::unique_ptr<Link_layer> parse_VLAN_Header(iterator data, iterator end) {
   check_type_and_range(data, end, header_size);
   std::advance(data, 2);
   uint16_t const payload_type =
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
   ether_addr const ether_shost{{0}};
-  return std::unique_ptr<Link_layer>(
-      new Link_layer(header_size, ether_shost, payload_type, "VLAN Header"));
+  return std::make_unique<Link_layer>(header_size, ether_shost, payload_type,
+                                      "VLAN Header");
 }
 
 template <typename iterator>

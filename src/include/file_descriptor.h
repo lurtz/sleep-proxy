@@ -25,7 +25,7 @@ struct File_descriptor {
 
   File_descriptor();
 
-  explicit File_descriptor(const int fdd);
+  explicit File_descriptor(int fdd);
 
   File_descriptor(File_descriptor &&rhs) noexcept;
 
@@ -47,8 +47,8 @@ struct File_descriptor {
 bool file_exists(const std::string &filename);
 
 std::tuple<File_descriptor, File_descriptor>
-get_self_pipes(bool const close_on_exec = true);
+get_self_pipes(bool close_on_exec = true);
 
-int get_fd_from_stream(FILE *const stream);
+int get_fd_from_stream(FILE *stream);
 
-void flush_file(FILE *const stream);
+void flush_file(FILE *stream);

@@ -17,13 +17,14 @@
 #include "int_utils.h"
 
 #include <arpa/inet.h>
+#include <array>
 #include <cerrno>
 #include <cstdlib>
 
 const ::std::string numbers{"-0123456789abcdefABCDEF"};
 
 int64_t stoll_with_checks(const std::string &s, const int base) {
-  if (s.size() == 0 || !contains_only_valid_characters(s, numbers)) {
+  if (s.empty() || !contains_only_valid_characters(s, numbers)) {
     throw std::invalid_argument("stoll(): cannot convert string: " + s);
   }
   auto errno_save = errno;
@@ -42,7 +43,7 @@ int64_t stoll_with_checks(const std::string &s, const int base) {
 }
 
 uint64_t stoull_with_checks(const std::string &s, const int base) {
-  if (s.size() == 0 || !contains_only_valid_characters(s, numbers)) {
+  if (s.empty() || !contains_only_valid_characters(s, numbers)) {
     throw std::invalid_argument("stoull(): cannot convert string: " + s);
   }
   auto errno_save = errno;
@@ -64,7 +65,8 @@ uint64_t stoull_with_checks(const std::string &s, const int base) {
 }
 
 std::string uint32_t_to_eight_hex_chars(const uint32_t i) noexcept {
-  char val[9] = {0};
-  snprintf(val, sizeof(val), "%08x", htonl(i));
-  return val;
+  auto const hex_size_nul_termination = uint8_t{9};
+  auto val = std::array<char, hex_size_nul_termination>{};
+  snprintf(val.data(), sizeof(val), "%08x", htonl(i));
+  return val.data();
 }

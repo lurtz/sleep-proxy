@@ -31,8 +31,8 @@ public:
 
   void tearDown() override {}
 
-  void compare_ip(const std::string &full_ip, const int family,
-                  const std::string &ip, const uint8_t subnet) {
+  static void compare_ip(const std::string &full_ip, const int family,
+                         const std::string &ip, const uint8_t subnet) {
     const IP_address ipa = parse_ip(full_ip);
     CPPUNIT_ASSERT_EQUAL(family, ipa.family);
     CPPUNIT_ASSERT_EQUAL(ip, ipa.pure());
@@ -41,7 +41,7 @@ public:
                          ipa.with_subnet());
   }
 
-  void test_parse_ip() {
+  static void test_parse_ip() {
     compare_ip("192.168.1.1/24", AF_INET, "192.168.1.1", 24);
     compare_ip("192.168.1.1", AF_INET, "192.168.1.1", 24);
     compare_ip("192.168.1.1/16", AF_INET, "192.168.1.1", 16);
@@ -58,7 +58,7 @@ public:
     CPPUNIT_ASSERT_THROW(parse_ip(""), std::invalid_argument);
   }
 
-  void test_stream_operator() {
+  static void test_stream_operator() {
     std::string const ip_str = "192.168.1.2/23";
     auto const ipa = parse_ip(ip_str);
     compare_ip(ip_str, AF_INET, "192.168.1.2", 23);

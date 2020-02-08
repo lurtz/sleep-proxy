@@ -32,7 +32,7 @@ class Str_to_integral_test : public CppUnit::TestFixture {
 public:
   void setUp() override {}
   void tearDown() override {}
-  void testConstructor() {
+  static void testConstructor() {
     CPPUNIT_ASSERT_EQUAL(0, str_to_integral<int>("0"));
     CPPUNIT_ASSERT_EQUAL(1, str_to_integral<int>("1"));
     CPPUNIT_ASSERT_EQUAL(-1, str_to_integral<int>("-1"));
@@ -40,11 +40,11 @@ public:
                          str_to_integral<unsigned int>("9001"));
   }
 
-  void outofnegbounds() { str_to_integral<unsigned int>("-1"); }
+  static void outofnegbounds() { str_to_integral<unsigned int>("-1"); }
 
-  void outofposbounds() { str_to_integral<uint8_t>("256"); }
+  static void outofposbounds() { str_to_integral<uint8_t>("256"); }
 
-  void test_stoll() {
+  static void test_stoll() {
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(123), stoll_with_checks("123"));
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(-123), stoll_with_checks("-123"));
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(0), stoll_with_checks("0"));
@@ -59,7 +59,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(static_cast<int64_t>(15), stoll_with_checks("F", 16));
   }
 
-  void test_stoull() {
+  static void test_stoull() {
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(123), stoull_with_checks("123"));
     CPPUNIT_ASSERT_EQUAL(static_cast<uint64_t>(0), stoull_with_checks("0"));
     CPPUNIT_ASSERT_THROW(stoull_with_checks("-123"), std::out_of_range);
@@ -74,7 +74,7 @@ public:
                          stoull_with_checks("F", 16));
   }
 
-  void test_uint32_t_to_eight_hex_chars() {
+  static void test_uint32_t_to_eight_hex_chars() {
     CPPUNIT_ASSERT_EQUAL(std::string("00000000"),
                          uint32_t_to_eight_hex_chars(0));
 

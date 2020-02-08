@@ -30,7 +30,7 @@ bool contains_only_valid_characters(const std::string &input,
 
 std::string test_characters(const std::string &input,
                             const std::string &valid_chars,
-                            std::string error_message) {
+                            const std::string &error_message) {
   if (!contains_only_valid_characters(input, valid_chars)) {
     throw std::runtime_error(error_message);
   }

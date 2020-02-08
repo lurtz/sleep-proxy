@@ -35,7 +35,7 @@ std::string get_iptables_cmd(const IP_address &ip) {
 }
 
 std::string iptables_action(const Action &action) {
-  return action == Action::add ? "I" : "D";
+  return action == Action::add ? std::string{"I"} : std::string{"D"};
 }
 
 /**
@@ -74,14 +74,13 @@ std::string ipv6_to_u32_rule(IP_address const &ip) {
 
 Scope_guard::Scope_guard() : freed{true}, aquire_release{} {}
 
-Scope_guard::Scope_guard(Aquire_release &&aquire_release_arg)
+Scope_guard::Scope_guard(Aquire_release aquire_release_arg)
     : freed{false}, aquire_release(std::move(aquire_release_arg)) {
   take_action(Action::add);
 }
 
 Scope_guard::Scope_guard(Scope_guard &&rhs) noexcept
-    : freed{std::move(rhs.freed)},
-      aquire_release(std::move(rhs.aquire_release)) {
+    : freed{rhs.freed}, aquire_release(rhs.aquire_release) {
   rhs.freed = true;
 }
 
@@ -96,7 +95,7 @@ void Scope_guard::free() {
 
 void Scope_guard::take_action(const Action a) const {
   std::string cmd = aquire_release(a);
-  if (cmd.size() > 0) {
+  if (!cmd.empty()) {
     log_string(LOG_INFO, cmd);
     auto const status = spawn(split(cmd, ' '));
     if (status != 0) {
@@ -106,7 +105,8 @@ void Scope_guard::take_action(const Action a) const {
 }
 
 std::string Temp_ip::operator()(const Action action) const {
-  const std::string saction{action == Action::add ? "add" : "del"};
+  auto const saction =
+      action == Action::add ? std::string{"add"} : std::string{"del"};
   return std::string{"ip"} + " addr " + saction + " " + ip.with_subnet() +
          " dev " + iface;
 }
@@ -121,7 +121,7 @@ std::string Drop_port::operator()(const Action action) const {
 
 std::string Reject_tp::operator()(const Action action) const {
   const std::string saction{iptables_action(action)};
-  const std::string stp{tcp_udp == TP::TCP ? "tcp" : "udp"};
+  auto const stp = tcp_udp == TP::TCP ? std::string{"tcp"} : std::string{"udp"};
   const std::string iptcmd = get_iptables_cmd(ip);
   const std::string pip = ip.pure();
   return iptcmd + " -w -" + saction + " INPUT -d " + pip + " -p " + stp +

@@ -18,15 +18,21 @@
 #include <cstdarg>
 #include <memory>
 #include <mutex>
+#include <utility>
 
 namespace {
 struct Syslog {
   const std::string identifier;
-  Syslog(const std::string ident, int option, int facility)
+  Syslog(std::string ident, int option, int facility)
       : identifier(std::move(ident)) {
     openlog(identifier.c_str(), option, facility);
   }
   ~Syslog() { closelog(); }
+
+  Syslog(Syslog const &) = delete;
+  Syslog(Syslog &&) = delete;
+  Syslog &operator=(Syslog const &) = delete;
+  Syslog &operator=(Syslog &&) = delete;
 };
 
 std::unique_ptr<Syslog> logger{nullptr};
@@ -34,7 +40,7 @@ std::unique_ptr<Syslog> logger{nullptr};
 
 void setup_log(const std::string &ident, int option, int facility) {
   logger = nullptr;
-  logger = std::unique_ptr<Syslog>(new Syslog(ident, option, facility));
+  logger = std::make_unique<Syslog>(ident, option, facility);
 }
 
 template <> void log_string<std::string>(const int priority, std::string &&t) {
@@ -45,12 +51,16 @@ void log(const int priority, const char *format, ...) {
   static std::mutex log_mutex;
   std::lock_guard<std::mutex> const lg(log_mutex);
   va_list args;
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
   va_start(args, format);
   if (logger == nullptr) {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     std::vprintf(format, args);
     std::printf("\n");
   } else {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     vsyslog(priority, format, args);
   }
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
   va_end(args);
 }

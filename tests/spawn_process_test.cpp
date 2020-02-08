@@ -19,7 +19,7 @@
 #include "packet_test_utils.h"
 
 #include <cppunit/extensions/HelperMacros.h>
-#include <string.h>
+#include <cstring>
 #include <string>
 #include <thread>
 #include <unistd.h>
@@ -36,12 +36,12 @@ public:
 
   void tearDown() override {}
 
-  void test_wait_until_pid_exits() {
+  static void test_wait_until_pid_exits() {
     pid_t pid = -1;
     CPPUNIT_ASSERT_THROW(wait_until_pid_exits(pid), std::runtime_error);
   }
 
-  void test_without_exceptions() const {
+  static void test_without_exceptions() {
     std::vector<std::string> const cmd{"/bin/echo", "pspawn_test()"};
     auto status = spawn(cmd);
     CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
@@ -59,7 +59,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(0), status);
   }
 
-  void test_with_exceptions() const {
+  static void test_with_exceptions() {
     std::vector<std::string> cmd1{"/bin/whereAmI", "pspawn_test()"};
     CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
 
@@ -67,12 +67,12 @@ public:
     CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
   }
 
-  void test_fork_exec() {
+  static void test_fork_exec() {
     test_without_exceptions();
     test_with_exceptions();
   }
 
-  void test_direct_output_to_self_pipes() {
+  static void test_direct_output_to_self_pipes() {
     auto const self_pipes = get_self_pipes(false);
     std::vector<std::string> const cmd{"echo", "blablabla12"};
     auto const status = spawn(cmd, File_descriptor(), std::get<1>(self_pipes));

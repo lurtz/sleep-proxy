@@ -16,6 +16,7 @@
 
 #include "packet_parser.h"
 #include "log.h"
+#include <iterator>
 
 template <typename T> void print_if_not_nullptr(std::ostream &out, T &&ptr) {
   if (ptr != nullptr) {
@@ -73,7 +74,9 @@ void Catch_incoming_connection::operator()(const pcap_pkthdr *header,
     return;
   }
   try {
-    data = std::vector<uint8_t>(packet, packet + header->len);
+    auto end_iter = packet;
+    std::advance(end_iter, header->len);
+    data = std::vector<uint8_t>(packet, end_iter);
     headers = get_headers(link_layer_type, data);
   } catch (std::exception const &e) {
     log_string(LOG_ERR,

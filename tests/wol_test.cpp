@@ -47,7 +47,7 @@ public:
     CPPUNIT_ASSERT(data == end);
   }
 
-  void test_create_wol_payload() {
+  static void test_create_wol_payload() {
     auto wol_packet = create_wol_payload(mac_to_binary("11:22:33:44:55:66"));
     check_wol_payload(wol_packet, 1, 7);
     wol_packet = create_wol_payload(mac_to_binary("88:99:aA:bB:cc:dd"));

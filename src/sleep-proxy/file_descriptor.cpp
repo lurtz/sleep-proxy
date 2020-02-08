@@ -120,14 +120,14 @@ void flush_file(FILE *const stream) {
   if (nullptr == stream) {
     throw std::domain_error("given FILE input is nullptr");
   }
-  if (fflush(stream)) {
+  if (fflush(stream) != 0) {
     throw std::runtime_error(std::string("could not flush file: ") +
                              strerror(errno));
   }
 }
 
 bool file_exists(const std::string &filename) {
-  struct stat stats;
+  struct stat stats {};
   const auto errno_save = errno;
   bool ret_val = stat(filename.c_str(), &stats) == 0;
   errno = errno_save;
@@ -136,14 +136,14 @@ bool file_exists(const std::string &filename) {
 
 std::tuple<File_descriptor, File_descriptor>
 get_self_pipes(bool const close_on_exec) {
-  int pipefds[2];
-  if (pipe(pipefds)) {
+  auto pipefds = std::array<int, 2>{};
+  if (pipe(pipefds.data()) != 0) {
     throw std::runtime_error(std::string("pipe() failed: ") + strerror(errno));
   }
   File_descriptor p0{pipefds[0]};
   File_descriptor p1{pipefds[1]};
   if (close_on_exec) {
-    if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC)) {
+    if (fcntl(p1.fd, F_SETFD, fcntl(p1.fd, F_GETFD) | FD_CLOEXEC) != 0) {
       throw std::runtime_error(std::string("fcntl() failed: ") +
                                strerror(errno));
     }

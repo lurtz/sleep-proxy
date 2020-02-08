@@ -161,7 +161,7 @@ public:
                          std::length_error);
   }
 
-  void test_parse_unknown_link_layer() {
+  static void test_parse_unknown_link_layer() {
     std::vector<uint8_t> const data;
     auto const headers = get_headers(-1, data);
     CPPUNIT_ASSERT(nullptr == std::get<0>(headers));
@@ -190,7 +190,7 @@ public:
   void test_catch_incoming_connection() {
     auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
     Catch_incoming_connection cic(DLT_EN10MB);
-    pcap_pkthdr hdr;
+    pcap_pkthdr hdr{};
     hdr.len = static_cast<bpf_u_int32>(ethernet_ipv4_tcp.size());
     cic(&hdr, ethernet_ipv4_tcp.data());
     CPPUNIT_ASSERT(ethernet_ipv4_tcp == cic.data);
@@ -200,7 +200,7 @@ public:
 
   void test_catch_incoming_connection_unknown_lcc_protocol() {
     Catch_incoming_connection cic(DLT_LINUX_SLL);
-    pcap_pkthdr hdr;
+    pcap_pkthdr hdr{};
     hdr.len = static_cast<bpf_u_int32>(lcc_unknown_udp.size());
     cic(&hdr, lcc_unknown_udp.data());
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), cic.data.size());
@@ -209,7 +209,7 @@ public:
 
   void test_catch_incoming_connection_void_ptr() {
     Catch_incoming_connection cic(DLT_LINUX_SLL);
-    pcap_pkthdr hdr;
+    pcap_pkthdr hdr{};
     hdr.len = static_cast<bpf_u_int32>(lcc_unknown_udp.size());
     cic(nullptr, nullptr);
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), cic.data.size());

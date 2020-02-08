@@ -18,6 +18,7 @@
 #include "log.h"
 #include "packet_parser.h"
 #include "pcap_wrapper.h"
+#include <iterator>
 
 /**
  * Writes time formatted into the stream
@@ -48,8 +49,10 @@ struct Got_packet {
       return;
     }
     log_string(LOG_INFO, *header);
-    basic_headers headers = get_headers(
-        link_layer_type, std::vector<u_char>(packet, packet + header->len));
+    auto end_iter = packet;
+    std::advance(end_iter, header->len);
+    basic_headers headers =
+        get_headers(link_layer_type, std::vector<u_char>(packet, end_iter));
     log_string(LOG_INFO, headers);
   }
 };
@@ -62,7 +65,9 @@ int main(int argc, char *argv[]) {
     print_help();
     return 1;
   }
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   Pcap_wrapper pcap(argv[1]);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   pcap.set_filter(argv[2]);
   pcap.loop(0, Got_packet{pcap.get_datalink()});
   return 0;

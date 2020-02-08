@@ -45,7 +45,7 @@ struct Ip_neigh_checker {
 
   explicit Ip_neigh_checker(std::string mac);
 
-  bool is_ipv4_present(std::string const &iface, IP_address const &ip) const;
+  static bool is_ipv4_present(std::string const &iface, IP_address const &ip);
 
   bool is_ipv6_present(std::string const &iface, IP_address const &ip) const;
 
@@ -58,14 +58,13 @@ struct Duplicate_address_watcher {
   Pcap_wrapper &pcap;
   const Is_ip_occupied is_ip_occupied;
   std::thread watcher;
-  std::atomic_bool loop;
+  std::atomic<bool> loop;
 
-  Duplicate_address_watcher(const std::string ifacee, const IP_address ipp,
+  Duplicate_address_watcher(std::string ifacee, IP_address ipp,
                             Pcap_wrapper &pc);
 
-  Duplicate_address_watcher(const std::string ifacee, const IP_address ipp,
-                            Pcap_wrapper &pc,
-                            Is_ip_occupied const is_ip_occupiedd);
+  Duplicate_address_watcher(std::string ifacee, IP_address ipp,
+                            Pcap_wrapper &pc, Is_ip_occupied is_ip_occupiedd);
 
   ~Duplicate_address_watcher();
 
@@ -76,7 +75,7 @@ struct Duplicate_address_watcher {
   operator=(Duplicate_address_watcher const &) = delete;
   Duplicate_address_watcher &operator=(Duplicate_address_watcher &&) = delete;
 
-  std::string operator()(const Action action);
+  std::string operator()(Action action);
 
   void stop_watcher();
 };

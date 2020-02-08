@@ -36,7 +36,7 @@ public:
 
   void tearDown() override {}
 
-  void test_sigterm() {
+  static void test_sigterm() {
     CPPUNIT_ASSERT(!is_signaled());
     setup_signals();
     CPPUNIT_ASSERT(!is_signaled());
@@ -44,7 +44,7 @@ public:
     CPPUNIT_ASSERT(is_signaled());
   }
 
-  void test_sigint() {
+  static void test_sigint() {
     CPPUNIT_ASSERT(!is_signaled());
     setup_signals();
     CPPUNIT_ASSERT(!is_signaled());
@@ -52,7 +52,7 @@ public:
     CPPUNIT_ASSERT(is_signaled());
   }
 
-  void test_ping_and_wait() {
+  static void test_ping_and_wait() {
     CPPUNIT_ASSERT(ping_and_wait("lo", parse_ip("127.0.0.1"), 1));
     CPPUNIT_ASSERT(!ping_and_wait("lo", parse_ip("127.0.0.1"), 0));
     CPPUNIT_ASSERT(ping_and_wait("eth0", parse_ip("127.0.0.1"), 1));
@@ -68,7 +68,7 @@ public:
     CPPUNIT_ASSERT(!ping_and_wait("eth0", parse_ip("::2"), 1));
   }
 
-  void test_get_bindable_ip() {
+  static void test_get_bindable_ip() {
     const std::string ipv4 = "somestuff";
     const std::string ipv6 = "fe80::123";
     CPPUNIT_ASSERT_EQUAL(ipv4, get_bindable_ip("lo", ipv4));
@@ -77,11 +77,11 @@ public:
     CPPUNIT_ASSERT_EQUAL(ipv6 + "%bla", get_bindable_ip("bla", ipv6));
   }
 
-  std::vector<IP_address> parse_ips(const std::string &ips) {
+  static std::vector<IP_address> parse_ips(const std::string &ips) {
     return parse_items(split(ips, ','), parse_ip);
   }
 
-  void test_rule_to_listen_on_ips_and_ports() {
+  static void test_rule_to_listen_on_ips_and_ports() {
     std::vector<IP_address> ips = parse_ips("192.168.1.1");
     std::vector<uint16_t> ports{22};
     std::string expected_rule = "tcp[tcpflags] == tcp-syn";

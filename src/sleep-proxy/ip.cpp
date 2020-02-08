@@ -43,9 +43,8 @@ std::ostream &operator<<(std::ostream &out, const ip &ip) {
 ip::ip(ip::Version const version, size_t const header_length,
        IP_address const source, IP_address const destination,
        uint8_t const payload_protocol)
-    : m_version(version), m_header_length(header_length),
-      m_source(std::move(source)), m_destination(std::move(destination)),
-      m_payload_protocol(payload_protocol) {}
+    : m_version(version), m_header_length(header_length), m_source(source),
+      m_destination(destination), m_payload_protocol(payload_protocol) {}
 
 ip::Version ip::version() const { return m_version; }
 
@@ -58,7 +57,7 @@ IP_address ip::destination() const { return m_destination; }
 uint8_t ip::payload_protocol() const { return m_payload_protocol; }
 
 IP_address get_ipv6_address(const in6_addr &addr) {
-  IP_address ipa;
+  IP_address ipa{};
   ipa.family = AF_INET6;
   ipa.address.ipv6 = addr;
   ipa.subnet = 128;

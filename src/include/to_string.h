@@ -47,7 +47,7 @@ bool contains_only_valid_characters(const std::string &input,
 
 std::string test_characters(const std::string &input,
                             const std::string &valid_chars,
-                            std::string error_message);
+                            const std::string &error_message);
 
 template <typename Container>
 std::vector<std::vector<std::string::value_type>>

@@ -18,6 +18,7 @@
 #include "log.h"
 #include "to_string.h"
 #include <cstring>
+#include <iterator>
 #include <linux/if_ether.h>
 #include <stdexcept>
 #include <sys/ioctl.h>
@@ -52,6 +53,8 @@ Socket::~Socket() {
   }
 }
 
+int Socket::fd() const { return sock; }
+
 void Socket::ioctl(const unsigned long req_number, ifreq &ifr) const {
   if (::ioctl(sock, req_number, &ifr) == -1) {
     throw std::runtime_error(std::string("ioctl() failed with request ") +
@@ -68,9 +71,12 @@ int Socket::get_ifindex(const std::string &iface) const {
 ether_addr Socket::get_hwaddr(const std::string &iface) const {
   struct ifreq ifr = get_ifreq(iface);
   ioctl(SIOCGIFHWADDR, ifr);
-  ether_addr addr;
-  std::copy(ifr.ifr_hwaddr.sa_data,
-            ifr.ifr_hwaddr.sa_data + sizeof(addr.ether_addr_octet),
-            std::begin(addr.ether_addr_octet));
+  ether_addr addr{};
+  auto const start = std::begin(ifr.ifr_hwaddr.sa_data);
+  auto end_iter = start;
+  auto const start_dst = std::begin(addr.ether_addr_octet);
+  std::advance(end_iter,
+               std::distance(start_dst, std::end(addr.ether_addr_octet)));
+  std::copy(start, end_iter, start_dst);
   return addr;
 }

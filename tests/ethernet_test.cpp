@@ -194,7 +194,7 @@ public:
                          std::length_error);
   }
 
-  void test_create_ethernet_header_1() {
+  static void test_create_ethernet_header_1() {
     std::vector<uint8_t> header = create_ethernet_header(
         mac_to_binary("aa:BB:cc:dd:ee:ff"), mac_to_binary("00:11:22:33:44:55"),
         ETHERTYPE_IP);
@@ -206,7 +206,7 @@ public:
     CPPUNIT_ASSERT(0x00 == *iter);
   }
 
-  void test_create_ethernet_header_2() {
+  static void test_create_ethernet_header_2() {
     std::vector<uint8_t> header = create_ethernet_header(
         mac_to_binary("66:77:88:99:aa:bb"), mac_to_binary("33:44:55:66:77:88"),
         ETHERTYPE_IPV6);
@@ -218,7 +218,7 @@ public:
     CPPUNIT_ASSERT(0xdd == *iter);
   }
 
-  void test_create_ethernet_header_3() {
+  static void test_create_ethernet_header_3() {
     std::vector<uint8_t> header =
         create_ethernet_header(mac_to_binary("66:77:88:99:aa:bb"),
                                mac_to_binary("33:44:55:66:77:88"), 0x0842);
@@ -230,7 +230,7 @@ public:
     CPPUNIT_ASSERT(0x42 == *iter);
   }
 
-  void test_non_supported_protocol() {
+  static void test_non_supported_protocol() {
     std::vector<uint8_t> data;
     for (int type = 0; type < 0xFFFFF; type++) {
       if (type == DLT_LINUX_SLL || type == DLT_EN10MB ||
@@ -252,7 +252,7 @@ public:
         std::string("Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0"), result);
   }
 
-  void test_mac_to_binary() {
+  static void test_mac_to_binary() {
     std::string const mac = "00:11:Aa:Cd:65:43";
     ether_addr const binary = mac_to_binary(mac);
     std::array<uint8_t, 6> const expected_mac{{0, 17, 170, 205, 101, 67}};
@@ -271,7 +271,7 @@ public:
     CPPUNIT_ASSERT_THROW(mac_to_binary("fdsafdsa"), std::runtime_error);
   }
 
-  void test_binary_to_mac() {
+  static void test_binary_to_mac() {
     ether_addr const binary{{0, 17, 170, 205, 101, 67}};
     CPPUNIT_ASSERT_EQUAL(std::string("0:11:aa:cd:65:43"),
                          binary_to_mac(binary));

@@ -66,6 +66,8 @@ warnings = [
   '-Whsa',
   # warnings from clang
   # enable everything and then switch not so useful warnings off
+  # clang discourages using -Weverything and recommends to only use selected
+  # warnings
   '-Weverything',
   '-Wno-padded',
   '-Wno-weak-vtables',

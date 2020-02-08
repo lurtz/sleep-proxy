@@ -30,7 +30,7 @@ const std::string def_address_ipv6 = "fe80::123/64";
 const std::string def_ports0 = "12345";
 const std::string def_ports1 = "23456";
 const std::string def_mac = "01:12:34:45:67:89";
-const std::string def_hostname = "";
+const std::string def_hostname;
 const std::string def_ping_tries = "5";
 
 bool to_syslog = false;
@@ -44,7 +44,7 @@ Args read_args(std::ifstream &file) {
   std::string ping_tries = def_ping_tries;
   std::string line;
   while (std::getline(file, line) && line.substr(0, 4) != "host") {
-    if (line.size() == 0) {
+    if (line.empty()) {
       continue;
     }
     const auto token = split(line, ' ');
@@ -78,8 +78,7 @@ Args read_args(std::ifstream &file) {
     ports.push_back(def_ports0);
     ports.push_back(def_ports1);
   }
-  return Args(std::move(interface), std::move(address), std::move(ports),
-              std::move(mac), std::move(hostname), std::move(ping_tries));
+  return Args(interface, address, ports, mac, hostname, ping_tries);
 }
 
 std::vector<Args> read_file(const std::string &filename) {
@@ -101,22 +100,22 @@ Args::Args()
     : interface{}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0},
       syslog(to_syslog) {}
 
-Args::Args(const std::string interface_,
-           const std::vector<std::string> addresss_,
-           const std::vector<std::string> ports_, const std::string mac_,
-           const std::string hostname_, const std::string ping_tries_)
-    : interface(validate_iface(std::move(interface_))),
-      address(parse_items(std::move(addresss_), parse_ip)),
-      ports(parse_items(std::move(ports_), str_to_integral<uint16_t>)),
-      mac(mac_to_binary(std::move(mac_))),
+Args::Args(const std::string &interface_,
+           const std::vector<std::string> &addresss_,
+           const std::vector<std::string> &ports_, const std::string &mac_,
+           const std::string &hostname_, const std::string &ping_tries_)
+    : interface(validate_iface(interface_)),
+      address(parse_items(addresss_, parse_ip)),
+      ports(parse_items(ports_, str_to_integral<uint16_t>)),
+      mac(mac_to_binary(mac_)),
       hostname(test_characters(hostname_, iface_chars + "-",
                                "invalid token in hostname: " + hostname_)),
       ping_tries(str_to_integral<unsigned int>(ping_tries_)),
       syslog(to_syslog) {
-  if (address.size() == 0) {
+  if (address.empty()) {
     throw std::runtime_error("no ip address given");
   }
-  if (ports.size() == 0) {
+  if (ports.empty()) {
     throw std::runtime_error("no port given");
   }
 }
@@ -136,7 +135,9 @@ void print_help() {
   log_string(LOG_INFO, "                        print messages to syslog");
 }
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 std::vector<Args> read_commandline(const int argc, char *const argv[]) {
+  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
   static const option long_options[] = {
       {"help", no_argument, nullptr, 'h'},
       {"config", required_argument, nullptr, 'c'},
@@ -146,6 +147,7 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
   int c = -1;
   std::vector<Args> ret_val;
   // read cmd line arguments and checks them
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
   while ((c = getopt_long(argc, argv, "hc:s", long_options, &option_index)) !=
          -1) {
     switch (c) {

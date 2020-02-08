@@ -27,6 +27,7 @@ namespace {
 template <typename Container>
 bool ping_ips(const std::string &iface, const Container &ips) {
   std::vector<std::future<bool>> futures;
+  futures.reserve(ips.size());
   for (const auto &ip : ips) {
     futures.emplace_back(std::async(ping_and_wait, iface, ip, 1));
   }
@@ -34,7 +35,7 @@ bool ping_ips(const std::string &iface, const Container &ips) {
                      [](std::future<bool> &f) { return f.get(); });
 }
 
-void thread_main(const Args args) {
+void thread_main(const Args &args) {
   bool loop = true;
   while (!is_signaled() && loop) {
     log_string(LOG_INFO, "ping " + args.hostname);
@@ -70,9 +71,11 @@ int main(int argc, char *argv[]) {
       return 1;
     }
     if (argss.at(0).syslog) {
+      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
       setup_log(argv[0], 0, LOG_DAEMON);
     }
     std::vector<std::thread> threads;
+    threads.reserve(argss.size());
     for (auto &args : argss) {
       threads.emplace_back(thread_main, std::move(args));
     }

@@ -27,13 +27,13 @@ class Log_test : public CppUnit::TestFixture {
 public:
   void setUp() override { setup_log("Log_test", 0, LOG_USER); }
   void tearDown() override {}
-  void test_log_string() {
+  static void test_log_string() {
     log_string(LOG_DEBUG, "test_log_string()");
     log_string(LOG_NOTICE, "test_log_string()");
     log_string(LOG_ERR, "test_log_string()");
     log_string(LOG_ALERT, "test_log_string()");
   }
-  void test_log_fmt() {
+  static void test_log_fmt() {
     syslog(LOG_DEBUG, "bla %d, %f", 42, 3.14);
     log(LOG_DEBUG, "bla %d, %f", 42, 3.14);
     log(LOG_NOTICE, "bla %d, %f", 42, 3.14);

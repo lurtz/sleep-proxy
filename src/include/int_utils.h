@@ -21,8 +21,8 @@
 #include <stdexcept>
 #include <string>
 
-int64_t stoll_with_checks(const std::string &s, const int base = 10);
-uint64_t stoull_with_checks(const std::string &s, const int base = 10);
+int64_t stoll_with_checks(const std::string &s, int base = 10);
+uint64_t stoull_with_checks(const std::string &s, int base = 10);
 
 /** range check for signed target types */
 template <typename R, typename T,
@@ -65,4 +65,4 @@ template <typename T> T str_to_integral(const std::string &string) {
   return static_cast<T>(value);
 }
 
-std::string uint32_t_to_eight_hex_chars(const uint32_t i) noexcept;
+std::string uint32_t_to_eight_hex_chars(uint32_t i) noexcept;

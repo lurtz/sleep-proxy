@@ -21,7 +21,7 @@
 #include <cctype>
 
 namespace {
-std::vector<std::string> const get_cmd_ipv4() {
+std::vector<std::string> get_cmd_ipv4() {
   return std::vector<std::string>{"arping", "-q", "-D", "-c", "1", "-I"};
 }
 
@@ -64,7 +64,7 @@ Ip_neigh_checker::Ip_neigh_checker(std::string mac)
     : this_nodes_mac{std::move(mac)} {}
 
 bool Ip_neigh_checker::is_ipv4_present(std::string const &iface,
-                                       IP_address const &ip) const {
+                                       IP_address const &ip) {
   auto cmd_ipv4_tmp = get_cmd_ipv4();
   cmd_ipv4_tmp.push_back(iface);
   cmd_ipv4_tmp.push_back(ip.pure());
@@ -107,7 +107,7 @@ bool Ip_neigh_checker::operator()(std::string const &iface,
 
 void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
                               Is_ip_occupied const &is_ip_occupied,
-                              std::atomic_bool &loop, Pcap_wrapper &pc) {
+                              std::atomic<bool> &loop, Pcap_wrapper &pc) {
   // 2. while(loop)
   // 2.1 use 'ip neigh' to watch for neighbors with the same ip
   // 2.2 if someone uses ip
@@ -115,7 +115,7 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
   // 2.2.2 pc.break_loop
   try {
     log(LOG_DEBUG, "daw_thread_main_non_root: iface = %s, ip = %s, loop = %d",
-        iface.c_str(), ip.with_subnet().c_str(), static_cast<bool>(loop));
+        iface.c_str(), ip.with_subnet().c_str(), static_cast<int>(loop));
 
     while (loop) {
       if (is_ip_occupied(iface, ip)) {
@@ -134,7 +134,7 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
 
 void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
                           Is_ip_occupied const &is_ip_occupied,
-                          std::atomic_bool &loop, Pcap_wrapper &pc) {
+                          std::atomic<bool> &loop, Pcap_wrapper &pc) {
   // 1. block incoming duplicate address detection for ip using firewall
   try {
     Scope_guard const bipv6ns{Block_ipv6_neighbor_solicitation{ip}};
@@ -146,17 +146,17 @@ void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
   }
 }
 
-Duplicate_address_watcher::Duplicate_address_watcher(const std::string ifacee,
+Duplicate_address_watcher::Duplicate_address_watcher(std::string ifacee,
                                                      const IP_address ipp,
                                                      Pcap_wrapper &pc)
-    : iface(std::move(ifacee)), ip(std::move(ipp)),
+    : iface(std::move(ifacee)), ip(ipp),
       pcap(pc), is_ip_occupied{Ip_neigh_checker{get_mac(iface)}},
       watcher(), loop{false} {}
 
 Duplicate_address_watcher::Duplicate_address_watcher(
-    const std::string ifacee, const IP_address ipp, Pcap_wrapper &pc,
-    Is_ip_occupied const is_ip_occupiedd)
-    : iface(std::move(ifacee)), ip(std::move(ipp)),
+    std::string ifacee, const IP_address ipp, Pcap_wrapper &pc,
+    Is_ip_occupied is_ip_occupiedd)
+    : iface(std::move(ifacee)), ip(ipp),
       pcap(pc), is_ip_occupied{std::move(is_ip_occupiedd)},
       watcher(), loop{false} {}
 
@@ -164,7 +164,7 @@ Duplicate_address_watcher::~Duplicate_address_watcher() { stop_watcher(); }
 
 using Main_Function_Type = std::function<void(
     const std::string &, const IP_address &, Is_ip_occupied const &,
-    std::atomic_bool &, Pcap_wrapper &)>;
+    std::atomic<bool> &, Pcap_wrapper &)>;
 
 std::string Duplicate_address_watcher::operator()(const Action action) {
   Main_Function_Type const main_function =

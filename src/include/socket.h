@@ -25,10 +25,11 @@
 #include <vector>
 
 /** C++ wrapper to socket functions */
-struct Socket {
-protected:
-  /** socket fd */
+class Socket {
   int sock;
+
+protected:
+  int fd() const;
 
 public:
   /** open a socket */
@@ -43,11 +44,15 @@ public:
    */
   Socket(const Socket &) = delete;
 
+  Socket(Socket &&) = delete;
+
   /**
    * do not provide a copy constructor as it might lead to multiple
    * closing of one socket
    */
   Socket &operator=(const Socket &) = delete;
+
+  Socket &operator=(Socket &&) = delete;
 
   /**
    * set socket option
@@ -68,6 +73,7 @@ public:
                   Sockaddr &&sockaddr) {
     ssize_t sent_bytes = sendto(
         sock, buf.data(), buf.size(), flags,
+        // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         reinterpret_cast<const struct sockaddr *>(&sockaddr), sizeof(Sockaddr));
     if (sent_bytes == -1) {
       throw std::runtime_error(std::string("sendto() failed: ") +
@@ -76,7 +82,7 @@ public:
     return sent_bytes;
   }
 
-  void ioctl(const unsigned long req_number, ifreq &ifr) const;
+  void ioctl(unsigned long req_number, ifreq &ifr) const;
 
   int get_ifindex(const std::string &iface) const;
 

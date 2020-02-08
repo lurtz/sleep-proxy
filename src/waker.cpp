@@ -35,15 +35,19 @@ int main(int argc, char *argv[]) {
   int count = 2;
   unsigned int mac_pos = 1;
   check_arguments(argc, count);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   if (std::string("-i") == argv[1]) {
     count += 2;
     mac_pos += 2;
   }
   check_arguments(argc, count);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   ether_addr mac = mac_to_binary(argv[mac_pos]);
+  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
   if (std::string("-i") != argv[1]) {
     wol_udp(mac);
   } else {
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     std::string iface = validate_iface(argv[2]);
     if (iface.size() > 13) {
       log_string(LOG_NOTICE,

@@ -22,9 +22,9 @@
 #include <container_utils.h>
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <cstdio>
+#include <cstring>
 #include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
 #include <string>
 #include <unistd.h>
 
@@ -64,21 +64,21 @@ public:
                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   }
 
-  void test_fd_constructor_open() {
+  static void test_fd_constructor_open() {
     {
       File_descriptor fd;
       CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
     }
   }
 
-  void test_fd_constructor() {
+  static void test_fd_constructor() {
     CPPUNIT_ASSERT_THROW(File_descriptor(-1), std::runtime_error);
 
     File_descriptor fd(get_fd_from_stream(stdout));
     CPPUNIT_ASSERT_EQUAL(1, fd.fd);
   }
 
-  void test_fd_copy_constructor() {
+  static void test_fd_copy_constructor() {
     File_descriptor fd;
     fd.fd = -10;
     CPPUNIT_ASSERT_EQUAL(-10, fd.fd);
@@ -88,7 +88,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
   }
 
-  void test_file_exists() {
+  static void test_file_exists() {
     CPPUNIT_ASSERT(file_exists("/dev"));
     CPPUNIT_ASSERT(file_exists("/dev/null"));
     CPPUNIT_ASSERT(file_exists("/etc/fstab"));
@@ -120,7 +120,7 @@ public:
         std::get<0>(out_in).read().at(0));
   }
 
-  void test_fd_close() {
+  static void test_fd_close() {
     // negative fd will not be changed
     File_descriptor fd;
     fd.fd = -10;
@@ -144,7 +144,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(-1, std::get<1>(self_pipes).fd);
   }
 
-  void test_fd_self_pipes_as_stdout() {
+  static void test_fd_self_pipes_as_stdout() {
     auto self_pipes = get_self_pipes();
     {
       Tmp_fd_remap const fd_remap{std::get<1>(self_pipes),
@@ -157,7 +157,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("blablarumsbums"), lines.at(0));
   }
 
-  void test_get_self_pipes() {
+  static void test_get_self_pipes() {
     auto self_pipes = get_self_pipes();
     write(std::get<1>(self_pipes), "testdata");
     write(std::get<1>(self_pipes), "\n");
@@ -181,14 +181,14 @@ public:
         std::string(std::begin(lines.at(1)), std::end(lines.at(1))));
   }
 
-  void test_fd_read() {
+  static void test_fd_read() {
     File_descriptor fd;
     fd.fd = std::numeric_limits<int>::max();
     CPPUNIT_ASSERT_THROW(fd.read(), std::runtime_error);
     fd.fd = -1;
   }
 
-  void test_fd_read_from_self_pipe() {
+  static void test_fd_read_from_self_pipe() {
     auto self_pipes = get_self_pipes();
     write(std::get<1>(self_pipes), "testdata");
     write(std::get<1>(self_pipes), "\n");
@@ -201,7 +201,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("testdata2"), data.at(1));
   }
 
-  void test_fd_self_pipe_without_close_on_exec() {
+  static void test_fd_self_pipe_without_close_on_exec() {
     {
       auto const out_in = get_self_pipes();
       int const mode = fcntl(std::get<1>(out_in), F_GETFD);
@@ -214,7 +214,7 @@ public:
     }
   }
 
-  void test_get_fd_from_stream() {
+  static void test_get_fd_from_stream() {
     FILE bla{0,       nullptr, nullptr, nullptr, nullptr, nullptr,
              nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
              nullptr, nullptr, 0,       0,       0,       0,
@@ -226,12 +226,12 @@ public:
     CPPUNIT_ASSERT_THROW(get_fd_from_stream(nullptr), std::domain_error);
   }
 
-  void test_duplicate_file_descriptors() {
+  static void test_duplicate_file_descriptors() {
     CPPUNIT_ASSERT_THROW(duplicate_file_descriptors(-1, -2),
                          std::runtime_error);
   }
 
-  void test_flush_file_nullptr() {
+  static void test_flush_file_nullptr() {
     CPPUNIT_ASSERT_THROW(flush_file(nullptr), std::domain_error);
   }
 };
