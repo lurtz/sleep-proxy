@@ -36,6 +36,8 @@ std::ostream &operator<<(std::ostream &out, std::vector<T, Alloc> v) {
   return out;
 }
 
+std::string to_string(char const * const t);
+
 template <typename T> std::string to_string(T &&t) {
   std::stringstream ss;
   ss << t;

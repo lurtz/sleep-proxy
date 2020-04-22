@@ -43,6 +43,10 @@ void setup_log(const std::string &ident, int option, int facility) {
   logger = std::make_unique<Syslog>(ident, option, facility);
 }
 
+void log_string(int priority, char const * const t) {
+  log(priority, "%s", t);
+}
+
 template <> void log_string<std::string>(const int priority, std::string &&t) {
   log(priority, "%s", t.c_str());
 }

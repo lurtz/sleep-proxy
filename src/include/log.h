@@ -25,6 +25,8 @@ void setup_log(const std::string &ident, int option, int facility);
 void log(int priority, const char *format, ...)
     __attribute__((format(printf, 2, 3)));
 
+void log_string(int priority, char const * const t);
+
 template <typename T> void log_string(int priority, T &&t);
 
 template <> void log_string<std::string>(int priority, std::string &&t);
