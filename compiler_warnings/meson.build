@@ -79,6 +79,10 @@ warnings = [
   '-Wno-disabled-macro-expansion'
 ]
 
+# gccs static code analyzer might give better results in the future
+# now it does not seem to work for C++
+#warnings += '-fanalyzer'
+
 compiler = meson.get_compiler('cpp')
 foreach w: warnings
   if (compiler.has_argument(w))
