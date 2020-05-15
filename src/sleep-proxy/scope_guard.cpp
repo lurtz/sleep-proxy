@@ -64,7 +64,9 @@ std::string ipv6_to_u32_rule(IP_address const &ip) {
            uint32_t_to_eight_hex_chars(ipv6_int);
   };
   std::vector<uint32_t> const ipv6_address{
+      // NOLINTNEXTLINE
       std::begin(ip.address.ipv6.s6_addr32),
+      // NOLINTNEXTLINE
       std::end(ip.address.ipv6.s6_addr32)};
   std::string const rule = join(ipv6_address, address_int_to_rule, "&&");
 

@@ -66,6 +66,7 @@ IP_address get_ipv6_address(const in6_addr &addr) {
   static auto const all_bits_specified = uint8_t{128};
   IP_address ipa{};
   ipa.family = AF_INET6;
+  // NOLINTNEXTLINE
   ipa.address.ipv6 = addr;
   ipa.subnet = all_bits_specified;
   return ipa;

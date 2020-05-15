@@ -33,6 +33,7 @@ ifreq get_ifreq(const std::string &iface) {
       }
     }
   };
+  // NOLINTNEXTLINE
   std::copy(std::begin(iface), std::end(iface), std::begin(ifr.ifr_name));
   return ifr;
 }
@@ -65,6 +66,7 @@ void Socket::ioctl(const unsigned long req_number, ifreq &ifr) const {
 int Socket::get_ifindex(const std::string &iface) const {
   struct ifreq ifr = get_ifreq(iface);
   ioctl(SIOCGIFINDEX, ifr);
+  // NOLINTNEXTLINE
   return ifr.ifr_ifindex;
 }
 
@@ -72,6 +74,7 @@ ether_addr Socket::get_hwaddr(const std::string &iface) const {
   struct ifreq ifr = get_ifreq(iface);
   ioctl(SIOCGIFHWADDR, ifr);
   ether_addr addr{};
+  // NOLINTNEXTLINE
   auto *const start = std::begin(ifr.ifr_hwaddr.sa_data);
   auto *end_iter = start;
   auto *const start_dst = std::begin(addr.ether_addr_octet);

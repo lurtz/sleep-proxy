@@ -182,6 +182,7 @@ void replay_data(const std::string &iface, const int type,
 void setup_signals() {
   struct sigaction sa {};
   memset(&sa, 0, sizeof(struct sigaction));
+  // NOLINTNEXTLINE
   sa.sa_handler = signal_handler;
   set_signal(SIGTERM, sa);
   set_signal(SIGINT, sa);

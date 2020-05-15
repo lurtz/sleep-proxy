@@ -6,11 +6,15 @@ Checks:          'clang-diagnostic-*,
                   performance-*,
                   portability-*,
                   readability-*,
+                  # seems to be false positive, code looks correct,
                   -clang-analyzer-valist.Uninitialized,
+                  # too much work and would have problems with cppunit,
                   -modernize-use-trailing-return-type,
+                  # conflicts with logging,
                   -cppcoreguidelines-pro-type-vararg,
-                  -cppcoreguidelines-pro-type-union-access,
+                  # cppunit creates too much warnings of this,
                   -cppcoreguidelines-owning-memory,
+                  # -Weffc++ wants each member to be initialized in constructor,
                   -readability-redundant-member-init'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

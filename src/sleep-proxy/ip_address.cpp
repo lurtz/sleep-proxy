@@ -65,6 +65,7 @@ uint8_t get_subnet(const int version,
 
 std::string IP_address::pure() const {
   std::array<char, INET6_ADDRSTRLEN> text{{0}};
+  // NOLINTNEXTLINE
   inet_ntop(family, &address.ipv6, text.data(),
             static_cast<socklen_t>(text.size()));
   return text.data();
@@ -101,6 +102,7 @@ IP_address parse_ip(const std::string &ip) {
   IP_address ipa{};
   ipa.family = version;
   ipa.subnet = get_subnet(version, ip_subnet);
+  // NOLINTNEXTLINE
   inet_pton(version, ip_subnet.at(0).c_str(), &ipa.address.ipv6);
   return ipa;
 }

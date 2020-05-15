@@ -107,9 +107,11 @@ std::unique_ptr<ip> parse_ipv6(iterator data, iterator end) {
   uint8_t const next_header = *data;
   std::advance(data, 2);
   in6_addr source_address{};
+  // NOLINTNEXTLINE
   std::copy(data, data + ip::ipv6_address_size_byte, source_address.s6_addr);
   std::advance(data, ip::ipv6_address_size_byte);
   in6_addr dest_address{};
+  // NOLINTNEXTLINE
   std::copy(data, data + ip::ipv6_address_size_byte, dest_address.s6_addr);
   return std::make_unique<ip>(ip::ipv6, ip::ipv6_header_size,
                               get_ipv6_address(source_address),
