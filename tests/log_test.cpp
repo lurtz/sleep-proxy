@@ -34,11 +34,13 @@ public:
     log_string(LOG_ALERT, "test_log_string()");
   }
   static void test_log_fmt() {
-    syslog(LOG_DEBUG, "bla %d, %f", 42, 3.14);
-    log(LOG_DEBUG, "bla %d, %f", 42, 3.14);
-    log(LOG_NOTICE, "bla %d, %f", 42, 3.14);
-    log(LOG_ERR, "bla %d, %f", 42, 3.14);
-    log(LOG_ALERT, "bla %d, %f", 42, 3.14);
+    static auto const i = uint8_t{42};
+    static auto const f = double{3.14};
+    syslog(LOG_DEBUG, "bla %d, %f", i, f);
+    log(LOG_DEBUG, "bla %d, %f", i, f);
+    log(LOG_NOTICE, "bla %d, %f", i, f);
+    log(LOG_ERR, "bla %d, %f", i, f);
+    log(LOG_ALERT, "bla %d, %f", i, f);
   }
 };
 

@@ -37,10 +37,13 @@ void check_range(const int64_t val, const int64_t lower, const int64_t upper) {
  * converts two hex characters into a byte value
  */
 uint8_t two_hex_chars_to_byte(const char a, const char b) {
-  const int64_t left = stoll_with_checks(std::string(1, a), 16);
-  const int64_t right = stoll_with_checks(std::string(1, b), 16);
-  check_range(left, 0, 16);
-  check_range(right, 0, 16);
+  static auto const base = uint8_t{16};
+  const int64_t left = stoll_with_checks(std::string(1, a), base);
+  const int64_t right = stoll_with_checks(std::string(1, b), base);
+  static auto const min_val = uint8_t{0};
+  static auto const max_val = uint8_t{16};
+  check_range(left, min_val, max_val);
+  check_range(right, min_val, max_val);
   return static_cast<uint8_t>(left << 4 | right);
 }
 } // namespace
@@ -191,9 +194,11 @@ Pcap_wrapper::Loop_end_reason Pcap_dummy::loop(
 }
 
 std::string get_executable_path() {
-  std::array<char, 32> szTmp{{0}};
+  static auto const max_proc_exe_length = 32;
+  std::array<char, max_proc_exe_length> szTmp{{0}};
   sprintf(szTmp.data(), "/proc/%d/exe", getpid());
-  std::array<char, 1000> buf{{0}};
+  static auto const max_path_length = 1000;
+  std::array<char, max_path_length> buf{{0}};
   if (-1 == readlink(szTmp.data(), buf.data(), buf.size())) {
     throw std::runtime_error(std::string("readlink() failed at") +
                              szTmp.data() + " with error " + strerror(errno));

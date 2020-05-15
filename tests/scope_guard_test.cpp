@@ -25,6 +25,7 @@ class Scope_guard_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Scope_guard_test);
   CPPUNIT_TEST(test_scope_guard_constructor);
   CPPUNIT_TEST(test_scope_guard);
+  CPPUNIT_TEST(test_scope_guard_with_changed_variable);
   CPPUNIT_TEST(test_ptr_guard);
   CPPUNIT_TEST(test_temp_ip);
   CPPUNIT_TEST(test_drop_port);
@@ -50,8 +51,8 @@ public:
     }
     {
       std::mutex ints_mutex;
-      std::vector<int *> ints;
-      int x = 123;
+      std::vector<int const *> ints;
+      static const int x = 123;
 
       Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
@@ -60,7 +61,6 @@ public:
       Scope_guard sg2 = std::move(sg);
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
       CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
-      sg.free(); // should do nothing
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
       CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
       sg2.free();
@@ -70,8 +70,8 @@ public:
 
   static void test_scope_guard() {
     std::mutex ints_mutex;
-    std::vector<int *> ints;
-    int x = 123;
+    std::vector<int const *> ints;
+    static int const x = 123;
     {
       Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
@@ -100,9 +100,8 @@ public:
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
       CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
       CPPUNIT_ASSERT_EQUAL(123, x);
-      x = 42;
       CPPUNIT_ASSERT_EQUAL(x, *ints.at(0));
-      int y = 21;
+      static const int y = 21;
       Scope_guard sg2{ptr_guard(ints, ints_mutex, y)};
       CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(2), ints.size());
       CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
@@ -114,10 +113,27 @@ public:
     }
   }
 
-  static void test_ptr_guard() {
+  static void test_scope_guard_with_changed_variable() {
     std::mutex ints_mutex;
     std::vector<int *> ints;
+    // NOLINTNEXTLINE
     int x = 123;
+    {
+      Scope_guard sg{ptr_guard(ints, ints_mutex, x)};
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), ints.size());
+      CPPUNIT_ASSERT_EQUAL(&x, ints.at(0));
+      CPPUNIT_ASSERT_EQUAL(123, x);
+      // NOLINTNEXTLINE
+      x = 42;
+      CPPUNIT_ASSERT_EQUAL(x, *ints.at(0));
+    }
+    CPPUNIT_ASSERT_EQUAL(42, x);
+  }
+
+  static void test_ptr_guard() {
+    std::mutex ints_mutex;
+    std::vector<int const *> ints;
+    static const int x = 123;
     auto guard = ptr_guard(ints, ints_mutex, x);
     CPPUNIT_ASSERT_EQUAL(&ints_mutex, &guard.cont_mutex);
     CPPUNIT_ASSERT_EQUAL(ints, guard.cont);
@@ -151,27 +167,27 @@ public:
 
   static void test_drop_port() {
     IP_address ip = parse_ip("10.0.0.1/16");
-    uint16_t port{1234};
-    Drop_port op{ip, port};
+    static const uint16_t port0{1234};
+    Drop_port op{ip, port0};
     CPPUNIT_ASSERT_EQUAL(
         "iptables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
-            std::to_string(static_cast<uint32_t>(port)) + " -j DROP",
+            std::to_string(static_cast<uint32_t>(port0)) + " -j DROP",
         op(Action::add));
     CPPUNIT_ASSERT_EQUAL(
         "iptables -w -D INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
-            std::to_string(static_cast<uint32_t>(port)) + " -j DROP",
+            std::to_string(static_cast<uint32_t>(port0)) + " -j DROP",
         op(Action::del));
 
     ip = parse_ip("fe80::affe");
-    port = 666;
-    Drop_port op2{ip, port};
+    static const uint16_t port1 = 666;
+    Drop_port op2{ip, port1};
     CPPUNIT_ASSERT_EQUAL(
         "ip6tables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
-            std::to_string(static_cast<uint32_t>(port)) + " -j DROP",
+            std::to_string(static_cast<uint32_t>(port1)) + " -j DROP",
         op2(Action::add));
     CPPUNIT_ASSERT_EQUAL(
         "ip6tables -w -D INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
-            std::to_string(static_cast<uint32_t>(port)) + " -j DROP",
+            std::to_string(static_cast<uint32_t>(port1)) + " -j DROP",
         op2(Action::del));
   }
 

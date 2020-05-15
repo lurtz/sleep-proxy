@@ -42,14 +42,20 @@ public:
   }
 
   static void test_parse_ip() {
-    compare_ip("192.168.1.1/24", AF_INET, "192.168.1.1", 24);
-    compare_ip("192.168.1.1", AF_INET, "192.168.1.1", 24);
-    compare_ip("192.168.1.1/16", AF_INET, "192.168.1.1", 16);
-    compare_ip("fe80::12", AF_INET6, "fe80::12", 64);
-    compare_ip("fe80::12%lo", AF_INET6, "fe80::12", 64);
-    compare_ip("fe80::12/34%lo", AF_INET6, "fe80::12", 34);
-    compare_ip("::1", AF_INET6, "::1", 128);
-    compare_ip("::1/66", AF_INET6, "::1", 66);
+    static auto const subnet_size_24 = uint8_t{24};
+    static auto const subnet_size_16 = uint8_t{16};
+    static auto const subnet_size_64 = uint8_t{64};
+    static auto const subnet_size_128 = uint8_t{128};
+    static auto const subnet_size_34 = uint8_t{34};
+    static auto const subnet_size_66 = uint8_t{66};
+    compare_ip("192.168.1.1/24", AF_INET, "192.168.1.1", subnet_size_24);
+    compare_ip("192.168.1.1", AF_INET, "192.168.1.1", subnet_size_24);
+    compare_ip("192.168.1.1/16", AF_INET, "192.168.1.1", subnet_size_16);
+    compare_ip("fe80::12", AF_INET6, "fe80::12", subnet_size_64);
+    compare_ip("fe80::12%lo", AF_INET6, "fe80::12", subnet_size_64);
+    compare_ip("fe80::12/34%lo", AF_INET6, "fe80::12", subnet_size_34);
+    compare_ip("::1", AF_INET6, "::1", subnet_size_128);
+    compare_ip("::1/66", AF_INET6, "::1", subnet_size_66);
     CPPUNIT_ASSERT_THROW(parse_ip("bla/bla/"), std::invalid_argument);
     CPPUNIT_ASSERT_THROW(parse_ip("fe80::123::123"), std::runtime_error);
     CPPUNIT_ASSERT_THROW(parse_ip("10"), std::runtime_error);
@@ -59,9 +65,10 @@ public:
   }
 
   static void test_stream_operator() {
+    static auto const subnet_size_23 = uint8_t{23};
     std::string const ip_str = "192.168.1.2/23";
     auto const ipa = parse_ip(ip_str);
-    compare_ip(ip_str, AF_INET, "192.168.1.2", 23);
+    compare_ip(ip_str, AF_INET, "192.168.1.2", subnet_size_23);
 
     std::stringstream ss;
     ss << ipa;

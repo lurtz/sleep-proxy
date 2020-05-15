@@ -27,6 +27,8 @@
 #include <unistd.h>
 
 struct Socket_listen : public Socket {
+  static auto const default_recv_size = size_t{2000};
+
   Socket_listen(int domain, int type, int protocol = 0)
       : Socket(domain, type, protocol) {}
 
@@ -41,7 +43,7 @@ struct Socket_listen : public Socket {
     }
   }
 
-  std::vector<uint8_t> recv(size_t len = 2000) {
+  std::vector<uint8_t> recv(size_t len = default_recv_size) {
     std::vector<uint8_t> data(len);
     ssize_t read_data = ::recv(fd(), data.data(), len, 0);
     if (read_data == -1) {
@@ -100,9 +102,10 @@ public:
   }
 
   static void test_send_to() {
+    static auto const leet_port = uint16_t{31337};
     sockaddr_in addr{0, 0, {0}, {0}};
     addr.sin_family = AF_INET;
-    addr.sin_port = 31337;
+    addr.sin_port = leet_port;
 
     // Socket(int domain, int type, int protocol = 0)
     Socket_listen s0(AF_INET, SOCK_DGRAM);
@@ -116,12 +119,17 @@ public:
     data.clear();
     s1.send_to(data, 0, addr);
     CPPUNIT_ASSERT(data == s0.recv());
+    // NOLINTNEXTLINE
     data.push_back(255);
     data.push_back(0);
+    // NOLINTNEXTLINE
     data.push_back(255);
     data.push_back(0);
+    // NOLINTNEXTLINE
     data.push_back(128);
+    // NOLINTNEXTLINE
     data.push_back(127);
+    // NOLINTNEXTLINE
     data.push_back(64);
     s1.send_to(data, 0, addr);
     CPPUNIT_ASSERT(data == s0.recv());

@@ -38,7 +38,7 @@ void break_on_magic_packet(const struct pcap_pkthdr *header,
     return;
   }
 
-  auto end_iter = packet;
+  const auto *end_iter = packet;
   std::advance(end_iter, header->len);
   std::vector<uint8_t> const data{packet, end_iter};
   if (is_magic_packet(data, mac)) {

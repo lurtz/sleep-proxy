@@ -30,7 +30,7 @@ namespace {
  * the version of ip
  */
 std::string get_iptables_cmd(const IP_address &ip) {
-  std::string const iptcmd{ip.family == AF_INET ? "iptables" : "ip6tables"};
+  std::string iptcmd{ip.family == AF_INET ? "iptables" : "ip6tables"};
   return iptcmd;
 }
 

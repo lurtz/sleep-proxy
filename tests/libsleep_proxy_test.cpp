@@ -83,6 +83,7 @@ public:
 
   static void test_rule_to_listen_on_ips_and_ports() {
     std::vector<IP_address> ips = parse_ips("192.168.1.1");
+    // NOLINTNEXTLINE
     std::vector<uint16_t> ports{22};
     std::string expected_rule = "tcp[tcpflags] == tcp-syn";
     expected_rule += " and dst host (192.168.1.1)";
@@ -97,6 +98,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(expected_rule,
                          rule_to_listen_on_ips_and_ports(ips, ports));
 
+    // NOLINTNEXTLINE
     ports.push_back(123);
     expected_rule = "tcp[tcpflags] == tcp-syn";
     expected_rule += " and dst host (192.168.1.1 or 192.168.23.23)";

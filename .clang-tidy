@@ -9,11 +9,9 @@ Checks:          'clang-diagnostic-*,
                   -clang-analyzer-valist.Uninitialized,
                   -modernize-use-trailing-return-type,
                   -cppcoreguidelines-pro-type-vararg,
-                  -cppcoreguidelines-avoid-magic-numbers,
                   -cppcoreguidelines-pro-type-union-access,
                   -cppcoreguidelines-owning-memory,
-                  -readability-redundant-member-init,
-                  -readability-magic-numbers'
+                  -readability-redundant-member-init'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

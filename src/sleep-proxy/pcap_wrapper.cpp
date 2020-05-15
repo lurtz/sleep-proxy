@@ -31,7 +31,7 @@ namespace {
 void callback_wrapper(u_char *args, const struct pcap_pkthdr *header,
                       const u_char *packet) {
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  auto const cb = reinterpret_cast<Pcap_wrapper::Callback_t *>(args);
+  auto *const cb = reinterpret_cast<Pcap_wrapper::Callback_t *>(args);
   (*cb)(header, packet);
 }
 
@@ -40,7 +40,7 @@ create_loop(int &ret_val) {
   auto loop_f = [&ret_val](pcap_t *const pcc, const int count,
                            Pcap_wrapper::Callback_t cb) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-    auto const args = reinterpret_cast<u_char *>(&cb);
+    auto *const args = reinterpret_cast<u_char *>(&cb);
     ret_val = pcap_loop(pcc, count, callback_wrapper, args);
   };
   return loop_f;

@@ -49,6 +49,10 @@ struct Throwing_ip_occupied_dummy {
   }
 };
 
+static auto const sleep_10 = std::chrono::milliseconds(10);
+static auto const sleep_100 = std::chrono::milliseconds(100);
+static auto const second = 1000;
+
 class Duplicate_address_watcher_test : public CppUnit::TestFixture {
 
   Is_ip_occupied_dummy const ip_checker{
@@ -86,7 +90,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(static_cast<Pcap_wrapper *>(&pcap), &daw.pcap);
     CPPUNIT_ASSERT_EQUAL(parse_ip("10.0.0.1/16"), daw.ip);
     CPPUNIT_ASSERT_EQUAL(std::atomic_bool(false), daw.loop);
-    auto ip_neigh_ptr = daw.is_ip_occupied.target<Ip_neigh_checker>();
+    const auto *ip_neigh_ptr = daw.is_ip_occupied.target<Ip_neigh_checker>();
     CPPUNIT_ASSERT(ip_neigh_ptr != nullptr);
     CPPUNIT_ASSERT_EQUAL(get_mac("enp0s25"), ip_neigh_ptr->this_nodes_mac);
   }
@@ -120,7 +124,7 @@ public:
     Duplicate_address_watcher daw{"enp0s25", parse_ip("10.0.0.1/16"), pcap,
                                   ip_checker};
     CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::add));
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(sleep_10);
     auto const end_reason = pcap.get_end_reason();
     CPPUNIT_ASSERT_EQUAL(std::string(""), daw(Action::del));
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset == end_reason);
@@ -133,7 +137,7 @@ public:
     Duplicate_address_watcher daw2{"wlp3s0", parse_ip("192.168.1.1/24"), pcap,
                                    ip_checker};
     CPPUNIT_ASSERT_EQUAL(std::string(""), daw2(Action::add));
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::this_thread::sleep_for(sleep_10);
     auto const end_reason = pcap.get_end_reason();
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::duplicate_address ==
                    end_reason);
@@ -149,7 +153,7 @@ public:
 
   void test_duplicate_address_watcher_ipv6_ip_taken() {
     // detect ip which is occupied by router
-    auto f = std::async(std::launch::async, timeout, std::ref(loop), 1000);
+    auto f = std::async(std::launch::async, timeout, std::ref(loop), second);
     daw_thread_main_non_root("wlp3s0", parse_ip("2001:470:1f15:df3::1/64"),
                              ip_checker, loop, pcap);
 
@@ -160,7 +164,7 @@ public:
 
   void test_duplicate_address_watcher_ipv6_ip_not_taken() {
     // just timeout
-    auto f = std::async(std::launch::async, timeout, std::ref(loop), 1000);
+    auto f = std::async(std::launch::async, timeout, std::ref(loop), second);
     daw_thread_main_non_root("wlp3s0", parse_ip("2001:470:1f15:df3::DEAD/64"),
                              ip_checker, loop, pcap);
 
@@ -176,7 +180,7 @@ public:
                    pcap.get_end_reason());
     CPPUNIT_ASSERT(!daw.loop);
     { daw(Action::add); }
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    std::this_thread::sleep_for(sleep_100);
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::signal ==
                    pcap.get_end_reason());
     CPPUNIT_ASSERT(!daw.loop);

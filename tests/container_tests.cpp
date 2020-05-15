@@ -41,15 +41,15 @@ public:
     std::vector<std::string> strings{"a", "b", "c", "d"};
     result = join(strings, identity<std::string>, ",");
     CPPUNIT_ASSERT_EQUAL(std::string("a,b,c,d"), result);
-    std::array<uint8_t, 3> arr{{10, 20, 30}};
+    std::array<uint8_t, 3> const arr{{10, 20, 30}};
     result = join(arr, identity<int>, ";");
     CPPUNIT_ASSERT_EQUAL(std::string("10;20;30"), result);
   }
 
   static void test_vector_addition() {
     std::vector<int> v0{1, 2, 3};
-    std::vector<int> v1{4, 5, 6};
-    std::vector<int> r0{1, 2, 3, 4, 5, 6};
+    std::vector<int> const v1{4, 5, 6};
+    std::vector<int> const r0{1, 2, 3, 4, 5, 6};
     CPPUNIT_ASSERT(r0 == std::move(v0) + v1);
     CPPUNIT_ASSERT((std::vector<int>() + std::vector<int>()).empty());
   }

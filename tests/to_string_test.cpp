@@ -46,6 +46,7 @@ public:
     ss << vi;
     CPPUNIT_ASSERT_EQUAL(std::string("3"), ss.str());
 
+    // NOLINTNEXTLINE
     vi.push_back(8);
     ss.str("");
     ss << vi;
@@ -59,7 +60,8 @@ public:
 
   static void test_to_string() {
     CPPUNIT_ASSERT_EQUAL(std::string("1"), to_string(1));
-    CPPUNIT_ASSERT_EQUAL(std::string("0.1"), to_string(0.1));
+    auto const result = to_string(0.1);
+    CPPUNIT_ASSERT_EQUAL(std::string("0.1"), result);
     std::string test{"blabla"};
     CPPUNIT_ASSERT_EQUAL(test, to_string(test));
     CPPUNIT_ASSERT_EQUAL(std::string(""), to_string(""));

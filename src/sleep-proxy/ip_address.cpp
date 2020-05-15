@@ -34,18 +34,24 @@ int get_af(const std::string &ip) {
                            " is not as IPv4 or IPv6 recognizeable");
 }
 
+uint8_t get_std_subnet(const int version,
+                       const std::vector<std::string> &ip_subnet) {
+  if (version == AF_INET6) {
+    static auto const ipv6_subnet = uint8_t{64};
+    static auto const ipv6_lo_subnet = uint8_t{128};
+    return ip_subnet.at(0) != "::1" ? ipv6_subnet : ipv6_lo_subnet;
+  }
+  static auto const ipv4_subnet = uint8_t{24};
+  return ipv4_subnet;
+}
+
 uint8_t get_subnet(const int version,
                    const std::vector<std::string> &ip_subnet) {
-  uint8_t subnet;
   // if no subnet size is given, append standard values
-  if (ip_subnet.size() == 1) {
-    subnet = 24;
-    if (version == AF_INET6) {
-      subnet = ip_subnet.at(0) != "::1" ? 64 : 128;
-    }
-  } else {
-    subnet = str_to_integral<uint8_t>(ip_subnet.at(1));
-  }
+  uint8_t const subnet = ip_subnet.size() > 1
+                             ? str_to_integral<uint8_t>(ip_subnet.at(1))
+                             : get_std_subnet(version, ip_subnet);
+
   // check if the subnet size is in correct bounds
   const uint8_t maxsubnetlen = version == AF_INET ? 32 : 128;
   if (subnet > maxsubnetlen) {

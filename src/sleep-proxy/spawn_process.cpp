@@ -24,7 +24,7 @@
 #include <unistd.h>
 
 uint8_t wait_until_pid_exits(const pid_t &pid) {
-  int status;
+  int status = -1;
   do {
     pid_t wpid = waitpid(pid, &status, 0);
     if (wpid == -1) {
@@ -39,9 +39,9 @@ uint8_t wait_until_pid_exits(const pid_t &pid) {
 }
 
 struct File_actions {
-  posix_spawn_file_actions_t fa;
+  posix_spawn_file_actions_t fa{};
 
-  File_actions() : fa{} {
+  File_actions() {
     auto const rc = posix_spawn_file_actions_init(&fa);
     if (0 != rc) {
       throw std::system_error{rc, std::system_category(),
@@ -85,7 +85,8 @@ uint8_t spawn_wrapper(std::vector<char *> params, File_descriptor const &in,
   }
 
   auto const exit_status = wait_until_pid_exits(pid);
-  if (127 == exit_status) {
+  static auto const spawn_failure = uint8_t{127};
+  if (spawn_failure == exit_status) {
     throw std::runtime_error{"failed to spawn process: " + command};
   }
 

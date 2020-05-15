@@ -19,6 +19,11 @@
 #include <iterator>
 #include <stdexcept>
 
+uint8_t const Link_layer::lcc_header_size;
+uint8_t const Link_layer::lcc_address_size;
+uint8_t const Link_layer::ethernet_header_size;
+uint16_t const Link_layer::ETHERTYPE_WAKE_ON_LAN;
+
 std::ostream &operator<<(std::ostream &out, const Link_layer &ll) {
   out << ll.get_info();
   return out;
@@ -46,8 +51,10 @@ std::vector<uint8_t> create_ethernet_header(const ether_addr &dmac,
                                             const ether_addr &smac,
                                             const uint16_t type) {
   auto binary = to_vector(dmac) + to_vector(smac);
-  binary.push_back(static_cast<uint8_t>(type >> 8));
-  binary.push_back(static_cast<uint8_t>(type & 0xFF));
+  static auto const shift_byte = uint8_t{8};
+  binary.push_back(static_cast<uint8_t>(type >> shift_byte));
+  static auto const and_byte = uint8_t{0xFF};
+  binary.push_back(static_cast<uint8_t>(type & and_byte));
   return binary;
 }
 
@@ -60,7 +67,11 @@ ether_addr mac_to_binary(const std::string &mac) {
 }
 
 std::string binary_to_mac(const ether_addr &mac) {
-  auto canon_mac = std::array<char, 12 + 5 + 1>{};
+  static auto const characters = uint8_t{12};
+  static auto const double_colons = uint8_t{5};
+  static auto const nul_termination = uint8_t{1};
+  static auto const array_size = characters + double_colons + nul_termination;
+  auto canon_mac = std::array<char, array_size>{};
   ether_ntoa_r(&mac, canon_mac.data());
   return canon_mac.data();
 }

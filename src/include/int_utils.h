@@ -21,8 +21,9 @@
 #include <stdexcept>
 #include <string>
 
-int64_t stoll_with_checks(const std::string &s, int base = 10);
-uint64_t stoull_with_checks(const std::string &s, int base = 10);
+static auto const base_10 = int{10};
+int64_t stoll_with_checks(const std::string &s, int base = base_10);
+uint64_t stoull_with_checks(const std::string &s, int base = base_10);
 
 /** range check for signed target types */
 template <typename R, typename T,

@@ -66,7 +66,8 @@ class Ip_test : public CppUnit::TestFixture {
 public:
   void test_ipv4_tcp_0() {
     auto ip = parse_ip(ip::ipv4, std::begin(ipv4_tcp_0), std::end(ipv4_tcp_0));
-    test_ip(ip, ip::ipv4, "141.76.2.4/32", "10.38.4.225/32", 20, ip::TCP);
+    test_ip(ip, ip::ipv4, "141.76.2.4/32", "10.38.4.225/32",
+            ip::ipv4_header_size, ip::TCP);
   }
 
   void test_ipv4_tcp_0_too_short() {
@@ -77,7 +78,8 @@ public:
 
   void test_ipv4_tcp_1() {
     auto ip = parse_ip(ip::ipv4, std::begin(ipv4_tcp_1), std::end(ipv4_tcp_1));
-    test_ip(ip, ip::ipv4, "10.38.4.225/32", "178.237.17.223/32", 20, ip::TCP);
+    test_ip(ip, ip::ipv4, "10.38.4.225/32", "178.237.17.223/32",
+            ip::ipv4_header_size, ip::TCP);
   }
 
   void test_ipv4_tcp_1_too_short() {
@@ -88,19 +90,21 @@ public:
 
   void test_ipv4_udp() {
     auto ip = parse_ip(ip::ipv4, std::begin(ipv4_udp), std::end(ipv4_udp));
-    test_ip(ip, ip::ipv4, "192.168.1.198/32", "146.66.152.13/32", 20, ip::UDP);
+    test_ip(ip, ip::ipv4, "192.168.1.198/32", "146.66.152.13/32",
+            ip::ipv4_header_size, ip::UDP);
   }
 
   void test_ipv6_udp() {
     auto ip = parse_ip(ip::ipv6, std::begin(ipv6_udp), std::end(ipv6_udp));
-    test_ip(ip, ip::ipv6, "fe80::9863:12ff:fee1:3a3d/128", "ff02::1/128", 40,
-            ip::UDP);
+    test_ip(ip, ip::ipv6, "fe80::9863:12ff:fee1:3a3d/128", "ff02::1/128",
+            ip::ipv6_header_size, ip::UDP);
   }
 
   void test_ipv6_tcp() {
     auto ip = parse_ip(ip::ipv6, std::begin(ipv6_tcp), std::end(ipv6_tcp));
     test_ip(ip, ip::ipv6, "2a03:2880:2110:6f07:face:b00c:0:1/128",
-            "2001:470:1f15:ea7:a288:b4ff:fecf:5094/128", 40, ip::TCP);
+            "2001:470:1f15:ea7:a288:b4ff:fecf:5094/128", ip::ipv6_header_size,
+            ip::TCP);
   }
 
   void test_ipv6_udp_too_short() {
@@ -122,7 +126,8 @@ public:
   }
 
   void test_unknown_ip_version() {
-    for (uint16_t i = 0; i < 20; i++) {
+    static auto const numbers_to_test = uint8_t{20};
+    for (uint16_t i = 0; i < numbers_to_test; i++) {
       CPPUNIT_ASSERT(ip::ipv4 != i && ip::ipv6 != i);
       CPPUNIT_ASSERT(std::unique_ptr<ip>(nullptr) ==
                      parse_ip(i, std::begin(ipv4_tcp_0), std::end(ipv4_tcp_0)));

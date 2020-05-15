@@ -16,10 +16,12 @@
 
 #include "file_descriptor.h"
 #include "container_utils.h"
+#include <array>
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
 #include <iostream>
+#include <iterator>
 #include <poll.h>
 #include <stdexcept>
 #include <string>
@@ -102,15 +104,16 @@ std::vector<std::string> File_descriptor::read() const {
 
   ssize_t read_bytes{-1};
   while (is_data_ready_to_read(fd) && read_bytes != 0) {
-    std::vector<uint8_t> data(100);
+    static auto const buffer_size = uint8_t{100};
+    auto data = std::array<uint8_t, buffer_size>{};
     read_bytes = ::read(fd, data.data(), data.size());
     if (read_bytes == -1) {
       throw std::runtime_error(std::string("File_descriptor::read() failed: ") +
                                strerror(errno));
     }
-    data.resize(static_cast<size_t>(read_bytes));
-    complete_data.insert(std::end(complete_data), std::begin(data),
-                         std::end(data));
+    auto *end_iter = std::begin(data);
+    std::advance(end_iter, read_bytes);
+    complete_data.insert(std::end(complete_data), std::begin(data), end_iter);
   }
 
   return byte_vector_to_strings(complete_data);

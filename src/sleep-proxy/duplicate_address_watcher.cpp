@@ -55,9 +55,11 @@ std::string get_mac(std::string const &iface) {
                              " did not succeed");
   }
   auto const lines = std::get<0>(out_in).read();
-  auto const line = lines.at(1);
+  static auto const mac_row = uint8_t{1};
+  auto const line = lines.at(mac_row);
   auto const splitted_line = split(line, ' ');
-  return splitted_line.at(5);
+  static auto const mac_column = uint8_t{5};
+  return splitted_line.at(mac_column);
 }
 
 Ip_neigh_checker::Ip_neigh_checker(std::string mac)
@@ -122,7 +124,8 @@ void daw_thread_main_non_root(const std::string &iface, const IP_address &ip,
         loop = false;
         pc.break_loop(Pcap_wrapper::Loop_end_reason::duplicate_address);
       } else {
-        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+        static auto const check_intervall = std::chrono::milliseconds(1000);
+        std::this_thread::sleep_for(check_intervall);
       }
     }
   } catch (std::exception const &e) {

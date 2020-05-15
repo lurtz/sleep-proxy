@@ -34,6 +34,8 @@ const std::string lcc_ipv4_3_wireshark = "00000001000960606060606000000800";
 const std::string lcc_ipv6_0_wireshark = "000000010006616263646566000086dd";
 const std::string vlan_ipv4_wireshark = "00010800";
 const std::string vlan_ipv6_wireshark = "000186dd";
+static auto const byte_size = 8;
+static auto const byte_mask = 0xFF;
 
 class Ethernet_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Ethernet_test);
@@ -92,21 +94,21 @@ public:
   void test_parse_lcc_loopback() {
     auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_loopback),
                                std::end(lcc_loopback));
-    test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv4,
+    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0", ip::ipv4,
             "Linux cooked capture: src: 0:0:0:0:0:0");
   }
 
   void test_parse_lcc_ipv4() {
     auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_0),
                                std::end(lcc_ipv4_0));
-    test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv4,
+    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0", ip::ipv4,
             "Linux cooked capture: src: 0:0:0:0:0:0");
   }
 
   void test_parse_lcc_ipv4_1() {
     auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_1),
                                std::end(lcc_ipv4_1));
-    test_ll(ll, 16, "60:60:60:60:60:60", ip::ipv4,
+    test_ll(ll, Link_layer::lcc_header_size, "60:60:60:60:60:60", ip::ipv4,
             "Linux cooked capture: src: 60:60:60:60:60:60");
   }
 
@@ -131,28 +133,28 @@ public:
   void test_parse_lcc_ipv6() {
     auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv6_0),
                                std::end(lcc_ipv6_0));
-    test_ll(ll, 16, "61:62:63:64:65:66", ip::ipv6,
+    test_ll(ll, Link_layer::lcc_header_size, "61:62:63:64:65:66", ip::ipv6,
             "Linux cooked capture: src: 61:62:63:64:65:66");
   }
 
   void test_parse_ethernet_ipv4() {
     auto ll = parse_link_layer(DLT_EN10MB, std::begin(ethernet_ipv4_0),
                                std::end(ethernet_ipv4_0));
-    test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv4,
+    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0", ip::ipv4,
             "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
   }
 
   void test_parse_ethernet_ipv4_1() {
     auto ll = parse_link_layer(DLT_EN10MB, std::begin(ethernet_ipv4_1),
                                std::end(ethernet_ipv4_1));
-    test_ll(ll, 14, "a:b:c:d:e:f", ip::ipv4,
+    test_ll(ll, Link_layer::ethernet_header_size, "a:b:c:d:e:f", ip::ipv4,
             "Ethernet: dst = 11:2:33:4:55:6, src = a:b:c:d:e:f");
   }
 
   void test_parse_ethernet_ipv6() {
     auto ll = parse_link_layer(DLT_EN10MB, std::begin(ethernet_ipv6_0),
                                std::end(ethernet_ipv6_0));
-    test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv6,
+    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0", ip::ipv6,
             "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
   }
 
@@ -199,11 +201,15 @@ public:
         mac_to_binary("aa:BB:cc:dd:ee:ff"), mac_to_binary("00:11:22:33:44:55"),
         ETHERTYPE_IP);
     auto iter = std::begin(header);
-    check_header(iter, std::end(header), 10, 16);
-    check_header(iter, std::end(header), 0, 6);
-    CPPUNIT_ASSERT(0x8 == *iter);
+    static auto const mac_start_0 = uint8_t{10};
+    static auto const mac_end_0 = uint8_t{16};
+    check_header(iter, std::end(header), mac_start_0, mac_end_0);
+    static auto const mac_start_1 = uint8_t{0};
+    static auto const mac_end_1 = uint8_t{6};
+    check_header(iter, std::end(header), mac_start_1, mac_end_1);
+    CPPUNIT_ASSERT((ETHERTYPE_IP >> byte_size) == *iter);
     iter++;
-    CPPUNIT_ASSERT(0x00 == *iter);
+    CPPUNIT_ASSERT((ETHERTYPE_IP & byte_mask) == *iter);
   }
 
   static void test_create_ethernet_header_2() {
@@ -211,28 +217,37 @@ public:
         mac_to_binary("66:77:88:99:aa:bb"), mac_to_binary("33:44:55:66:77:88"),
         ETHERTYPE_IPV6);
     auto iter = std::begin(header);
-    check_header(iter, std::end(header), 6, 12);
-    check_header(iter, std::end(header), 3, 9);
-    CPPUNIT_ASSERT(0x86 == *iter);
+    static auto const mac_start_0 = uint8_t{6};
+    static auto const mac_end_0 = uint8_t{12};
+    check_header(iter, std::end(header), mac_start_0, mac_end_0);
+    static auto const mac_start_1 = uint8_t{3};
+    static auto const mac_end_1 = uint8_t{9};
+    check_header(iter, std::end(header), mac_start_1, mac_end_1);
+    CPPUNIT_ASSERT((ETHERTYPE_IPV6 >> byte_size) == *iter);
     iter++;
-    CPPUNIT_ASSERT(0xdd == *iter);
+    CPPUNIT_ASSERT((ETHERTYPE_IPV6 & byte_mask) == *iter);
   }
 
   static void test_create_ethernet_header_3() {
-    std::vector<uint8_t> header =
-        create_ethernet_header(mac_to_binary("66:77:88:99:aa:bb"),
-                               mac_to_binary("33:44:55:66:77:88"), 0x0842);
+    std::vector<uint8_t> header = create_ethernet_header(
+        mac_to_binary("66:77:88:99:aa:bb"), mac_to_binary("33:44:55:66:77:88"),
+        Link_layer::ETHERTYPE_WAKE_ON_LAN);
     auto iter = std::begin(header);
-    check_header(iter, std::end(header), 6, 12);
-    check_header(iter, std::end(header), 3, 9);
-    CPPUNIT_ASSERT(0x8 == *iter);
+    static auto const mac_start_0 = uint8_t{6};
+    static auto const mac_end_0 = uint8_t{12};
+    check_header(iter, std::end(header), mac_start_0, mac_end_0);
+    static auto const mac_start_1 = uint8_t{3};
+    static auto const mac_end_1 = uint8_t{9};
+    check_header(iter, std::end(header), mac_start_1, mac_end_1);
+    CPPUNIT_ASSERT((Link_layer::ETHERTYPE_WAKE_ON_LAN >> byte_size) == *iter);
     iter++;
-    CPPUNIT_ASSERT(0x42 == *iter);
+    CPPUNIT_ASSERT((Link_layer::ETHERTYPE_WAKE_ON_LAN & byte_mask) == *iter);
   }
 
   static void test_non_supported_protocol() {
     std::vector<uint8_t> data;
-    for (int type = 0; type < 0xFFFFF; type++) {
+    static auto const max_type = uint16_t{0xFFFF};
+    for (int type = 0; type < max_type; type++) {
       if (type == DLT_LINUX_SLL || type == DLT_EN10MB ||
           type == ETHERTYPE_VLAN) {
         continue;

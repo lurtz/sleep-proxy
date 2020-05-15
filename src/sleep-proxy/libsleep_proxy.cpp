@@ -72,13 +72,13 @@ void set_signal(const int signum, const struct sigaction &sa) {
  */
 std::vector<Scope_guard> setup_firewall_and_ips(const Args &args) {
   std::vector<Scope_guard> guards;
-  for (auto &ip : args.address) {
+  for (auto const &ip : args.address) {
     // setup firewall first, some services might respond
     // reject any incoming connection, except the ones to the
     // ports specified
     guards.emplace_back(Reject_tp{ip, Reject_tp::TP::TCP});
     guards.emplace_back(Reject_tp{ip, Reject_tp::TP::UDP});
-    for (auto &port : args.ports) {
+    for (auto const &port : args.ports) {
       guards.emplace_back(Drop_port{ip, port});
     }
     guards.emplace_back(Temp_ip{args.interface, ip});
@@ -154,7 +154,7 @@ wait_and_listen(const Args &args) {
 }
 
 std::string get_ping_cmd(const IP_address &ip) {
-  std::string const pingcmd = ip.family == AF_INET ? "ping" : "ping6";
+  std::string pingcmd = ip.family == AF_INET ? "ping" : "ping6";
   return pingcmd;
 }
 

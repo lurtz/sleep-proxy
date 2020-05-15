@@ -22,6 +22,7 @@
 #include "packet_test_utils.h"
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <limits>
 #include <string>
 
 const std::string ethernet_ipv4_tcp_wireshark =
@@ -82,21 +83,22 @@ public:
     auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
 
     auto &ll = std::get<0>(headers);
-    test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv4,
+    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0", ip::ipv4,
             "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
 
-    test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32", 20,
-            ip::TCP);
+    test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32",
+            ip::ipv4_header_size, ip::TCP);
   }
 
   void test_parse_ethernet_ipv6_tcp() {
     auto headers = get_headers(DLT_EN10MB, ethernet_ipv6_tcp);
 
     auto &ll = std::get<0>(headers);
-    test_ll(ll, 14, "0:0:0:0:0:0", ip::ipv6,
+    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0", ip::ipv6,
             "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
 
-    test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128", 40, ip::TCP);
+    test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128",
+            ip::ipv6_header_size, ip::TCP);
   }
 
   void test_parse_ethernet_ipv4_tcp_too_short() {
@@ -116,18 +118,19 @@ public:
   void test_parse_lcc_ipv4_udp() {
     auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv4_udp);
     auto &ll = std::get<0>(headers);
-    test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv4,
+    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0", ip::ipv4,
             "Linux cooked capture: src: 0:0:0:0:0:0");
-    test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32", 20,
-            ip::UDP);
+    test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32",
+            ip::ipv4_header_size, ip::UDP);
   }
 
   void test_parse_lcc_ipv6_tcp() {
     auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp);
     auto &ll = std::get<0>(headers);
-    test_ll(ll, 16, "0:0:0:0:0:0", ip::ipv6,
+    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0", ip::ipv6,
             "Linux cooked capture: src: 0:0:0:0:0:0");
-    test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128", 40, ip::TCP);
+    test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128",
+            ip::ipv6_header_size, ip::TCP);
   }
 
   void test_parse_lcc_ipv4_udp_too_short() {
@@ -147,11 +150,11 @@ public:
   void test_parse_lcc_vlan_ipv4_udp() {
     auto headers = get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp);
     auto &ll = std::get<0>(headers);
-    test_ll(ll, 16, "e8:de:27:55:a1:71",
+    test_ll(ll, Link_layer::lcc_header_size, "e8:de:27:55:a1:71",
             static_cast<ip::Version>(ETHERTYPE_VLAN),
             "Linux cooked capture: src: e8:de:27:55:a1:71");
     test_ip(std::get<1>(headers), ip::ipv4, "192.168.1.155/32",
-            "79.143.179.211/32", 20, ip::UDP);
+            "79.143.179.211/32", ip::ipv4_header_size, ip::UDP);
   }
 
   void test_parse_lcc_vlan_ipv4_udp_too_short() {
@@ -171,17 +174,20 @@ public:
   void test_parse_unknown_ip() {
     std::vector<uint8_t> data{std::begin(ethernet_ipv4_tcp),
                               std::end(ethernet_ipv4_tcp)};
-    data.at(12) = 0xFF;
-    data.at(13) = 0xFF;
+    static auto const first_payload_type_byte = uint8_t{12};
+    static auto const second_payload_type_byte = uint8_t{13};
+    data.at(first_payload_type_byte) = std::numeric_limits<uint8_t>::max();
+    data.at(second_payload_type_byte) = std::numeric_limits<uint8_t>::max();
     auto const headers = get_headers(DLT_EN10MB, data);
     CPPUNIT_ASSERT(nullptr != std::get<0>(headers));
     CPPUNIT_ASSERT(nullptr == std::get<1>(headers));
 
-    auto &ll = std::get<0>(headers);
+    auto const &ll = std::get<0>(headers);
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(14), ll->header_length());
     CPPUNIT_ASSERT_EQUAL(std::string("0:0:0:0:0:0"),
                          binary_to_mac(ll->source()));
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint16_t>(0xFFFF), ll->payload_protocol());
+    CPPUNIT_ASSERT_EQUAL(std::numeric_limits<uint16_t>::max(),
+                         ll->payload_protocol());
     CPPUNIT_ASSERT_EQUAL(
         std::string("Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0"),
         ll->get_info());

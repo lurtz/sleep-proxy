@@ -20,9 +20,7 @@
 #include <stdexcept>
 #include <vector>
 
-std::string to_string(char const * const t) {
-  return t;
-}
+std::string to_string(char const *const t) { return t; }
 
 bool contains_only_valid_characters(const std::string &input,
                                     const std::string &valid_chars) {

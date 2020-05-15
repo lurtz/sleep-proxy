@@ -40,7 +40,8 @@ void thread_main(const Args &args) {
   while (!is_signaled() && loop) {
     log_string(LOG_INFO, "ping " + args.hostname);
     while (ping_ips(args.interface, args.address) && !is_signaled()) {
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      static auto const sleep_time = std::chrono::milliseconds(500);
+      std::this_thread::sleep_for(sleep_time);
     }
     if (is_signaled()) {
       return;

@@ -49,7 +49,8 @@ int main(int argc, char *argv[]) {
   } else {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     std::string iface = validate_iface(argv[2]);
-    if (iface.size() > 13) {
+    static auto const max_ethernet_name_size = uint8_t{13};
+    if (iface.size() > max_ethernet_name_size) {
       log_string(LOG_NOTICE,
                  "maximum of 13 characters allowed for ethernet name");
       return 1;

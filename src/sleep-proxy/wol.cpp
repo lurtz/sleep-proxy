@@ -26,8 +26,10 @@
 
 std::vector<uint8_t> create_wol_payload(const ether_addr &mac) {
   const std::vector<uint8_t> binary_mac = to_vector(mac);
-  std::vector<uint8_t> magic_bytes{0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-  for (unsigned int i = 0; i < 16; i++) {
+  static auto const mb = uint8_t{0xff};
+  std::vector<uint8_t> magic_bytes{mb, mb, mb, mb, mb, mb};
+  static auto const mac_repititions = uint8_t{16};
+  for (unsigned int i = 0; i < mac_repititions; i++) {
     magic_bytes.insert(std::end(magic_bytes), std::begin(binary_mac),
                        std::end(binary_mac));
   }

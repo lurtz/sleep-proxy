@@ -20,6 +20,7 @@
 #include "packet_test_utils.h"
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <limits>
 #include <netinet/ether.h>
 #include <string>
 #include <vector>
@@ -38,10 +39,12 @@ public:
                                 const unsigned char end_pos) {
     auto data = std::begin(wol);
     const auto end = std::end(wol);
-    for (unsigned int i = 0; i < 6 && data < end; i++, data++) {
-      CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(255), *data);
+    static auto const ff_repetitions = uint8_t{6};
+    for (unsigned int i = 0; i < ff_repetitions && data < end; i++, data++) {
+      CPPUNIT_ASSERT_EQUAL(std::numeric_limits<uint8_t>::max(), *data);
     }
-    for (unsigned int i = 0; i < 16; i++) {
+    static auto const mac_repetitions = 16;
+    for (unsigned int i = 0; i < mac_repetitions; i++) {
       check_range(data, end, start, end_pos);
     }
     CPPUNIT_ASSERT(data == end);
@@ -49,8 +52,10 @@ public:
 
   static void test_create_wol_payload() {
     auto wol_packet = create_wol_payload(mac_to_binary("11:22:33:44:55:66"));
+    // NOLINTNEXTLINE
     check_wol_payload(wol_packet, 1, 7);
     wol_packet = create_wol_payload(mac_to_binary("88:99:aA:bB:cc:dd"));
+    // NOLINTNEXTLINE
     check_wol_payload(wol_packet, 8, 14);
   }
 };

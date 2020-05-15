@@ -27,6 +27,10 @@
 #include <vector>
 
 struct ip {
+  static auto const ipv4_header_size = uint8_t{20};
+  static auto const ipv6_header_size = uint8_t{40};
+  static auto const ipv6_address_size_byte = uint8_t{16};
+
   enum Version { ipv4 = ETHERTYPE_IP, ipv6 = ETHERTYPE_IPV6 };
   enum Payload { TCP = IPPROTO_TCP, UDP = IPPROTO_UDP };
 
@@ -77,9 +81,10 @@ IP_address get_ipv6_address(const in6_addr &addr);
 
 template <typename iterator>
 std::unique_ptr<ip> parse_ipv4(iterator data, iterator end) {
-  check_type_and_range(data, end, 20);
+  check_type_and_range(data, end, ip::ipv4_header_size);
   uint8_t const ip_vhl = *data;
   size_t const header_length = static_cast<uint8_t>((ip_vhl & 0x0f) * 4);
+  // NOLINTNEXTLINE
   std::advance(data, 9);
   uint8_t const ip_p = *data;
   std::advance(data, 3);
@@ -88,24 +93,25 @@ std::unique_ptr<ip> parse_ipv4(iterator data, iterator end) {
   std::advance(data, 4);
   // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
   struct in_addr const ip_dst = *reinterpret_cast<in_addr const *>(&(*data));
+  static auto const no_subnet = uint8_t{32};
   return std::make_unique<ip>(ip::ipv4, header_length,
-                              IP_address{AF_INET, {ip_src}, 32},
-                              IP_address{AF_INET, {ip_dst}, 32}, ip_p);
+                              IP_address{AF_INET, {ip_src}, no_subnet},
+                              IP_address{AF_INET, {ip_dst}, no_subnet}, ip_p);
 }
 
 template <typename iterator>
 std::unique_ptr<ip> parse_ipv6(iterator data, iterator end) {
-  const size_t ipv6_header_size = 40;
-  check_type_and_range(data, end, ipv6_header_size);
+  check_type_and_range(data, end, ip::ipv6_header_size);
+  // NOLINTNEXTLINE
   std::advance(data, 6);
   uint8_t const next_header = *data;
   std::advance(data, 2);
   in6_addr source_address{};
-  std::copy(data, data + 16, source_address.s6_addr);
-  std::advance(data, 16);
+  std::copy(data, data + ip::ipv6_address_size_byte, source_address.s6_addr);
+  std::advance(data, ip::ipv6_address_size_byte);
   in6_addr dest_address{};
-  std::copy(data, data + 16, dest_address.s6_addr);
-  return std::make_unique<ip>(ip::ipv6, ipv6_header_size,
+  std::copy(data, data + ip::ipv6_address_size_byte, dest_address.s6_addr);
+  return std::make_unique<ip>(ip::ipv6, ip::ipv6_header_size,
                               get_ipv6_address(source_address),
                               get_ipv6_address(dest_address), next_header);
 }

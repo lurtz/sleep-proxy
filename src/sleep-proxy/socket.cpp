@@ -72,9 +72,9 @@ ether_addr Socket::get_hwaddr(const std::string &iface) const {
   struct ifreq ifr = get_ifreq(iface);
   ioctl(SIOCGIFHWADDR, ifr);
   ether_addr addr{};
-  auto const start = std::begin(ifr.ifr_hwaddr.sa_data);
-  auto end_iter = start;
-  auto const start_dst = std::begin(addr.ether_addr_octet);
+  auto *const start = std::begin(ifr.ifr_hwaddr.sa_data);
+  auto *end_iter = start;
+  auto *const start_dst = std::begin(addr.ether_addr_octet);
   std::advance(end_iter,
                std::distance(start_dst, std::end(addr.ether_addr_octet)));
   std::copy(start, end_iter, start_dst);

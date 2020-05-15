@@ -18,12 +18,18 @@
 #include "to_string.h"
 #include <arpa/inet.h>
 
+uint8_t const ip::ipv4_header_size;
+uint8_t const ip::ipv6_header_size;
+uint8_t const ip::ipv6_address_size_byte;
+
 inline std::ostream &operator<<(std::ostream &out, const ip::Version &v) {
   switch (v) {
   case ip::Version::ipv4:
+    // NOLINTNEXTLINE
     out << 4;
     break;
   case ip::Version::ipv6:
+    // NOLINTNEXTLINE
     out << 6;
     break;
   default:
@@ -57,9 +63,10 @@ IP_address ip::destination() const { return m_destination; }
 uint8_t ip::payload_protocol() const { return m_payload_protocol; }
 
 IP_address get_ipv6_address(const in6_addr &addr) {
+  static auto const all_bits_specified = uint8_t{128};
   IP_address ipa{};
   ipa.family = AF_INET6;
   ipa.address.ipv6 = addr;
-  ipa.subnet = 128;
+  ipa.subnet = all_bits_specified;
   return ipa;
 }

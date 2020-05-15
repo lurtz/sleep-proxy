@@ -28,6 +28,11 @@
 #include <vector>
 
 struct Link_layer {
+  static auto const lcc_header_size = uint8_t{16};
+  static auto const lcc_address_size = uint8_t{8};
+  static auto const ethernet_header_size = uint8_t{14};
+  static auto const ETHERTYPE_WAKE_ON_LAN = uint16_t{0x0842};
+
   size_t m_header_length;
   ether_addr m_source;
   uint16_t m_payload_protocol;
@@ -60,8 +65,8 @@ std::string binary_to_mac(const ether_addr &mac);
 template <typename iterator>
 std::unique_ptr<Link_layer> parse_linux_cooked_capture(iterator data,
                                                        iterator end) {
-  size_t const header_size = 16;
-  check_type_and_range(data, end, header_size);
+  // see https://www.tcpdump.org/linktypes/LINKTYPE_LINUX_SLL.html
+  check_type_and_range(data, end, Link_layer::lcc_header_size);
   std::advance(data, 2);
   uint16_t const device_type =
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -82,14 +87,14 @@ std::unique_ptr<Link_layer> parse_linux_cooked_capture(iterator data,
   ether_addr ether_shost{};
   std::copy(data, data + ETHER_ADDR_LEN,
             std::begin(ether_shost.ether_addr_octet));
-  std::advance(data, 8);
+  std::advance(data, Link_layer::lcc_address_size);
   uint16_t const payload_type =
       // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
       ntohs(*reinterpret_cast<uint16_t const *>(&(*data)));
   std::string const info =
       "Linux cooked capture: src: " + binary_to_mac(ether_shost);
-  return std::make_unique<Link_layer>(header_size, ether_shost, payload_type,
-                                      info);
+  return std::make_unique<Link_layer>(Link_layer::lcc_header_size, ether_shost,
+                                      payload_type, info);
 }
 
 template <typename iterator>

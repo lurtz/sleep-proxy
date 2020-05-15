@@ -28,6 +28,9 @@
 #include <string>
 #include <unistd.h>
 
+static auto const invalid_fd = int{-1};
+static auto const really_invalid_fd = int{-10};
+
 class File_descriptor_test : public CppUnit::TestFixture {
   std::string const filename = "fdclosetestfile";
 
@@ -80,12 +83,12 @@ public:
 
   static void test_fd_copy_constructor() {
     File_descriptor fd;
-    fd.fd = -10;
-    CPPUNIT_ASSERT_EQUAL(-10, fd.fd);
+    fd.fd = really_invalid_fd;
+    CPPUNIT_ASSERT_EQUAL(really_invalid_fd, fd.fd);
 
     File_descriptor const fd2(std::move(fd));
-    CPPUNIT_ASSERT_EQUAL(-10, fd2.fd);
-    CPPUNIT_ASSERT_EQUAL(-1, fd.fd);
+    CPPUNIT_ASSERT_EQUAL(really_invalid_fd, fd2.fd);
+    CPPUNIT_ASSERT_EQUAL(invalid_fd, fd.fd);
   }
 
   static void test_file_exists() {
@@ -123,9 +126,9 @@ public:
   static void test_fd_close() {
     // negative fd will not be changed
     File_descriptor fd;
-    fd.fd = -10;
+    fd.fd = really_invalid_fd;
     fd.close();
-    CPPUNIT_ASSERT_EQUAL(-10, fd.fd);
+    CPPUNIT_ASSERT_EQUAL(really_invalid_fd, fd.fd);
 
     // invalid fd cause exception
     File_descriptor fd1;
@@ -164,7 +167,8 @@ public:
     write(std::get<1>(self_pipes), "testdata2");
     write(std::get<1>(self_pipes), "testdata3");
 
-    std::vector<std::string::value_type> data(100);
+    static auto const buffer_size = uint8_t{100};
+    std::vector<std::string::value_type> data(buffer_size);
     ssize_t read_bytes =
         read(std::get<0>(self_pipes), data.data(), data.size());
     CPPUNIT_ASSERT(27 == read_bytes);

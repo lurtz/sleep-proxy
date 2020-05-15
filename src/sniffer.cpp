@@ -43,13 +43,14 @@ namespace {
  * */
 struct Got_packet {
   const int link_layer_type;
-  void operator()(const struct pcap_pkthdr *header, const u_char *packet) {
+  void operator()(const struct pcap_pkthdr *header,
+                  const u_char *packet) const {
     if (header == nullptr || packet == nullptr) {
       log_string(LOG_ERR, "header or packet are nullptr");
       return;
     }
     log_string(LOG_INFO, *header);
-    auto end_iter = packet;
+    const auto *end_iter = packet;
     std::advance(end_iter, header->len);
     basic_headers headers =
         get_headers(link_layer_type, std::vector<u_char>(packet, end_iter));

@@ -74,7 +74,7 @@ void Catch_incoming_connection::operator()(const pcap_pkthdr *header,
     return;
   }
   try {
-    auto end_iter = packet;
+    const auto *end_iter = packet;
     std::advance(end_iter, header->len);
     data = std::vector<uint8_t>(packet, end_iter);
     headers = get_headers(link_layer_type, data);

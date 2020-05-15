@@ -28,11 +28,10 @@ std::vector<uint8_t> gen_random_data(size_t const size) {
   std::default_random_engine generator;
   std::uniform_int_distribution<uint8_t> distribution(
       std::numeric_limits<uint8_t>::min(), std::numeric_limits<uint8_t>::max());
-  auto gen_dist = std::bind(distribution, generator);
 
   std::vector<uint8_t> data(size);
   for (uint8_t &i : data) {
-    i = gen_dist();
+    i = distribution(generator);
   }
   return data;
 }
@@ -59,6 +58,7 @@ public:
   void test_is_magic_packet() {
     auto const payload = create_wol_payload(mac0);
     // put it between some random data
+    // NOLINTNEXTLINE
     for (size_t iterations = 1; iterations < 102; iterations += 10) {
       for (size_t i = 0; i < iterations; i++) {
         auto data =
@@ -99,8 +99,10 @@ public:
                    wait_on_wol.get_end_reason());
 
     // no magic packet
+    // NOLINTNEXTLINE
     auto usual_packet = gen_random_data(500);
     while (is_magic_packet(usual_packet, mac0)) {
+      // NOLINTNEXTLINE
       usual_packet = gen_random_data(500);
     }
     auto const usual_header = create_header(usual_packet.size());
