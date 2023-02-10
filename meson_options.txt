@@ -1,0 +1,8 @@
+option(
+  'libsleep_proxy_linking',
+  type: 'combo',
+  choices: ['dynamic', 'static'],
+  value: 'dynamic',
+  description: 'Whether to dynamically or statically link libsleep-proxy'
+)
+

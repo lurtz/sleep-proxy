@@ -20,11 +20,21 @@ pcap_dep = meson.get_compiler('cpp').find_library('pcap')
 thread_dep = dependency('threads')
 
 sleep_proxy_include = include_directories('include')
-sleep_proxy_lib = shared_library(
-        'sleep-proxy',
-         sleep_proxy_sources,
-         dependencies : [pcap_dep, thread_dep],
-         include_directories : sleep_proxy_include)
+
+if get_option('libsleep_proxy_linking') == 'dynamic'
+        sleep_proxy_lib = shared_library(
+                'sleep-proxy',
+                 sleep_proxy_sources,
+                 dependencies : [pcap_dep, thread_dep],
+                 include_directories : sleep_proxy_include)
+else
+        sleep_proxy_lib = static_library(
+                'sleep-proxy',
+                sleep_proxy_sources,
+                dependencies : [pcap_dep, thread_dep],
+                include_directories : sleep_proxy_include)
+endif
+
 sleep_proxy_dep = declare_dependency(
         link_with : sleep_proxy_lib,
         include_directories : sleep_proxy_include,
