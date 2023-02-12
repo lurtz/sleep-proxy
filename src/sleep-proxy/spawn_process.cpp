@@ -81,7 +81,7 @@ uint8_t spawn_wrapper(std::vector<char *> params, File_descriptor const &in,
   auto const rc = posix_spawnp(&pid, command.data(), &file_actions.fa, nullptr,
                                params.data(), nullptr);
   if (0 != rc) {
-    throw std::system_error{rc, std::system_category(), "posix_spawn()"};
+    throw std::system_error{rc, std::system_category(), "posix_spawn(" + command + ")"};
   }
 
   auto const exit_status = wait_until_pid_exits(pid);

@@ -26,7 +26,7 @@ jobs:
       run: meson compile -C ${{github.workspace}}/min_build
 
     - name: Install dependencies for complete build
-      run: sudo apt install valgrind libcppunit-dev
+      run: sudo apt install valgrind libcppunit-dev arping
 
     - name: Configure Meson
       run: meson setup ${{github.workspace}}/build . --buildtype ${{env.BUILD_TYPE}}
