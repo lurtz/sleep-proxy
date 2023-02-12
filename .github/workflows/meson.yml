@@ -1,0 +1,39 @@
+name: Meson
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+env:
+  BUILD_TYPE: release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies for minimal build
+      run: sudo apt install meson libpcap-dev # valgrind libcppunit-dev
+
+    - name: Configure Meson for minimal build
+      run: meson setup ${{github.workspace}}/min_build . --buildtype ${{env.BUILD_TYPE}}
+
+    - name: Minimal build
+      run: meson compile -C ${{github.workspace}}/min_build
+
+    - name: Install dependencies for complete build
+      run: sudo apt install valgrind libcppunit-dev
+
+    - name: Configure Meson
+      run: meson setup ${{github.workspace}}/build . --buildtype ${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: meson compile -C ${{github.workspace}}/build
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ninja test
