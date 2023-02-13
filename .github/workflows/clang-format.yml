@@ -17,5 +17,5 @@ jobs:
       run: sudo apt install clang-format
 
     - name: Run clang-format
-      run: ${{github.workspace}}/clang-format
+      run: bash ${{github.workspace}}/clang-format.sh
 
