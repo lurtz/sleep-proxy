@@ -73,7 +73,7 @@ class Socket_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_constructor_throws);
   CPPUNIT_TEST(test_ioctl_throws);
   CPPUNIT_TEST(test_send_to);
-//  CPPUNIT_TEST(test_get_ifindex);
+  //  CPPUNIT_TEST(test_get_ifindex);
   CPPUNIT_TEST(test_set_sock_opt);
   CPPUNIT_TEST(test_destructor);
   CPPUNIT_TEST_SUITE_END();

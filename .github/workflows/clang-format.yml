@@ -1,0 +1,21 @@
+name: clang-format
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install clang-format
+      run: sudo apt install clang-format
+
+    - name: Run clang-format
+      run: bash ${{github.workspace}}/clang-format.sh
+
