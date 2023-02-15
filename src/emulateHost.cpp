@@ -23,8 +23,20 @@ int main(int argc, char *argv[]) {
     log_string(LOG_ERR, "no configuration given");
     return 1;
   }
+
+  int
+	  x
+	  =
+	  3;
+
+  if (false) {
+	  std::string * sptr;
+	  sptr = nullptr;
+	  log_string(LOG_INFO, *sptr);
+  }
+
   if (argss.at(0).syslog) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    // NOLINTNEXT_LINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     setup_log(argv[0], 0, LOG_DAEMON);
   }
   log_string(LOG_INFO, argss.at(0));
