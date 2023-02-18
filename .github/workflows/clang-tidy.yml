@@ -1,0 +1,23 @@
+name: clang-tidy
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  clang-tidy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: '0'
+      - name: Install dependencies for build
+        run: sudo apt install meson libpcap-dev libcppunit-dev clang-tidy
+      - name: Configure Meson for minimal build
+        run: meson setup ${{github.workspace}}/build .
+      - name: Workaround against more complex shell scripts
+        run: touch ${{github.workspace}}/build/fixes.yml
+      - name: clang-tidy-diff
+        run: git diff --name-only origin/master | grep "src\|tests" | xargs clang-tidy -p ${{github.workspace}}/build -export-fixes ${{github.workspace}}/build/fixes.yml
+      - name: check result
+        run: exit `stat -c %s ${{github.workspace}}/build/fixes.yml`

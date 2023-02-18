@@ -18,7 +18,6 @@
 #include "log.h"
 
 int main(int argc, char *argv[]) {
-  // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays)
   std::vector<Args> argss(read_commandline(argc, argv));
   if (argss.empty()) {
     log_string(LOG_ERR, "no configuration given");
