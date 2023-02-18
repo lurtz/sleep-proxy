@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
     return 1;
   }
   if (argss.at(0).syslog) {
-    // NOLINTNEXT_LINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
+    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     setup_log(argv[0], 0, LOG_DAEMON);
   }
   log_string(LOG_INFO, argss.at(0));
