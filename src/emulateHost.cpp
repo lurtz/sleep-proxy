@@ -23,7 +23,6 @@ int main(int argc, char *argv[]) {
     log_string(LOG_ERR, "no configuration given");
     return 1;
   }
-
   if (argss.at(0).syslog) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
     setup_log(argv[0], 0, LOG_DAEMON);
