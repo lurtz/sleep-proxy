@@ -14,7 +14,7 @@ jobs:
       - name: Configure Meson for minimal build
         run: meson setup ${{github.workspace}}/build .
       - name: C/C++ Linter
-        uses: cpp-linter/cpp-linter-action@v2.4.0
+        uses: cpp-linter/cpp-linter-action@main
         id: linter
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
