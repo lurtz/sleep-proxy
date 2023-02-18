@@ -10,10 +10,10 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install dependencies for build
-        run: sudo apt install meson libpcap-dev libcppunit-dev
+        run: sudo apt install meson libpcap-dev libcppunit-dev clang-tidy
       - name: Configure Meson for minimal build
         run: meson setup ${{github.workspace}}/build .
       - name: clang-tidy-diff
-        run: git diff master | clang-tidy-diff -p1 -path build/ -export-fixes build/fixes.yml
+        run: git diff origin/master | clang-tidy-diff -p1 -path ${{github.workspace}}/build -export-fixes ${{github.workspace}}/build/fixes.yml
       - name: check result
-        run: exit `stat -c %s fixes.yml`
+        run: exit `stat -c %s ${{github.workspace}}/build/fixes.yml`
