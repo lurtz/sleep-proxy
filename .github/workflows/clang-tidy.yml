@@ -16,6 +16,6 @@ jobs:
       - name: Configure Meson for minimal build
         run: meson setup ${{github.workspace}}/build .
       - name: clang-tidy-diff
-        run: git diff origin/master | clang-tidy-diff -p1 -path ${{github.workspace}}/build -export-fixes ${{github.workspace}}/build/fixes.yml
+        run: git diff --name-only origin/master | grep "src\|tests" | xargs clang-tidy -p ${{github.workspace}}/build -export-fixes ${{github.workspace}}/build/fixes.yml
       - name: check result
         run: exit `stat -c %s ${{github.workspace}}/build/fixes.yml`
