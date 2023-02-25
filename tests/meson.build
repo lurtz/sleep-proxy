@@ -30,11 +30,13 @@ configure_file(input : 'watchhosts-empty', output : 'watchhosts-empty', copy : t
 tests = ['container_tests','int_utils_test','to_string_test','ip_utils_test','scope_guard_test','args_test','spawn_process_test','log_test','libsleep_proxy_test','ethernet_test','wol_test','duplicate_address_watcher_test','ip_address_test','packet_parser_test','ip_test','socket_test','file_descriptor_test','wol_watcher_test']
 
 valgrind = find_program('valgrind', required : false)
+sanitize = get_option('b_sanitize')
 
 foreach te : tests
         le_test = executable(te, '@0@.cpp'.format(te), dependencies : [packet_test_utils_dep, test_main_dep])
         test(te, le_test, timeout : 50)
-        if valgrind.found()
+        # make sure valgrind is not added for -fsanitize builds
+        if valgrind.found() and (sanitize == 'none')
                 test('@0@_valgrind'.format(te), valgrind, args : ['--leak-check=yes', '--suppressions=@0@/valgrind.supp'.format(meson.current_source_dir()), '--error-exitcode=9001', 'tests/@0@'.format(te)], timeout : 50)
         endif
 endforeach
