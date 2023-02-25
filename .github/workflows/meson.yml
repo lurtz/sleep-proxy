@@ -17,7 +17,7 @@ jobs:
       run: sudo apt install meson libpcap-dev
 
     - name: Configure Meson for minimal build
-      run: meson setup ${{github.workspace}}/min_build --buildtype debug .
+      run: meson setup --buildtype debug ${{github.workspace}}/min_build ${{github.workspace}}
 
     - name: Minimal build
       run: meson compile -C ${{github.workspace}}/min_build
@@ -26,7 +26,7 @@ jobs:
       run: sudo apt install valgrind libcppunit-dev arping gcovr
 
     - name: Configure Meson
-      run: meson setup ${{github.workspace}}/build --buildtype debug -Db_coverage=true . 
+      run: meson setup --buildtype debug -Db_coverage=true ${{github.workspace}}/build ${{github.workspace}}
 
     - name: Build
       run: meson compile -C ${{github.workspace}}/build
