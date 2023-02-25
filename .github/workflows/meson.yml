@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ "master" ]
 
-env:
-  BUILD_TYPE: release
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -20,16 +17,16 @@ jobs:
       run: sudo apt install meson libpcap-dev
 
     - name: Configure Meson for minimal build
-      run: meson setup ${{github.workspace}}/min_build . --buildtype ${{env.BUILD_TYPE}}
+      run: meson setup ${{github.workspace}}/min_build --buildtype debug .
 
     - name: Minimal build
       run: meson compile -C ${{github.workspace}}/min_build
 
     - name: Install dependencies for complete build
-      run: sudo apt install valgrind libcppunit-dev arping
+      run: sudo apt install valgrind libcppunit-dev arping gcovr
 
     - name: Configure Meson
-      run: meson setup ${{github.workspace}}/build . --buildtype ${{env.BUILD_TYPE}}
+      run: meson setup ${{github.workspace}}/build --buildtype debug -Db_coverage=true . 
 
     - name: Build
       run: meson compile -C ${{github.workspace}}/build
@@ -37,6 +34,10 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       run: ninja test
+
+    - name: Create coverage
+      working-directory: ${{github.workspace}}/build
+      run: ninja coverage
 
   fsanitize:
     strategy:
