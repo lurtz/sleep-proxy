@@ -23,7 +23,7 @@ jobs:
       run: meson compile -C ${{github.workspace}}/min_build
 
     - name: Install dependencies for complete build
-      run: sudo apt install valgrind libcppunit-dev arping gcovr
+      run: sudo apt install valgrind libcppunit-dev arping lcov
 
     - name: Configure Meson
       run: meson setup --buildtype debug -Db_coverage=true ${{github.workspace}}/build ${{github.workspace}}
@@ -41,8 +41,7 @@ jobs:
 
     - uses: romeovs/lcov-reporter-action@v0.2.16
       with:
-        # lcov-file: ${{github.workspace}}/build/coverage/lcov.info
-        lcov-file: ${{github.workspace}}/build/meson-logs/coverage.txt
+        lcov-file: ${{github.workspace}}/build/meson-logs/coverage.info
 
   fsanitize:
     strategy:
