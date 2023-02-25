@@ -50,7 +50,7 @@ jobs:
       run: sudo apt install meson libpcap-dev libcppunit-dev
 
     - name: Configure Meson
-      run: meson setup ${{github.workspace}}/build . --buildtype Debug -Db_sanitize=${{ matrix.sanitizer }}
+      run: meson setup ${{github.workspace}}/build . --buildtype debug -Db_sanitize=${{ matrix.sanitizer }}
 
     - name: Build
       run: meson compile -C ${{github.workspace}}/build
