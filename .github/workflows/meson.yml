@@ -17,7 +17,7 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Install dependencies for minimal build
-      run: sudo apt install meson libpcap-dev # valgrind libcppunit-dev
+      run: sudo apt install meson libpcap-dev
 
     - name: Configure Meson for minimal build
       run: meson setup ${{github.workspace}}/min_build . --buildtype ${{env.BUILD_TYPE}}
@@ -30,6 +30,27 @@ jobs:
 
     - name: Configure Meson
       run: meson setup ${{github.workspace}}/build . --buildtype ${{env.BUILD_TYPE}}
+
+    - name: Build
+      run: meson compile -C ${{github.workspace}}/build
+
+    - name: Test
+      working-directory: ${{github.workspace}}/build
+      run: ninja test
+
+  fsanitize:
+    strategy:
+      matrix:
+        sanitizer: ['address,undefined', 'thread']
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install dependencies for build
+      run: sudo apt install meson libpcap-dev libcppunit-dev
+
+    - name: Configure Meson
+      run: meson setup ${{github.workspace}}/build . --buildtype debug -Db_sanitize=${{ matrix.sanitizer }}
 
     - name: Build
       run: meson compile -C ${{github.workspace}}/build

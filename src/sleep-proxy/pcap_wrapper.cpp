@@ -69,15 +69,19 @@ struct BPF {
   BPF &operator=(BPF &&) = delete;
 };
 
-Pcap_wrapper::Pcap_wrapper() : pc(nullptr, pcap_close), loop_thread{} {}
+Pcap_wrapper::Pcap_wrapper()
+    : pc(nullptr, pcap_close), loop_thread{},
+      loop_end_reson_mutex{std::make_unique<std::mutex>()} {}
 
 Pcap_wrapper::Loop_end_reason Pcap_wrapper::get_end_reason() const {
+  std::lock_guard<std::mutex> const lock{*loop_end_reson_mutex};
   return loop_end_reason;
 }
 
 Pcap_wrapper::Pcap_wrapper(const std::string &iface, const int snaplen,
                            const bool promisc, const int timeout)
-    : pc(pcap_create(iface.c_str(), errbuf.data()), pcap_close), loop_thread{} {
+    : pc(pcap_create(iface.c_str(), errbuf.data()), pcap_close), loop_thread{},
+      loop_end_reson_mutex{std::make_unique<std::mutex>()} {
   if (pc == nullptr) {
     throw std::runtime_error(errbuf.data());
   }
@@ -139,6 +143,7 @@ Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count,
   loop_thread = std::thread{loop_f, pc.get(), count, std::move(cb)};
   loop_thread.join();
 
+  std::lock_guard<std::mutex> const lock{*loop_end_reson_mutex};
   switch (ret_val) {
   case 0:
     loop_end_reason = Loop_end_reason::packets_captured;
@@ -154,7 +159,10 @@ Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count,
 }
 
 void Pcap_wrapper::break_loop(const Loop_end_reason &ler) {
-  loop_end_reason = ler;
+  {
+    std::lock_guard<std::mutex> const lock{*loop_end_reson_mutex};
+    loop_end_reason = ler;
+  }
   if (pc != nullptr) {
     pcap_breakloop(pc.get());
   }
