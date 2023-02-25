@@ -19,6 +19,7 @@
 #include <array>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <pcap/pcap.h>
 #include <string>
 #include <thread>
@@ -40,6 +41,7 @@ private:
   /** pointer to the opened pcap_t struct with its close function */
   std::unique_ptr<pcap_t, void (*)(pcap_t *)> pc;
   std::thread loop_thread;
+  std::unique_ptr<std::mutex> loop_end_reson_mutex;
   Loop_end_reason loop_end_reason = Loop_end_reason::unset;
 
 protected:
