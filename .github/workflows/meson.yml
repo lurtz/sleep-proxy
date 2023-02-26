@@ -39,7 +39,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: ninja coverage
 
-    - uses: romeovs/lcov-reporter-action@v0.2.16
+    - uses: romeovs/lcov-reporter-action@v0.3.1
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         lcov-file: ${{github.workspace}}/build/meson-logs/coverage.info
