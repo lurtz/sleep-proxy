@@ -17,7 +17,6 @@ Checks:          'clang-diagnostic-*,
                   # -Weffc++ wants each member to be initialized in constructor,
                   -readability-redundant-member-init,
                   # new,
-                  -modernize-return-braced-init-list,
                   -readability-suspicious-call-argument,
                   # test specific, move to subfile?,
                   -readability-identifier-length'

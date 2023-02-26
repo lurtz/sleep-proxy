@@ -45,7 +45,7 @@ class Args_test : public CppUnit::TestFixture {
   std::vector<std::string> addresses{"fe80::123/64"};
   std::vector<std::string> ports{"12345"};
   std::string mac = "1:12:34:45:67:89";
-  std::string hostname;
+  std::string hostname{};
   std::string ping_tries = "5";
   bool syslog__ = false;
 
@@ -73,7 +73,7 @@ public:
   }
 
   Args get_args() const {
-    return Args(interface, addresses, ports, mac, hostname, ping_tries);
+    return {interface, addresses, ports, mac, hostname, ping_tries};
   }
 
   static std::vector<Args> get_args(const std::string &filename,

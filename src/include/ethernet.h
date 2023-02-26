@@ -142,6 +142,6 @@ std::unique_ptr<Link_layer> parse_link_layer(const int type, iterator data,
   case ETHERTYPE_VLAN:
     return parse_VLAN_Header(data, end);
   default:
-    return std::unique_ptr<Link_layer>(nullptr);
+    return nullptr;
   }
 }

@@ -43,8 +43,7 @@ std::string Link_layer::get_info() const { return m_info; }
 ether_addr Link_layer::source() const { return m_source; }
 
 std::vector<uint8_t> to_vector(const ether_addr &mac) {
-  return std::vector<uint8_t>(std::begin(mac.ether_addr_octet),
-                              std::end(mac.ether_addr_octet));
+  return {std::begin(mac.ether_addr_octet), std::end(mac.ether_addr_octet)};
 }
 
 std::vector<uint8_t> create_ethernet_header(const ether_addr &dmac,
