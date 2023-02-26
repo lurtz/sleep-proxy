@@ -35,6 +35,7 @@ struct Syslog {
   Syslog &operator=(Syslog &&) = delete;
 };
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::unique_ptr<Syslog> logger{nullptr};
 } // namespace
 

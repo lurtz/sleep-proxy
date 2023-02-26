@@ -47,9 +47,12 @@
 
 namespace {
 /** used to break the loop using a signal handler */
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::mutex pcaps_mutex;
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::vector<Pcap_wrapper *> pcaps;
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 std::atomic_bool signaled{false};
 
 void signal_handler(int /*unused*/) {

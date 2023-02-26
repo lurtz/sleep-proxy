@@ -20,10 +20,6 @@ Checks:          'clang-diagnostic-*,
                   -modernize-return-braced-init-list,
                   -readability-suspicious-call-argument,
                   # test specific, move to subfile?,
-                  -readability-function-cognitive-complexity,
-                  -readability-redundant-string-init,
-                  -cppcoreguidelines-avoid-non-const-global-variables,
-                  -performance-unnecessary-copy-initialization,
                   -readability-identifier-length'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
@@ -187,6 +183,8 @@ CheckOptions:
     value:           '800'
   - key:             readability-function-size.VariableThreshold
     value:           '4294967295'
+  - key:             readability-function-cognitive-complexity.IgnoreMacros
+    value:           true
   - key:             readability-identifier-naming.IgnoreFailedSplit
     value:           '0'
   - key:             readability-implicit-bool-conversion.AllowIntegerConditions
