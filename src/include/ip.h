@@ -122,7 +122,7 @@ template <typename iterator>
 std::unique_ptr<ip> parse_ip(uint16_t const type, iterator data, iterator end) {
   // check wether type and the version the ip headers matches
   if (ethernet_payload_and_ip_version_dont_match(type, data)) {
-    return std::unique_ptr<ip>(nullptr);
+    return nullptr;
   }
   // construct the IPv4/IPv6 header
   switch (type) {
@@ -132,6 +132,6 @@ std::unique_ptr<ip> parse_ip(uint16_t const type, iterator data, iterator end) {
     return parse_ipv6(data, end);
   // do not know the IP version which is given
   default:
-    return std::unique_ptr<ip>(nullptr);
+    return nullptr;
   }
 }

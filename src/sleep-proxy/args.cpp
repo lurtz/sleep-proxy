@@ -33,6 +33,7 @@ const std::string def_mac = "01:12:34:45:67:89";
 const std::string def_hostname;
 const std::string def_ping_tries = "5";
 
+// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 bool to_syslog = false;
 
 Args read_args(std::ifstream &file) {
@@ -78,7 +79,7 @@ Args read_args(std::ifstream &file) {
     ports.push_back(def_ports0);
     ports.push_back(def_ports1);
   }
-  return Args(interface, address, ports, mac, hostname, ping_tries);
+  return {interface, address, ports, mac, hostname, ping_tries};
 }
 
 std::vector<Args> read_file(const std::string &filename) {

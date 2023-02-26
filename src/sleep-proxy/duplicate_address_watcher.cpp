@@ -56,7 +56,7 @@ std::string get_mac(std::string const &iface) {
   }
   auto const lines = std::get<0>(out_in).read();
   static auto const mac_row = uint8_t{1};
-  auto const line = lines.at(mac_row);
+  auto const &line = lines.at(mac_row);
   auto const splitted_line = split(line, ' ');
   static auto const mac_column = uint8_t{5};
   return splitted_line.at(mac_column);

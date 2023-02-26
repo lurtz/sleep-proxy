@@ -16,14 +16,9 @@ Checks:          'clang-diagnostic-*,
                   -cppcoreguidelines-owning-memory,
                   # -Weffc++ wants each member to be initialized in constructor,
                   -readability-redundant-member-init,
-                  # new,
-                  -modernize-return-braced-init-list,
+                  # min and max values at some functions have the same type and trigger check,
                   -readability-suspicious-call-argument,
-                  # test specific, move to subfile?,
-                  -readability-function-cognitive-complexity,
-                  -readability-redundant-string-init,
-                  -cppcoreguidelines-avoid-non-const-global-variables,
-                  -performance-unnecessary-copy-initialization,
+                  # many variables have a short name, too hard to fix,
                   -readability-identifier-length'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
@@ -187,6 +182,8 @@ CheckOptions:
     value:           '800'
   - key:             readability-function-size.VariableThreshold
     value:           '4294967295'
+  - key:             readability-function-cognitive-complexity.IgnoreMacros
+    value:           true
   - key:             readability-identifier-naming.IgnoreFailedSplit
     value:           '0'
   - key:             readability-implicit-bool-conversion.AllowIntegerConditions
