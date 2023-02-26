@@ -16,9 +16,9 @@ Checks:          'clang-diagnostic-*,
                   -cppcoreguidelines-owning-memory,
                   # -Weffc++ wants each member to be initialized in constructor,
                   -readability-redundant-member-init,
-                  # new,
+                  # min and max values at some functions have the same type and trigger check,
                   -readability-suspicious-call-argument,
-                  # test specific, move to subfile?,
+                  # many variables have a short name, too hard to fix,
                   -readability-identifier-length'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''

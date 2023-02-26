@@ -47,7 +47,7 @@ class Args_test : public CppUnit::TestFixture {
   std::string mac = "1:12:34:45:67:89";
   std::string hostname{};
   std::string ping_tries = "5";
-  bool syslog__ = false;
+  bool use_syslog = false;
 
 public:
   void setUp() override {
@@ -65,7 +65,7 @@ public:
 
   std::vector<Args> get_args_vec() const {
     std::vector<std::string> params{"args_test"};
-    if (syslog__) {
+    if (use_syslog) {
       std::cout << "syslog" << std::endl;
       params.emplace_back("--syslog");
     }
@@ -110,7 +110,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(hostname, args.hostname);
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(std::stoul(ping_tries)),
                          args.ping_tries);
-    CPPUNIT_ASSERT_EQUAL(syslog__, args.syslog);
+    CPPUNIT_ASSERT_EQUAL(use_syslog, args.syslog);
   }
 
   void tearDown() override {}
@@ -194,7 +194,7 @@ public:
 
   void test_syslog() {
     CPPUNIT_ASSERT(!Args().syslog);
-    syslog__ = true;
+    use_syslog = true;
     auto args = get_args_vec();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args.size());
     CPPUNIT_ASSERT(Args().syslog);
