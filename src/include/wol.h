@@ -20,10 +20,19 @@
 #include <string>
 #include <vector>
 
+enum class Wol_method { ethernet, udp };
+
 /**
  * create the payload for a UDP wol packet to be broadcast in to the network
  */
 std::vector<uint8_t> create_wol_payload(const ether_addr &mac);
+
+/**
+ * validates and converts human readable wol method into its respective enum
+ * value
+ */
+Wol_method parse_wol_method(const std::string &wol_method);
+std::ostream &operator<<(std::ostream &out, const Wol_method &wol_method);
 
 /**
  * Send a WOL UDP packet to the given mac

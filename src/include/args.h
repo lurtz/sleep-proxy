@@ -17,6 +17,7 @@
 #pragma once
 
 #include "ip_address.h"
+#include "wol.h"
 #include <netinet/ether.h>
 #include <ostream>
 #include <string>
@@ -39,13 +40,15 @@ struct Args {
   const ether_addr mac;
   const std::string hostname;
   const unsigned int ping_tries;
+  const Wol_method wol_method;
   const bool &syslog;
 
   Args();
 
   Args(const std::string &interface_, const std::vector<std::string> &addresss_,
        const std::vector<std::string> &ports_, const std::string &mac_,
-       const std::string &hostname_, const std::string &ping_tries_);
+       const std::string &hostname_, const std::string &ping_tries_,
+       const std::string &wol_method_);
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)

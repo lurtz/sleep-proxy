@@ -261,7 +261,12 @@ Emulate_host_status emulate_host(const Args &args) {
   // release_locks()
   locks.clear();
   // wake the sleeping server
-  wol_ethernet(args.interface, args.mac);
+  if (args.wol_method == Wol_method::udp) {
+    wol_udp(args.mac);
+  } else {
+    wol_ethernet(args.interface, args.mac);
+  }
+
   // wait until server responds and release ICMP rules
   log_string(LOG_INFO,
              "ping: " + std::get<3>(status_data_source_destination).pure());
