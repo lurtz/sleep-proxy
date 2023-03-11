@@ -19,7 +19,6 @@
 #include <cppunit/ui/text/TestRunner.h>
 
 int main(int /* argc */, char ** /* argv */) {
-  // blub
   // Get the top level suite from the registry
   CppUnit::Test *suite = CppUnit::TestFactoryRegistry::getRegistry().makeTest();
   // Adds the test to the list of test to run
