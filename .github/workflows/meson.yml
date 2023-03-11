@@ -7,7 +7,7 @@ on:
     branches: [ "master" ]
 
 jobs:
-  build:
+  min-build:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,8 +22,17 @@ jobs:
     - name: Minimal build
       run: meson compile -C ${{github.workspace}}/min_build
 
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pull-requests: write
+
+    steps:
+    - uses: actions/checkout@v3
+
     - name: Install dependencies for complete build
-      run: sudo apt install valgrind libcppunit-dev arping lcov
+      run: sudo apt install meson libpcap-dev valgrind libcppunit-dev arping lcov
 
     - name: Configure Meson
       run: meson setup --buildtype debug -Db_coverage=true ${{github.workspace}}/build ${{github.workspace}}
