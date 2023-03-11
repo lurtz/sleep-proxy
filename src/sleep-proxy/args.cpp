@@ -19,6 +19,7 @@
 #include "int_utils.h"
 #include "ip_utils.h"
 #include "log.h"
+#include "wol.h"
 #include <fstream>
 #include <getopt.h>
 #include <stdexcept>
@@ -32,6 +33,7 @@ const std::string def_ports1 = "23456";
 const std::string def_mac = "01:12:34:45:67:89";
 const std::string def_hostname;
 const std::string def_ping_tries = "5";
+const std::string def_wol_method = "ethernet";
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
 bool to_syslog = false;
@@ -43,6 +45,7 @@ Args read_args(std::ifstream &file) {
   std::string mac = def_mac;
   std::string hostname = def_hostname;
   std::string ping_tries = def_ping_tries;
+  std::string wol_method = def_wol_method;
   std::string line;
   while (std::getline(file, line) && line.substr(0, 4) != "host") {
     if (line.empty()) {
@@ -67,6 +70,8 @@ Args read_args(std::ifstream &file) {
       hostname = token.at(1);
     } else if (token.at(0) == "ping_tries") {
       ping_tries = token.at(1);
+    } else if (token.at(0) == "wol_method") {
+      wol_method = token.at(1);
     } else {
       log_string(LOG_INFO, "unknown name \"" + token.at(0) + "\": skipping");
     }
@@ -79,7 +84,8 @@ Args read_args(std::ifstream &file) {
     ports.push_back(def_ports0);
     ports.push_back(def_ports1);
   }
-  return {interface, address, ports, mac, hostname, ping_tries};
+
+  return {interface, address, ports, mac, hostname, ping_tries, wol_method};
 }
 
 std::vector<Args> read_file(const std::string &filename) {
@@ -98,13 +104,15 @@ std::vector<Args> read_file(const std::string &filename) {
 void reset() { to_syslog = false; }
 
 Args::Args() : interface {
-}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0}, syslog(to_syslog) {
+}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0}, wol_method{},
+    syslog(to_syslog) {
 }
 
 Args::Args(const std::string &interface_,
            const std::vector<std::string> &addresss_,
            const std::vector<std::string> &ports_, const std::string &mac_,
-           const std::string &hostname_, const std::string &ping_tries_)
+           const std::string &hostname_, const std::string &ping_tries_,
+           const std::string &wol_method_)
     : interface(validate_iface(interface_)),
       address(parse_items(addresss_, parse_ip)),
       ports(parse_items(ports_, str_to_integral<uint16_t>)),
@@ -112,7 +120,7 @@ Args::Args(const std::string &interface_,
       hostname(test_characters(hostname_, iface_chars + "-",
                                "invalid token in hostname: " + hostname_)),
       ping_tries(str_to_integral<unsigned int>(ping_tries_)),
-      syslog(to_syslog) {
+      wol_method(parse_wol_method(wol_method_)), syslog(to_syslog) {
   if (address.empty()) {
     throw std::runtime_error("no ip address given");
   }
@@ -177,7 +185,8 @@ std::ostream &operator<<(std::ostream &out, const Args &args) {
   out << "Args(interface = " << args.interface << ", address = " << args.address
       << ", ports = " << args.ports << ", mac = " << binary_to_mac(args.mac)
       << ", hostname = " << args.hostname
-      << ", print_tries = " << args.ping_tries << ", syslog = " << args.syslog
+      << ", print_tries = " << args.ping_tries
+      << ", wol_method = " << args.wol_method << ", syslog = " << args.syslog
       << ")";
   return out;
 }

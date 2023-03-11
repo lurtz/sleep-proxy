@@ -7,6 +7,7 @@ port 23456
 mac 01:12:34:45:67:89
 interface lo
 ping_tries 5
+wol_method ethernet
 
 host
 name test2
@@ -16,6 +17,7 @@ port 22
 mac FF:EE:DD:CC:BB:AA
 interface lo
 ping_tries 1
+wol_method udp
 
 host
 

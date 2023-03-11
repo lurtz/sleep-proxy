@@ -36,6 +36,33 @@ std::vector<uint8_t> create_wol_payload(const ether_addr &mac) {
   return magic_bytes;
 }
 
+Wol_method parse_wol_method(const std::string &readable_wol_method) {
+  if (readable_wol_method == "ethernet") {
+    return Wol_method::ethernet;
+  }
+
+  if (readable_wol_method == "udp") {
+    return Wol_method::udp;
+  }
+
+  throw std::invalid_argument("invalid wol method: " + readable_wol_method);
+}
+
+std::ostream &operator<<(std::ostream &out, const Wol_method &wol_method) {
+  switch (wol_method) {
+  case Wol_method::ethernet:
+    out << "ethernet";
+    break;
+  case Wol_method::udp:
+    out << "udp";
+    break;
+  default:
+    throw std::runtime_error("invalid wol method");
+    break;
+  }
+  return out;
+}
+
 void wol_udp(const ether_addr &mac) {
   log_string(LOG_INFO, "waking (udp) " + binary_to_mac(mac));
   const std::vector<uint8_t> binary_data = create_wol_payload(mac);

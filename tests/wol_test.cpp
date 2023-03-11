@@ -28,6 +28,10 @@
 class Wol_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Wol_test);
   CPPUNIT_TEST(test_create_wol_payload);
+  CPPUNIT_TEST(test_parse_wol_method);
+  CPPUNIT_TEST(test_parse_invalid_wol_method);
+  CPPUNIT_TEST(test_ostream_operator);
+  CPPUNIT_TEST(test_ostream_operator_with_invalid_wol_method);
   CPPUNIT_TEST_SUITE_END();
 
 public:
@@ -57,6 +61,30 @@ public:
     wol_packet = create_wol_payload(mac_to_binary("88:99:aA:bB:cc:dd"));
     // NOLINTNEXTLINE
     check_wol_payload(wol_packet, 8, 14);
+  }
+
+  static void test_parse_wol_method() {
+    auto ethernet_method = parse_wol_method("ethernet");
+    CPPUNIT_ASSERT_EQUAL(Wol_method::ethernet, ethernet_method);
+    auto udp_method = parse_wol_method("udp");
+    CPPUNIT_ASSERT_EQUAL(Wol_method::udp, udp_method);
+  }
+
+  static void test_parse_invalid_wol_method() {
+    CPPUNIT_ASSERT_THROW(parse_wol_method("unknown"), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW(parse_wol_method(""), std::invalid_argument);
+  }
+
+  static void test_ostream_operator() {
+    std::stringstream stream;
+    stream << Wol_method::ethernet << ',' << Wol_method::udp;
+    CPPUNIT_ASSERT_EQUAL(std::string{"ethernet,udp"}, stream.str());
+  }
+
+  static void test_ostream_operator_with_invalid_wol_method() {
+    std::stringstream stream;
+    auto invalid_method = static_cast<Wol_method>(-1);
+    CPPUNIT_ASSERT_THROW(stream << invalid_method, std::runtime_error);
   }
 };
 
