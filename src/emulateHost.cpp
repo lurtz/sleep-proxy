@@ -16,16 +16,17 @@
 
 #include "libsleep_proxy.h"
 #include "log.h"
+#include <span>
 
 int main(int argc, char *argv[]) {
+  std::span<char *> const args{argv, static_cast<size_t>(argc)};
   std::vector<Args> argss(read_commandline(argc, argv));
   if (argss.empty()) {
     log_string(LOG_ERR, "no configuration given");
     return 1;
   }
   if (argss.at(0).syslog) {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    setup_log(argv[0], 0, LOG_DAEMON);
+    setup_log(args[0], 0, LOG_DAEMON);
   }
   log_string(LOG_INFO, argss.at(0));
   setup_signals();
