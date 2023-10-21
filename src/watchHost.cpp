@@ -19,7 +19,9 @@
 #include "log.h"
 #include <algorithm>
 #include <csignal>
+#include <cstdlib>
 #include <future>
+#include <span>
 #include <thread>
 #include <type_traits>
 
@@ -69,11 +71,11 @@ int main(int argc, char *argv[]) {
     auto argss = read_commandline(argc, argv);
     if (argss.empty()) {
       log_string(LOG_ERR, "no configuration given");
-      return 1;
+      return EXIT_FAILURE;
     }
     if (argss.at(0).syslog) {
-      // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-      setup_log(argv[0], 0, LOG_DAEMON);
+      std::span<char *> const args{argv, static_cast<size_t>(argc)};
+      setup_log(args[0], 0, LOG_DAEMON);
     }
     std::vector<std::thread> threads;
     threads.reserve(argss.size());
@@ -88,5 +90,5 @@ int main(int argc, char *argv[]) {
   } catch (std::exception const &e) {
     log(LOG_ERR, "something wrong: %s\n", e.what());
   }
-  return 0;
+  return EXIT_SUCCESS;
 }

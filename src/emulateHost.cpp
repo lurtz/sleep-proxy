@@ -16,6 +16,7 @@
 
 #include "libsleep_proxy.h"
 #include "log.h"
+#include <cstdlib>
 #include <span>
 
 int main(int argc, char *argv[]) {
@@ -23,7 +24,7 @@ int main(int argc, char *argv[]) {
   std::vector<Args> argss(read_commandline(argc, argv));
   if (argss.empty()) {
     log_string(LOG_ERR, "no configuration given");
-    return 1;
+    return EXIT_FAILURE;
   }
   if (argss.at(0).syslog) {
     setup_log(args[0], 0, LOG_DAEMON);
@@ -37,5 +38,5 @@ int main(int argc, char *argv[]) {
   } catch (...) {
     log_string(LOG_ERR, "Something went terribly wrong");
   }
-  return 0;
+  return EXIT_FAILURE;
 }
