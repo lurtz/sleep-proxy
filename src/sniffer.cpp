@@ -18,7 +18,10 @@
 #include "log.h"
 #include "packet_parser.h"
 #include "pcap_wrapper.h"
+#include <cstddef>
+#include <cstdlib>
 #include <iterator>
+#include <span>
 
 /**
  * Writes time formatted into the stream
@@ -64,12 +67,13 @@ void print_help() { log_string(LOG_NOTICE, "usage: iface bpf_filter"); }
 int main(int argc, char *argv[]) {
   if (argc != 3) {
     print_help();
-    return 1;
+    return EXIT_FAILURE;
   }
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  Pcap_wrapper pcap(argv[1]);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  pcap.set_filter(argv[2]);
+
+  std::span<char *> const args{argv, static_cast<size_t>(argc)};
+
+  Pcap_wrapper pcap(args[1]);
+  pcap.set_filter(args[2]);
   pcap.loop(0, Got_packet{pcap.get_datalink()});
-  return 0;
+  return EXIT_SUCCESS;
 }

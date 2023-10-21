@@ -18,6 +18,9 @@
 #include "ip_utils.h"
 #include "log.h"
 #include "wol.h"
+#include <cstddef>
+#include <cstdlib>
+#include <span>
 #include <string>
 
 namespace {
@@ -26,7 +29,7 @@ void print_help() { log_string(LOG_NOTICE, "usage: [-i iface] mac"); }
 void check_arguments(const int argc, const int count) {
   if (argc < count) {
     print_help();
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 }
 } // namespace
@@ -35,20 +38,17 @@ int main(int argc, char *argv[]) {
   int count = 2;
   unsigned int mac_pos = 1;
   check_arguments(argc, count);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  if (std::string("-i") == argv[1]) {
+  std::span<char *> const args{argv, static_cast<size_t>(argc)};
+  if (std::string("-i") == args[1]) {
     count += 2;
     mac_pos += 2;
   }
   check_arguments(argc, count);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  ether_addr mac = mac_to_binary(argv[mac_pos]);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-  if (std::string("-i") != argv[1]) {
+  ether_addr mac = mac_to_binary(args[mac_pos]);
+  if (std::string("-i") != args[1]) {
     wol_udp(mac);
   } else {
-    // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-pointer-arithmetic)
-    std::string iface = validate_iface(argv[2]);
+    std::string iface = validate_iface(args[2]);
     static auto const max_ethernet_name_size = uint8_t{13};
     if (iface.size() > max_ethernet_name_size) {
       log_string(LOG_NOTICE,
@@ -58,5 +58,5 @@ int main(int argc, char *argv[]) {
 
     wol_ethernet(iface, mac);
   }
-  return 0;
+  return EXIT_SUCCESS;
 }
