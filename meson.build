@@ -17,7 +17,7 @@
 project('sleep proxy', 'cpp',
   version : '0.0.1',
   license : 'GPL',
-  default_options : ['cpp_std=c++14', 'warning_level=3']
+  default_options : ['cpp_std=c++20', 'warning_level=3']
 )
 
 # enable all warnings found

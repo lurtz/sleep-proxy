@@ -58,7 +58,6 @@ std::ostream &operator<<(std::ostream &out, const Wol_method &wol_method) {
     break;
   default:
     throw std::runtime_error("invalid wol method");
-    break;
   }
   return out;
 }
@@ -80,7 +79,7 @@ void wol_ethernet(const std::string &iface, const ether_addr &mac) {
   Socket sock(PF_PACKET, SOCK_RAW, 0);
   sock.set_sock_opt(SOL_SOCKET, SO_BROADCAST, 1);
 
-  sockaddr_ll broadcast_ll{0, 0, 0, 0, 0, 0, {0}};
+  sockaddr_ll broadcast_ll{0, 0, 0, 0, 0, 0, {}};
   broadcast_ll.sll_family = AF_PACKET;
   broadcast_ll.sll_ifindex = sock.get_ifindex(iface);
   broadcast_ll.sll_halen = ETH_ALEN;
