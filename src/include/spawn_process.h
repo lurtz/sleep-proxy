@@ -18,6 +18,7 @@
 
 #include "file_descriptor.h"
 #include "to_string.h"
+#include <cstdint>
 #include <functional>
 #include <string>
 #include <type_traits>

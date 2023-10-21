@@ -17,6 +17,7 @@
 #pragma once
 
 #include <cppunit/extensions/HelperMacros.h>
+#include <cstdint>
 #include <ethernet.h>
 #include <file_descriptor.h>
 #include <ip.h>

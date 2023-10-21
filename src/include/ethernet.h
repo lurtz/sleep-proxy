@@ -20,6 +20,7 @@
 #include "to_string.h"
 #include <arpa/inet.h>
 #include <array>
+#include <cstdint>
 #include <memory>
 #include <netinet/ether.h>
 #include <ostream>
