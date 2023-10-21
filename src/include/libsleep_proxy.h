@@ -18,6 +18,7 @@
 
 #include "args.h"
 #include "ip_address.h"
+#include <cstdint>
 #include <exception>
 #include <string>
 

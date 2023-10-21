@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <netinet/ether.h>
 #include <string>
 #include <vector>

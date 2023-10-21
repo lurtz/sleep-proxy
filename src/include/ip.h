@@ -20,6 +20,7 @@
 #include "ip_address.h"
 #include "log.h"
 #include <arpa/inet.h>
+#include <cstdint>
 #include <memory>
 #include <net/ethernet.h>
 #include <stdexcept>

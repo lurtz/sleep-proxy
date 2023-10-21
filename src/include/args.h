@@ -18,6 +18,7 @@
 
 #include "ip_address.h"
 #include "wol.h"
+#include <cstdint>
 #include <netinet/ether.h>
 #include <ostream>
 #include <string>

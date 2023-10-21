@@ -17,6 +17,7 @@
 #pragma once
 
 #include "to_string.h"
+#include <cstdint>
 #include <limits>
 #include <stdexcept>
 #include <string>

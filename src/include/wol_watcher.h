@@ -16,6 +16,7 @@
 
 #include "pcap_wrapper.h"
 #include "scope_guard.h"
+#include <cstdint>
 #include <netinet/ether.h>
 #include <string>
 #include <thread>

@@ -17,6 +17,7 @@
 #pragma once
 
 #include <cerrno>
+#include <cstdint>
 #include <cstring>
 #include <linux/if.h>
 #include <netinet/ether.h>
