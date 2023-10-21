@@ -17,6 +17,7 @@
 #include "args.h"
 
 #include "ethernet.h"
+#include "ip_address.h"
 #include "ip_utils.h"
 #include "packet_test_utils.h"
 #include "to_string.h"
@@ -25,6 +26,70 @@
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 #include <unistd.h>
+
+struct Expected_args {
+  /** the interface to use */
+  std::string interface;
+  /** addresses to listen on */
+  std::vector<IP_address> address;
+  /** ports to listen on */
+  std::vector<uint16_t> ports;
+  /** mac of the target machine to wake up */
+  ether_addr mac;
+  std::string hostname;
+  unsigned int ping_tries;
+  Wol_method wol_method;
+  bool syslog;
+};
+
+void compare(Expected_args const &eargs, Args const &args) {
+  CPPUNIT_ASSERT_EQUAL(eargs.interface, args.interface);
+  CPPUNIT_ASSERT_EQUAL(eargs.address, args.address);
+  CPPUNIT_ASSERT_EQUAL(eargs.ports, args.ports);
+  CPPUNIT_ASSERT_EQUAL(eargs.mac, args.mac);
+  CPPUNIT_ASSERT_EQUAL(eargs.hostname, args.hostname);
+  CPPUNIT_ASSERT_EQUAL(eargs.ping_tries, args.ping_tries);
+  CPPUNIT_ASSERT_EQUAL(eargs.wol_method, args.wol_method);
+  CPPUNIT_ASSERT_EQUAL(eargs.syslog, args.syslog);
+}
+
+struct Input_args {
+  std::string interface;
+  std::vector<std::string> addresses;
+  std::vector<std::string> ports;
+  std::string mac;
+  std::string hostname;
+  std::string ping_tries;
+  std::string wol_method;
+  bool use_syslog;
+
+  [[nodiscard]] std::vector<IP_address> parse_ips() const {
+    std::vector<IP_address> parsed_ips;
+    parsed_ips.reserve(addresses.size());
+    for (const auto &ip : addresses) {
+      parsed_ips.push_back(parse_ip(ip));
+    }
+    return parsed_ips;
+  }
+
+  [[nodiscard]] std::vector<uint16_t> parse_ports() const {
+    std::vector<uint16_t> ret_val(ports.size());
+    std::transform(std::begin(ports), std::end(ports), std::begin(ret_val),
+                   [](const std::string &s) { return std::stoi(s); });
+    return ret_val;
+  }
+
+  [[nodiscard]] Expected_args to_expected() const {
+    return Expected_args{interface,
+                         parse_ips(),
+                         parse_ports(),
+                         mac_to_binary(mac),
+                         hostname,
+                         static_cast<unsigned int>(std::stoul(ping_tries)),
+                         parse_wol_method(wol_method),
+                         use_syslog};
+  }
+};
 
 class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST_SUITE(Args_test);
@@ -43,16 +108,13 @@ class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_ostream_operator_with_value_initialized_args);
   CPPUNIT_TEST(test_read_command_line_weird_option);
   CPPUNIT_TEST_SUITE_END();
-  std::string interface = "lo";
-  std::vector<std::string> addresses{"fe80::123/64"};
-  std::vector<std::string> ports{"12345"};
-  std::string mac = "1:12:34:45:67:89";
-  std::string hostname{};
-  std::string ping_tries = "5";
-  std::string wol_method = "ethernet";
-  bool use_syslog = false;
 
-  static std::vector<Args> get_args(std::vector<std::string> &params) {
+  Input_args input_args{
+      "lo", {"fe80::123/64"}, {"12345"}, "1:12:34:45:67:89", {},
+      "5",  "ethernet",       false};
+
+  [[nodiscard]] static std::vector<Args>
+  get_args(std::vector<std::string> &params) {
     // reset getopt() to the start
     optind = 0;
     auto vs = to_vector_strings(params);
@@ -60,21 +122,23 @@ class Args_test : public CppUnit::TestFixture {
                             get_c_string_array(vs).data());
   }
 
-  std::vector<Args> get_args_vec() const {
+  [[nodiscard]] std::vector<Args> get_args_vec() const {
     std::vector<std::string> params{"args_test"};
-    if (use_syslog) {
+    if (input_args.use_syslog) {
       std::cout << "syslog" << std::endl;
       params.emplace_back("--syslog");
     }
     return get_args(params);
   }
 
-  Args get_args() const {
-    return {interface, addresses, ports, mac, hostname, ping_tries, wol_method};
+  [[nodiscard]] Args get_args() const {
+    return {input_args.interface, input_args.addresses, input_args.ports,
+            input_args.mac,       input_args.hostname,  input_args.ping_tries,
+            input_args.wol_method};
   }
 
-  static std::vector<Args> get_args(const std::string &filename,
-                                    const bool with_syslog = false) {
+  [[nodiscard]] static std::vector<Args>
+  get_args(const std::string &filename, const bool with_syslog = false) {
     std::vector<std::string> params{get_executable_path(), "-c",
                                     get_executable_directory() + "/" +
                                         filename};
@@ -84,32 +148,35 @@ class Args_test : public CppUnit::TestFixture {
     return get_args(params);
   }
 
-  std::vector<uint16_t> parse_ports() const {
-    std::vector<uint16_t> ret_val(ports.size());
-    std::transform(std::begin(ports), std::end(ports), std::begin(ret_val),
+  [[nodiscard]] std::vector<uint16_t> parse_ports() const {
+    std::vector<uint16_t> ret_val(input_args.ports.size());
+    std::transform(std::begin(input_args.ports), std::end(input_args.ports),
+                   std::begin(ret_val),
                    [](const std::string &s) { return std::stoi(s); });
     return ret_val;
   }
 
   void compare(const Args &args) const {
-    CPPUNIT_ASSERT_EQUAL(interface, args.interface);
+    CPPUNIT_ASSERT_EQUAL(input_args.interface, args.interface);
     std::vector<IP_address> parsed_ips;
-    parsed_ips.reserve(addresses.size());
-    for (const auto &ip : addresses) {
+    parsed_ips.reserve(input_args.addresses.size());
+    for (const auto &ip : input_args.addresses) {
       parsed_ips.push_back(parse_ip(ip));
     }
-    CPPUNIT_ASSERT(parsed_ips == args.address);
-    CPPUNIT_ASSERT(parse_ports() == args.ports);
-    std::string lower_mac = mac;
+    CPPUNIT_ASSERT_EQUAL(parsed_ips, args.address);
+    CPPUNIT_ASSERT_EQUAL(parse_ports(), args.ports);
+    std::string lower_mac = input_args.mac;
     std::transform(std::begin(lower_mac), std::end(lower_mac),
                    std::begin(lower_mac),
                    [](int ch) { return std::tolower(ch); });
     CPPUNIT_ASSERT_EQUAL(lower_mac, binary_to_mac(args.mac));
-    CPPUNIT_ASSERT_EQUAL(hostname, args.hostname);
-    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(std::stoul(ping_tries)),
-                         args.ping_tries);
-    CPPUNIT_ASSERT_EQUAL(parse_wol_method(wol_method), args.wol_method);
-    CPPUNIT_ASSERT_EQUAL(use_syslog, args.syslog);
+    CPPUNIT_ASSERT_EQUAL(input_args.hostname, args.hostname);
+    CPPUNIT_ASSERT_EQUAL(
+        static_cast<unsigned int>(std::stoul(input_args.ping_tries)),
+        args.ping_tries);
+    CPPUNIT_ASSERT_EQUAL(parse_wol_method(input_args.wol_method),
+                         args.wol_method);
+    CPPUNIT_ASSERT_EQUAL(input_args.use_syslog, args.syslog);
   }
 
 public:
@@ -129,84 +196,84 @@ public:
   }
 
   void test_interface() {
-    interface = "lo";
+    input_args.interface = "lo";
     compare(get_args());
-    interface = "lo,eth0";
+    input_args.interface = "lo,eth0";
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
-    interface = "eth0;";
+    input_args.interface = "eth0;";
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
   void test_addresses() {
-    addresses = std::vector<std::string>{"192.168.1.1"};
+    input_args.addresses = std::vector<std::string>{"192.168.1.1"};
     Args args(get_args());
-    addresses = std::vector<std::string>{"192.168.1.1/24"};
+    input_args.addresses = std::vector<std::string>{"192.168.1.1/24"};
     compare(args);
-    addresses = std::vector<std::string>{"::1"};
+    input_args.addresses = std::vector<std::string>{"::1"};
     Args args1(get_args());
-    addresses = std::vector<std::string>{"::1/128"};
+    input_args.addresses = std::vector<std::string>{"::1/128"};
     compare(args1);
-    addresses = std::vector<std::string>{"::1/128;"};
+    input_args.addresses = std::vector<std::string>{"::1/128;"};
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
-    addresses = std::vector<std::string>{""};
+    input_args.addresses = std::vector<std::string>{""};
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
-    addresses = std::vector<std::string>{};
+    input_args.addresses = std::vector<std::string>{};
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
   void test_ports() {
-    ports = std::vector<std::string>{"123"};
+    input_args.ports = std::vector<std::string>{"123"};
     compare(get_args());
-    ports = std::vector<std::string>{"123456789"};
+    input_args.ports = std::vector<std::string>{"123456789"};
     CPPUNIT_ASSERT_THROW(get_args(), std::out_of_range);
-    ports = std::vector<std::string>{"66000"};
+    input_args.ports = std::vector<std::string>{"66000"};
     CPPUNIT_ASSERT_THROW(get_args(), std::out_of_range);
-    ports = std::vector<std::string>{"12345;"};
+    input_args.ports = std::vector<std::string>{"12345;"};
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
-    ports = std::vector<std::string>{"garbage"};
+    input_args.ports = std::vector<std::string>{"garbage"};
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
-    ports = std::vector<std::string>{""};
+    input_args.ports = std::vector<std::string>{""};
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
-    ports = std::vector<std::string>{};
+    input_args.ports = std::vector<std::string>{};
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
   void test_mac() {
-    mac = "aa:aa:aa:aa:bb:cc";
+    input_args.mac = "aa:aa:aa:aa:bb:cc";
     Args args = get_args();
     compare(args);
-    mac = "AA:AA:AA:AA:BB:CC";
+    input_args.mac = "AA:AA:AA:AA:BB:CC";
     compare(args);
-    mac = "01:2:03:04:05:06";
+    input_args.mac = "01:2:03:04:05:06";
     Args args1 = get_args();
-    mac = "1:2:3:4:5:6";
+    input_args.mac = "1:2:3:4:5:6";
     compare(args1);
-    mac = "";
+    input_args.mac = "";
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
   void test_hostname() {
-    hostname = "asdf,.-";
+    input_args.hostname = "asdf,.-";
     CPPUNIT_ASSERT_THROW(get_args(), std::runtime_error);
   }
 
   void test_ping_tries() {
-    ping_tries = "1111111111111111111111";
+    input_args.ping_tries = "1111111111111111111111";
     CPPUNIT_ASSERT_THROW(get_args(), std::out_of_range);
-    ping_tries = "";
+    input_args.ping_tries = "";
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
   }
 
   void test_wol_method() {
-    wol_method = "unknown";
+    input_args.wol_method = "unknown";
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
-    wol_method = "";
+    input_args.wol_method = "";
     CPPUNIT_ASSERT_THROW(get_args(), std::invalid_argument);
   }
 
   void test_syslog() {
     CPPUNIT_ASSERT(!Args().syslog);
-    use_syslog = true;
+    input_args.use_syslog = true;
     auto args = get_args_vec();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args.size());
     CPPUNIT_ASSERT(Args().syslog);
@@ -217,31 +284,34 @@ public:
   void test_read_file() {
     auto args = get_args("watchhosts");
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), args.size());
-    interface = "lo";
-    addresses = std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"};
-    ports = std::vector<std::string>{"12345", "23456"};
-    mac = "1:12:34:45:67:89";
-    hostname = "test.lan";
-    ping_tries = "5";
-    wol_method = "ethernet";
+    input_args.interface = "lo";
+    input_args.addresses =
+        std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"};
+    input_args.ports = std::vector<std::string>{"12345", "23456"};
+    input_args.mac = "1:12:34:45:67:89";
+    input_args.hostname = "test.lan";
+    input_args.ping_tries = "5";
+    input_args.wol_method = "ethernet";
     compare(args.at(0));
 
-    interface = "lo";
-    addresses = std::vector<std::string>{"10.1.2.3/16", "fe80::de:ad/64"};
-    ports = std::vector<std::string>{"22"};
-    mac = "FF:EE:DD:CC:BB:AA";
-    hostname = "test2";
-    ping_tries = "1";
-    wol_method = "udp";
+    input_args.interface = "lo";
+    input_args.addresses =
+        std::vector<std::string>{"10.1.2.3/16", "fe80::de:ad/64"};
+    input_args.ports = std::vector<std::string>{"22"};
+    input_args.mac = "FF:EE:DD:CC:BB:AA";
+    input_args.hostname = "test2";
+    input_args.ping_tries = "1";
+    input_args.wol_method = "udp";
     compare(args.at(1));
 
-    interface = "lo";
-    addresses = std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"};
-    ports = std::vector<std::string>{"12345", "23456"};
-    mac = "1:12:34:45:67:89";
-    hostname = "";
-    ping_tries = "5";
-    wol_method = "ethernet";
+    input_args.interface = "lo";
+    input_args.addresses =
+        std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"};
+    input_args.ports = std::vector<std::string>{"12345", "23456"};
+    input_args.mac = "1:12:34:45:67:89";
+    input_args.hostname = "";
+    input_args.ping_tries = "5";
+    input_args.wol_method = "ethernet";
     compare(args.at(2));
 
     auto args2 = get_args("watchhosts-empty");

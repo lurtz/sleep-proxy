@@ -270,7 +270,8 @@ public:
   static void test_mac_to_binary() {
     std::string const mac = "00:11:Aa:Cd:65:43";
     ether_addr const binary = mac_to_binary(mac);
-    std::array<uint8_t, 6> const expected_mac{{0, 17, 170, 205, 101, 67}};
+    std::array<uint8_t, 6> const expected_mac{
+        {0x0, 0x11, 0xaa, 0xcd, 0x65, 0x43}};
     CPPUNIT_ASSERT(std::equal(std::begin(expected_mac), std::end(expected_mac),
                               std::begin(binary.ether_addr_octet)));
 
@@ -287,7 +288,7 @@ public:
   }
 
   static void test_binary_to_mac() {
-    ether_addr const binary{{0, 17, 170, 205, 101, 67}};
+    ether_addr const binary{{0x0, 0x11, 0xaa, 0xcd, 0x65, 0x43}};
     CPPUNIT_ASSERT_EQUAL(std::string("0:11:aa:cd:65:43"),
                          binary_to_mac(binary));
   }
