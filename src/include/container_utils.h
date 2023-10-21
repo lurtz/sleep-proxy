@@ -33,8 +33,9 @@ std::string join(Container c, Func fun, const std::string &sep) {
   std::stringstream ss;
   std::ostream_iterator<input_type> iter(ss, sep.c_str());
   if (std::begin(c) != std::end(c)) {
-    std::transform(std::begin(c), std::end(c) - 1, iter, fun);
-    ss << fun(*(std::end(c) - 1));
+    auto const last_element = std::next(std::end(c), -1);
+    std::transform(std::begin(c), last_element, iter, fun);
+    ss << fun(*last_element);
   }
   return ss.str();
 }
