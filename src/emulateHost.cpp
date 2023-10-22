@@ -21,7 +21,7 @@
 
 int main(int argc, char *argv[]) {
   std::span<char *> const args{argv, static_cast<size_t>(argc)};
-  Args argss(read_commandline(argc, argv));
+  Args argss(read_commandline(args));
   if (argss.host_args.empty()) {
     log_string(LOG_ERR, "no configuration given");
     return EXIT_FAILURE;

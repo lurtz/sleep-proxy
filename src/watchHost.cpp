@@ -68,19 +68,19 @@ void thread_main(const Host_args &args) {
 int main(int argc, char *argv[]) {
   try {
     setup_signals();
-    auto argss = read_commandline(argc, argv);
+    std::span<char *> const args{argv, static_cast<size_t>(argc)};
+    auto argss = read_commandline(args);
     if (argss.host_args.empty()) {
       log_string(LOG_ERR, "no configuration given");
       return EXIT_FAILURE;
     }
     if (argss.syslog) {
-      std::span<char *> const args{argv, static_cast<size_t>(argc)};
       setup_log(args[0], 0, LOG_DAEMON);
     }
     std::vector<std::thread> threads;
     threads.reserve(argss.host_args.size());
-    for (auto const &args : argss.host_args) {
-      threads.emplace_back(thread_main, args);
+    for (auto const &hargs : argss.host_args) {
+      threads.emplace_back(thread_main, hargs);
     }
     std::for_each(std::begin(threads), std::end(threads), [](std::thread &t) {
       if (t.joinable()) {

@@ -62,8 +62,8 @@ parse_ports(std::vector<std::string> const &ports) {
   // reset getopt() to the start
   optind = 0;
   auto vs = to_vector_strings(params);
-  return read_commandline(static_cast<int>(params.size()),
-                          get_c_string_array(vs).data());
+  auto cvs = get_c_string_array(vs);
+  return read_commandline({cvs.data(), params.size()});
 }
 
 [[nodiscard]] Args get_args_vec(bool const use_syslog) {

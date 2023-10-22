@@ -21,6 +21,7 @@
 #include <cstdint>
 #include <netinet/ether.h>
 #include <ostream>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -55,8 +56,7 @@ Host_args parse_host_args(const std::string &interface_,
                           const std::string &ping_tries_,
                           const std::string &wol_method_);
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
-Args read_commandline(int argc, char *const argv[]);
+Args read_commandline(std::span<char *> const &args);
 
 /**
  * write args into out

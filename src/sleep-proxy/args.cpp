@@ -138,8 +138,7 @@ Host_args parse_host_args(const std::string &interface_,
   return hargs;
 }
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
-Args read_commandline(const int argc, char *const argv[]) {
+Args read_commandline(std::span<char *> const &args) {
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
   static const option long_options[] = {
       {"help", no_argument, nullptr, 'h'},
@@ -153,9 +152,11 @@ Args read_commandline(const int argc, char *const argv[]) {
   bool to_syslog = false;
 
   // read cmd line arguments and checks them
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-  while ((c = getopt_long(argc, argv, "hc:s", long_options, &option_index)) !=
-         -1) {
+  while (
+      (c = getopt_long(
+           static_cast<int>(args.size()), args.data(), "hc:s",
+           // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
+           long_options, &option_index)) != -1) {
     switch (c) {
     case 'h':
       print_help();
