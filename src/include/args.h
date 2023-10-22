@@ -31,30 +31,29 @@ void print_help();
  */
 struct Host_args {
   /** the interface to use */
-  const std::string interface;
+  std::string interface {};
   /** addresses to listen on */
-  const std::vector<IP_address> address;
+  std::vector<IP_address> address{};
   /** ports to listen on */
-  const std::vector<uint16_t> ports;
+  std::vector<uint16_t> ports{};
   /** mac of the target machine to wake up */
-  const ether_addr mac;
-  const std::string hostname;
-  const unsigned int ping_tries;
-  const Wol_method wol_method;
-
-  Host_args();
-
-  Host_args(const std::string &interface_,
-            const std::vector<std::string> &addresss_,
-            const std::vector<std::string> &ports_, const std::string &mac_,
-            const std::string &hostname_, const std::string &ping_tries_,
-            const std::string &wol_method_);
+  ether_addr mac{};
+  std::string hostname{};
+  unsigned int ping_tries{};
+  Wol_method wol_method{};
 };
 
 struct Args {
   const std::vector<Host_args> host_args;
   const bool syslog;
 };
+
+Host_args parse_host_args(const std::string &interface_,
+                          const std::vector<std::string> &addresss_,
+                          const std::vector<std::string> &ports_,
+                          const std::string &mac_, const std::string &hostname_,
+                          const std::string &ping_tries_,
+                          const std::string &wol_method_);
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
 Args read_commandline(int argc, char *const argv[]);

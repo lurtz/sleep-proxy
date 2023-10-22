@@ -83,7 +83,8 @@ Host_args read_args(std::ifstream &file) {
     ports.push_back(def_ports1);
   }
 
-  return {interface, address, ports, mac, hostname, ping_tries, wol_method};
+  return parse_host_args(interface, address, ports, mac, hostname, ping_tries,
+                         wol_method);
 }
 
 std::vector<Host_args> read_file(const std::string &filename) {
@@ -99,32 +100,6 @@ std::vector<Host_args> read_file(const std::string &filename) {
 }
 } // namespace
 
-Host_args::Host_args() : interface {
-}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0}, wol_method{} {
-}
-
-Host_args::Host_args(const std::string &interface_,
-                     const std::vector<std::string> &addresss_,
-                     const std::vector<std::string> &ports_,
-                     const std::string &mac_, const std::string &hostname_,
-                     const std::string &ping_tries_,
-                     const std::string &wol_method_)
-    : interface(validate_iface(interface_)),
-      address(parse_items(addresss_, parse_ip)),
-      ports(parse_items(ports_, str_to_integral<uint16_t>)),
-      mac(mac_to_binary(mac_)),
-      hostname(test_characters(hostname_, iface_chars + "-",
-                               "invalid token in hostname: " + hostname_)),
-      ping_tries(str_to_integral<unsigned int>(ping_tries_)),
-      wol_method(parse_wol_method(wol_method_)) {
-  if (address.empty()) {
-    throw std::runtime_error("no ip address given");
-  }
-  if (ports.empty()) {
-    throw std::runtime_error("no port given");
-  }
-}
-
 void print_help() {
   log_string(LOG_INFO, "usage: emulateHost [-h] [-s] [-c CONFIG]");
   log_string(LOG_INFO, "emulates a host, which went standby and wakes it upon "
@@ -138,6 +113,29 @@ void print_help() {
       "                        read config file, should be the last argument");
   log_string(LOG_INFO, "  -s, --syslog");
   log_string(LOG_INFO, "                        print messages to syslog");
+}
+
+Host_args parse_host_args(const std::string &interface_,
+                          const std::vector<std::string> &addresss_,
+                          const std::vector<std::string> &ports_,
+                          const std::string &mac_, const std::string &hostname_,
+                          const std::string &ping_tries_,
+                          const std::string &wol_method_) {
+
+  Host_args hargs(validate_iface(interface_), parse_items(addresss_, parse_ip),
+                  parse_items(ports_, str_to_integral<uint16_t>),
+                  mac_to_binary(mac_),
+                  test_characters(hostname_, iface_chars + "-",
+                                  "invalid token in hostname: " + hostname_),
+                  str_to_integral<unsigned int>(ping_tries_),
+                  parse_wol_method(wol_method_));
+  if (hargs.address.empty()) {
+    throw std::runtime_error("no ip address given");
+  }
+  if (hargs.ports.empty()) {
+    throw std::runtime_error("no port given");
+  }
+  return hargs;
 }
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)

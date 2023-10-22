@@ -30,21 +30,7 @@
 
 namespace {
 
-struct Expected_host_args {
-  /** the interface to use */
-  std::string interface;
-  /** addresses to listen on */
-  std::vector<IP_address> address;
-  /** ports to listen on */
-  std::vector<uint16_t> ports;
-  /** mac of the target machine to wake up */
-  ether_addr mac;
-  std::string hostname;
-  unsigned int ping_tries;
-  Wol_method wol_method;
-};
-
-void compare(Expected_host_args const &eargs, Host_args const &args) {
+void compare(Host_args const &eargs, Host_args const &args) {
   CPPUNIT_ASSERT_EQUAL(eargs.interface, args.interface);
   CPPUNIT_ASSERT_EQUAL(eargs.address, args.address);
   CPPUNIT_ASSERT_EQUAL(eargs.ports, args.ports);
@@ -109,17 +95,18 @@ struct Input_args {
   std::string wol_method;
 
   [[nodiscard]] Host_args to_args() const {
-    return {interface, addresses, ports, mac, hostname, ping_tries, wol_method};
+    return parse_host_args(interface, addresses, ports, mac, hostname,
+                           ping_tries, wol_method);
   }
 
-  [[nodiscard]] Expected_host_args to_expected() const {
-    return Expected_host_args{interface,
-                              parse_ips(addresses),
-                              parse_ports(ports),
-                              mac_to_binary(mac),
-                              hostname,
-                              static_cast<unsigned int>(std::stoul(ping_tries)),
-                              parse_wol_method(wol_method)};
+  [[nodiscard]] Host_args to_expected() const {
+    return Host_args{interface,
+                     parse_ips(addresses),
+                     parse_ports(ports),
+                     mac_to_binary(mac),
+                     hostname,
+                     static_cast<unsigned int>(std::stoul(ping_tries)),
+                     parse_wol_method(wol_method)};
   }
 
   void compare() const { ::compare(to_expected(), to_args()); }
@@ -159,7 +146,7 @@ public:
   static void test_default_constructor() {
     Host_args args;
 
-    CPPUNIT_ASSERT_EQUAL(ether_addr{{0}}, args.mac);
+    CPPUNIT_ASSERT_EQUAL(ether_addr{{}}, args.mac);
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), args.ping_tries);
     CPPUNIT_ASSERT_EQUAL(Wol_method::ethernet, args.wol_method);
   }
@@ -245,7 +232,7 @@ public:
     CPPUNIT_ASSERT(!get_args_vec(false).syslog);
   }
 
-  void test_read_file() {
+  static void test_read_file() {
     auto args = get_args("watchhosts");
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), args.host_args.size());
 
