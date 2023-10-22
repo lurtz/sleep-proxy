@@ -44,4 +44,4 @@ enum class Emulate_host_status {
   undefined_error
 };
 
-Emulate_host_status emulate_host(const Args &args);
+Emulate_host_status emulate_host(const Host_args &args);

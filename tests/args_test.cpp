@@ -23,28 +23,14 @@
 #include "to_string.h"
 
 #include <algorithm>
+#include <cppunit/TestAssert.h>
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 #include <unistd.h>
 
 namespace {
 
-struct Expected_args {
-  /** the interface to use */
-  std::string interface;
-  /** addresses to listen on */
-  std::vector<IP_address> address;
-  /** ports to listen on */
-  std::vector<uint16_t> ports;
-  /** mac of the target machine to wake up */
-  ether_addr mac;
-  std::string hostname;
-  unsigned int ping_tries;
-  Wol_method wol_method;
-  bool syslog;
-};
-
-void compare(Expected_args const &eargs, Args const &args) {
+void compare(Host_args const &eargs, Host_args const &args) {
   CPPUNIT_ASSERT_EQUAL(eargs.interface, args.interface);
   CPPUNIT_ASSERT_EQUAL(eargs.address, args.address);
   CPPUNIT_ASSERT_EQUAL(eargs.ports, args.ports);
@@ -52,7 +38,6 @@ void compare(Expected_args const &eargs, Args const &args) {
   CPPUNIT_ASSERT_EQUAL(eargs.hostname, args.hostname);
   CPPUNIT_ASSERT_EQUAL(eargs.ping_tries, args.ping_tries);
   CPPUNIT_ASSERT_EQUAL(eargs.wol_method, args.wol_method);
-  CPPUNIT_ASSERT_EQUAL(eargs.syslog, args.syslog);
 }
 
 [[nodiscard]] std::vector<IP_address>
@@ -73,15 +58,15 @@ parse_ports(std::vector<std::string> const &ports) {
   return ret_val;
 }
 
-[[nodiscard]] std::vector<Args> get_args(std::vector<std::string> &params) {
+[[nodiscard]] Args get_args(std::vector<std::string> &params) {
   // reset getopt() to the start
   optind = 0;
   auto vs = to_vector_strings(params);
-  return read_commandline(static_cast<int>(params.size()),
-                          get_c_string_array(vs).data());
+  auto cvs = get_c_string_array(vs);
+  return read_commandline({cvs.data(), params.size()});
 }
 
-[[nodiscard]] std::vector<Args> get_args_vec(bool const use_syslog) {
+[[nodiscard]] Args get_args_vec(bool const use_syslog) {
   std::vector<std::string> params{"args_test"};
   if (use_syslog) {
     std::cout << "syslog" << std::endl;
@@ -90,8 +75,8 @@ parse_ports(std::vector<std::string> const &ports) {
   return get_args(params);
 }
 
-[[nodiscard]] std::vector<Args> get_args(const std::string &filename,
-                                         const bool with_syslog = false) {
+[[nodiscard]] Args get_args(const std::string &filename,
+                            const bool with_syslog = false) {
   std::vector<std::string> params{get_executable_path(), "-c",
                                   get_executable_directory() + "/" + filename};
   if (with_syslog) {
@@ -108,21 +93,20 @@ struct Input_args {
   std::string hostname;
   std::string ping_tries;
   std::string wol_method;
-  bool use_syslog;
 
-  [[nodiscard]] Args to_args() const {
-    return {interface, addresses, ports, mac, hostname, ping_tries, wol_method};
+  [[nodiscard]] Host_args to_args() const {
+    return parse_host_args(interface, addresses, ports, mac, hostname,
+                           ping_tries, wol_method);
   }
 
-  [[nodiscard]] Expected_args to_expected() const {
-    return Expected_args{interface,
-                         parse_ips(addresses),
-                         parse_ports(ports),
-                         mac_to_binary(mac),
-                         hostname,
-                         static_cast<unsigned int>(std::stoul(ping_tries)),
-                         parse_wol_method(wol_method),
-                         use_syslog};
+  [[nodiscard]] Host_args to_expected() const {
+    return Host_args{interface,
+                     parse_ips(addresses),
+                     parse_ports(ports),
+                     mac_to_binary(mac),
+                     hostname,
+                     static_cast<unsigned int>(std::stoul(ping_tries)),
+                     parse_wol_method(wol_method)};
   }
 
   void compare() const { ::compare(to_expected(), to_args()); }
@@ -141,30 +125,30 @@ class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_syslog);
   CPPUNIT_TEST(test_read_file);
   CPPUNIT_TEST(test_print_help);
+  CPPUNIT_TEST(test_ostream_operator_with_default_initialized_host_args);
+  CPPUNIT_TEST(test_ostream_operator_with_value_initialized_host_args);
   CPPUNIT_TEST(test_ostream_operator_with_default_initialized_args);
-  CPPUNIT_TEST(test_ostream_operator_with_value_initialized_args);
+  CPPUNIT_TEST(test_ostream_operator_with_empty_args_without_syslog);
+  CPPUNIT_TEST(test_ostream_operator_with_empty_args_with_syslog);
+  CPPUNIT_TEST(test_ostream_operator_with_initialized_args);
   CPPUNIT_TEST(test_read_command_line_weird_option);
   CPPUNIT_TEST_SUITE_END();
 
   Input_args input_args{
       "lo", {"fe80::123/64"}, {"12345"}, "1:12:34:45:67:89", {},
-      "5",  "ethernet",       false};
+      "5",  "ethernet"};
 
 public:
-  void setUp() override {
-    reset();
-    input_args.compare();
-  }
+  void setUp() override { input_args.compare(); }
 
   void tearDown() override {}
 
   static void test_default_constructor() {
-    Args args;
+    Host_args args;
 
-    CPPUNIT_ASSERT_EQUAL(ether_addr{{0}}, args.mac);
+    CPPUNIT_ASSERT_EQUAL(ether_addr{{}}, args.mac);
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned int>(0), args.ping_tries);
     CPPUNIT_ASSERT_EQUAL(Wol_method::ethernet, args.wol_method);
-    CPPUNIT_ASSERT_EQUAL(false, args.syslog);
   }
 
   void test_interface() {
@@ -178,11 +162,11 @@ public:
 
   void test_addresses() {
     input_args.addresses = std::vector<std::string>{"192.168.1.1"};
-    Args args(input_args.to_args());
+    Host_args args(input_args.to_args());
     input_args.addresses = std::vector<std::string>{"192.168.1.1/24"};
     ::compare(input_args.to_expected(), args);
     input_args.addresses = std::vector<std::string>{"::1"};
-    Args args1(input_args.to_args());
+    Host_args args1(input_args.to_args());
     input_args.addresses = std::vector<std::string>{"::1/128"};
     ::compare(input_args.to_expected(), args1);
     input_args.addresses = std::vector<std::string>{"::1/128;"};
@@ -212,12 +196,12 @@ public:
 
   void test_mac() {
     input_args.mac = "aa:aa:aa:aa:bb:cc";
-    Args args = input_args.to_args();
+    Host_args args = input_args.to_args();
     ::compare(input_args.to_expected(), args);
     input_args.mac = "AA:AA:AA:AA:BB:CC";
     ::compare(input_args.to_expected(), args);
     input_args.mac = "01:2:03:04:05:06";
-    Args args1 = input_args.to_args();
+    Host_args args1 = input_args.to_args();
     input_args.mac = "1:2:3:4:5:6";
     ::compare(input_args.to_expected(), args1);
     input_args.mac = "";
@@ -244,17 +228,13 @@ public:
   }
 
   static void test_syslog() {
-    CPPUNIT_ASSERT(!Args().syslog);
-    auto args = get_args_vec(true);
-    CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args.size());
-    CPPUNIT_ASSERT(Args().syslog);
-    reset();
-    CPPUNIT_ASSERT(!Args().syslog);
+    CPPUNIT_ASSERT(get_args_vec(true).syslog);
+    CPPUNIT_ASSERT(!get_args_vec(false).syslog);
   }
 
-  void test_read_file() {
+  static void test_read_file() {
     auto args = get_args("watchhosts");
-    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), args.size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), args.host_args.size());
 
     Input_args const arg0{
         "lo",
@@ -263,9 +243,8 @@ public:
         "1:12:34:45:67:89",
         "test.lan",
         "5",
-        "ethernet",
-        input_args.use_syslog};
-    ::compare(arg0.to_expected(), args.at(0));
+        "ethernet"};
+    ::compare(arg0.to_expected(), args.host_args.at(0));
 
     Input_args const arg1{
         "lo",
@@ -274,9 +253,8 @@ public:
         "FF:EE:DD:CC:BB:AA",
         "test2",
         "1",
-        "udp",
-        input_args.use_syslog};
-    ::compare(arg1.to_expected(), args.at(1));
+        "udp"};
+    ::compare(arg1.to_expected(), args.host_args.at(1));
 
     Input_args const arg2{
         "lo",
@@ -285,16 +263,14 @@ public:
         "1:12:34:45:67:89",
         "",
         "5",
-        "ethernet",
-        input_args.use_syslog};
-    ::compare(arg2.to_expected(), args.at(2));
+        "ethernet"};
+    ::compare(arg2.to_expected(), args.host_args.at(2));
 
     auto args2 = get_args("watchhosts-empty");
-    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), args2.size());
+    CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(0), args2.host_args.size());
 
     auto args3 = get_args("watchhosts", true);
-    CPPUNIT_ASSERT_EQUAL(true, args3.at(0).syslog);
-    CPPUNIT_ASSERT_EQUAL(true, args3.at(1).syslog);
+    CPPUNIT_ASSERT(args3.syslog);
   }
 
   static void test_print_help() {
@@ -309,25 +285,59 @@ public:
     CPPUNIT_ASSERT(help_text.size() > 7);
   }
 
-  static void test_ostream_operator_with_default_initialized_args() {
-    Args args;
+  static void test_ostream_operator_with_default_initialized_host_args() {
     std::stringstream ss;
-    ss << args;
+    ss << Host_args{};
     CPPUNIT_ASSERT_EQUAL(
-        std::string("Args(interface = , address = , ports = , mac = "
+        std::string("Host_args(interface = , address = , ports = , mac = "
                     "0:0:0:0:0:0, hostname = , print_tries = 0, wol_method = "
-                    "ethernet, syslog = 0)"),
+                    "ethernet)"),
         ss.str());
   }
 
-  void test_ostream_operator_with_value_initialized_args() {
+  void test_ostream_operator_with_value_initialized_host_args() {
     std::stringstream ss;
     ss << input_args.to_args();
     CPPUNIT_ASSERT_EQUAL(
         std::string(
-            "Args(interface = lo, address = fe80::123/64, ports = 12345, mac = "
+            "Host_args(interface = lo, address = fe80::123/64, ports = 12345, "
+            "mac = "
             "1:12:34:45:67:89, hostname = , print_tries = 5, wol_method = "
-            "ethernet, syslog = 0)"),
+            "ethernet)"),
+        ss.str());
+  }
+
+  static void test_ostream_operator_with_default_initialized_args() {
+    std::stringstream ss;
+    ss << Args{};
+    CPPUNIT_ASSERT_EQUAL(std::string("Args(host_args = [], syslog = false)"),
+                         ss.str());
+  }
+
+  static void test_ostream_operator_with_empty_args_without_syslog() {
+    std::stringstream ss;
+    ss << Args{{}, false};
+    CPPUNIT_ASSERT_EQUAL(std::string("Args(host_args = [], syslog = false)"),
+                         ss.str());
+  }
+
+  static void test_ostream_operator_with_empty_args_with_syslog() {
+    std::stringstream ss;
+    ss << Args{{}, true};
+    CPPUNIT_ASSERT_EQUAL(std::string("Args(host_args = [], syslog = true)"),
+                         ss.str());
+  }
+
+  void test_ostream_operator_with_initialized_args() {
+    std::stringstream ss;
+    ss << Args{{input_args.to_args()}, false};
+    CPPUNIT_ASSERT_EQUAL(
+        std::string(
+            "Args(host_args = [Host_args(interface = lo, address = "
+            "fe80::123/64, ports = 12345, "
+            "mac = "
+            "1:12:34:45:67:89, hostname = , print_tries = 5, wol_method = "
+            "ethernet)], syslog = false)"),
         ss.str());
   }
 
@@ -341,11 +351,11 @@ public:
 
       std::vector<std::string> cmd_args{"weird_option", "-f"};
       auto args = get_args(cmd_args);
-      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args.size());
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args.host_args.size());
 
       cmd_args[1] = "-c";
       auto args1 = get_args(cmd_args);
-      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args1.size());
+      CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(0), args1.host_args.size());
 
       std::cout << std::flush;
     }

@@ -28,12 +28,12 @@ std::string validate_iface(std::string const &iface);
 
 template <typename Container, typename Func>
 auto parse_items(Container &&items, Func &&parser) -> std::vector<
-    typename std::result_of<decltype(parser)(const std::string &)>::type> {
+    typename std::invoke_result_t<decltype(parser), const std::string &>> {
   static_assert(std::is_same<typename std::decay<Container>::type::value_type,
                              std::string>::value,
                 "container has to carry std::string");
   std::vector<
-      typename std::result_of<decltype(parser)(const std::string &)>::type>
+      typename std::invoke_result_t<decltype(parser), const std::string &>>
       ret_val(items.size());
   std::transform(std::begin(items), std::end(items), std::begin(ret_val),
                  std::forward<Func>(parser));

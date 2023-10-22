@@ -21,39 +21,60 @@
 #include <cstdint>
 #include <netinet/ether.h>
 #include <ostream>
+#include <span>
 #include <string>
 #include <vector>
 
-void reset();
 void print_help();
 
 /**
  * Parses and checks the input of the command line arguments
  */
-struct Args {
+struct Host_args {
   /** the interface to use */
-  const std::string interface;
+  std::string interface {};
   /** addresses to listen on */
-  const std::vector<IP_address> address;
+  std::vector<IP_address> address{};
   /** ports to listen on */
-  const std::vector<uint16_t> ports;
+  std::vector<uint16_t> ports{};
   /** mac of the target machine to wake up */
-  const ether_addr mac;
-  const std::string hostname;
-  const unsigned int ping_tries;
-  const Wol_method wol_method;
-  const bool &syslog;
+  ether_addr mac{};
+  std::string hostname{};
+  unsigned int ping_tries{};
+  Wol_method wol_method{};
 
-  Args();
+  Host_args() = default;
 
-  Args(const std::string &interface_, const std::vector<std::string> &addresss_,
-       const std::vector<std::string> &ports_, const std::string &mac_,
-       const std::string &hostname_, const std::string &ping_tries_,
-       const std::string &wol_method_);
+  Host_args(std::string interface_, std::vector<IP_address> address_,
+            std::vector<uint16_t> ports_, ether_addr mac_,
+            std::string hostname_, unsigned int ping_tries_,
+            Wol_method wol_method_)
+      : interface {
+    std::move(interface_)
+  }, address{std::move(address_)}, ports{std::move(ports_)}, mac{mac_},
+      hostname{std::move(hostname_)}, ping_tries{ping_tries_},
+      wol_method{wol_method_} {
+  }
 };
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
-std::vector<Args> read_commandline(int argc, char *const argv[]);
+struct Args {
+  const std::vector<Host_args> host_args;
+  const bool syslog;
+};
+
+Host_args parse_host_args(const std::string &interface_,
+                          const std::vector<std::string> &addresss_,
+                          const std::vector<std::string> &ports_,
+                          const std::string &mac_, const std::string &hostname_,
+                          const std::string &ping_tries_,
+                          const std::string &wol_method_);
+
+Args read_commandline(std::span<char *> const &args);
+
+/**
+ * write args into out
+ */
+std::ostream &operator<<(std::ostream &out, const Host_args &args);
 
 /**
  * write args into out

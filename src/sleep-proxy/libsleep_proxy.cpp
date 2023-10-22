@@ -73,7 +73,7 @@ void set_signal(const int signum, const struct sigaction &sa) {
 /**
  * Adds from args the IPs to the machine and setups the firewall
  */
-std::vector<Scope_guard> setup_firewall_and_ips(const Args &args) {
+std::vector<Scope_guard> setup_firewall_and_ips(const Host_args &args) {
   std::vector<Scope_guard> guards;
   for (auto const &ip : args.address) {
     // setup firewall first, some services might respond
@@ -96,7 +96,7 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Args &args) {
  */
 std::tuple<Pcap_wrapper::Loop_end_reason, std::vector<uint8_t>, IP_address,
            IP_address>
-wait_and_listen(const Args &args) {
+wait_and_listen(const Host_args &args) {
   Pcap_wrapper pc("any");
 
   // guards to handle signals and address duplication
@@ -230,7 +230,7 @@ bool ping_and_wait(const std::string &iface, const IP_address &ip,
  * Puts everything together. Sets up firewall and IPs. Waits for an incoming
  * SYN packet and wakes the sleeping host via WOL
  */
-Emulate_host_status emulate_host(const Args &args) {
+Emulate_host_status emulate_host(const Host_args &args) {
   // setup firewall rules and add IPs to the interface
   std::vector<Scope_guard> locks(setup_firewall_and_ips(args));
   // wait until upon an incoming connection
