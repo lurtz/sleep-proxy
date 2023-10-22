@@ -37,7 +37,7 @@ bool ping_ips(const std::string &iface, const Container &ips) {
                      [](std::future<bool> &f) { return f.get(); });
 }
 
-void thread_main(const Args &args) {
+void thread_main(const Host_args &args) {
   bool loop = true;
   while (!is_signaled() && loop) {
     log_string(LOG_INFO, "ping " + args.hostname);
@@ -69,18 +69,18 @@ int main(int argc, char *argv[]) {
   try {
     setup_signals();
     auto argss = read_commandline(argc, argv);
-    if (argss.empty()) {
+    if (argss.host_args.empty()) {
       log_string(LOG_ERR, "no configuration given");
       return EXIT_FAILURE;
     }
-    if (argss.at(0).syslog) {
+    if (argss.syslog) {
       std::span<char *> const args{argv, static_cast<size_t>(argc)};
       setup_log(args[0], 0, LOG_DAEMON);
     }
     std::vector<std::thread> threads;
-    threads.reserve(argss.size());
-    for (auto &args : argss) {
-      threads.emplace_back(thread_main, std::move(args));
+    threads.reserve(argss.host_args.size());
+    for (auto const &args : argss.host_args) {
+      threads.emplace_back(thread_main, args);
     }
     std::for_each(std::begin(threads), std::end(threads), [](std::thread &t) {
       if (t.joinable()) {

@@ -21,18 +21,18 @@
 
 int main(int argc, char *argv[]) {
   std::span<char *> const args{argv, static_cast<size_t>(argc)};
-  std::vector<Args> argss(read_commandline(argc, argv));
-  if (argss.empty()) {
+  Args argss(read_commandline(argc, argv));
+  if (argss.host_args.empty()) {
     log_string(LOG_ERR, "no configuration given");
     return EXIT_FAILURE;
   }
-  if (argss.at(0).syslog) {
+  if (argss.syslog) {
     setup_log(args[0], 0, LOG_DAEMON);
   }
-  log_string(LOG_INFO, argss.at(0));
+  log_string(LOG_INFO, argss.host_args.at(0));
   setup_signals();
   try {
-    emulate_host(argss.at(0));
+    emulate_host(argss.host_args.at(0));
   } catch (std::exception &e) {
     log(LOG_ERR, "what: %s", e.what());
   } catch (...) {

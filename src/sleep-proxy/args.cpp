@@ -22,6 +22,7 @@
 #include "wol.h"
 #include <fstream>
 #include <getopt.h>
+#include <ios>
 #include <stdexcept>
 
 namespace {
@@ -35,10 +36,7 @@ const std::string def_hostname;
 const std::string def_ping_tries = "5";
 const std::string def_wol_method = "ethernet";
 
-// NOLINTNEXTLINE(cppcoreguidelines-avoid-non-const-global-variables)
-bool to_syslog = false;
-
-Args read_args(std::ifstream &file) {
+Host_args read_args(std::ifstream &file) {
   std::string interface = def_iface;
   std::vector<std::string> address;
   std::vector<std::string> ports;
@@ -88,9 +86,9 @@ Args read_args(std::ifstream &file) {
   return {interface, address, ports, mac, hostname, ping_tries, wol_method};
 }
 
-std::vector<Args> read_file(const std::string &filename) {
+std::vector<Host_args> read_file(const std::string &filename) {
   std::ifstream file(filename);
-  std::vector<Args> ret_val;
+  std::vector<Host_args> ret_val;
   std::string line;
   while (std::getline(file, line) && line.substr(0, 4) != "host") {
   }
@@ -101,18 +99,16 @@ std::vector<Args> read_file(const std::string &filename) {
 }
 } // namespace
 
-void reset() { to_syslog = false; }
-
-Args::Args() : interface {
-}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0}, wol_method{},
-    syslog(to_syslog) {
+Host_args::Host_args() : interface {
+}, address{}, ports{}, mac{{0}}, hostname{}, ping_tries{0}, wol_method{} {
 }
 
-Args::Args(const std::string &interface_,
-           const std::vector<std::string> &addresss_,
-           const std::vector<std::string> &ports_, const std::string &mac_,
-           const std::string &hostname_, const std::string &ping_tries_,
-           const std::string &wol_method_)
+Host_args::Host_args(const std::string &interface_,
+                     const std::vector<std::string> &addresss_,
+                     const std::vector<std::string> &ports_,
+                     const std::string &mac_, const std::string &hostname_,
+                     const std::string &ping_tries_,
+                     const std::string &wol_method_)
     : interface(validate_iface(interface_)),
       address(parse_items(addresss_, parse_ip)),
       ports(parse_items(ports_, str_to_integral<uint16_t>)),
@@ -120,7 +116,7 @@ Args::Args(const std::string &interface_,
       hostname(test_characters(hostname_, iface_chars + "-",
                                "invalid token in hostname: " + hostname_)),
       ping_tries(str_to_integral<unsigned int>(ping_tries_)),
-      wol_method(parse_wol_method(wol_method_)), syslog(to_syslog) {
+      wol_method(parse_wol_method(wol_method_)) {
   if (address.empty()) {
     throw std::runtime_error("no ip address given");
   }
@@ -145,7 +141,7 @@ void print_help() {
 }
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
-std::vector<Args> read_commandline(const int argc, char *const argv[]) {
+Args read_commandline(const int argc, char *const argv[]) {
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
   static const option long_options[] = {
       {"help", no_argument, nullptr, 'h'},
@@ -154,7 +150,10 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
       {nullptr, 0, nullptr, 0}};
   int option_index = 0;
   int c = -1;
-  std::vector<Args> ret_val;
+  std::vector<Host_args> ret_val;
+
+  bool to_syslog = false;
+
   // read cmd line arguments and checks them
   // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
   while ((c = getopt_long(argc, argv, "hc:s", long_options, &option_index)) !=
@@ -178,15 +177,21 @@ std::vector<Args> read_commandline(const int argc, char *const argv[]) {
       break;
     }
   }
-  return ret_val;
+  return {std::move(ret_val), to_syslog};
+}
+
+std::ostream &operator<<(std::ostream &out, const Host_args &args) {
+  out << "Host_args(interface = " << args.interface << ", address = "
+      << args.address << ", ports = " << args.ports
+      << ", mac = " << binary_to_mac(args.mac)
+      << ", hostname = " << args.hostname
+      << ", print_tries = " << args.ping_tries
+      << ", wol_method = " << args.wol_method << ")";
+  return out;
 }
 
 std::ostream &operator<<(std::ostream &out, const Args &args) {
-  out << "Args(interface = " << args.interface << ", address = " << args.address
-      << ", ports = " << args.ports << ", mac = " << binary_to_mac(args.mac)
-      << ", hostname = " << args.hostname
-      << ", print_tries = " << args.ping_tries
-      << ", wol_method = " << args.wol_method << ", syslog = " << args.syslog
-      << ")";
+  out << "Args(host_args = [" << args.host_args
+      << "], syslog = " << std::boolalpha << args.syslog << ")";
   return out;
 }

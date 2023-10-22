@@ -24,13 +24,12 @@
 #include <string>
 #include <vector>
 
-void reset();
 void print_help();
 
 /**
  * Parses and checks the input of the command line arguments
  */
-struct Args {
+struct Host_args {
   /** the interface to use */
   const std::string interface;
   /** addresses to listen on */
@@ -42,18 +41,28 @@ struct Args {
   const std::string hostname;
   const unsigned int ping_tries;
   const Wol_method wol_method;
-  const bool &syslog;
 
-  Args();
+  Host_args();
 
-  Args(const std::string &interface_, const std::vector<std::string> &addresss_,
-       const std::vector<std::string> &ports_, const std::string &mac_,
-       const std::string &hostname_, const std::string &ping_tries_,
-       const std::string &wol_method_);
+  Host_args(const std::string &interface_,
+            const std::vector<std::string> &addresss_,
+            const std::vector<std::string> &ports_, const std::string &mac_,
+            const std::string &hostname_, const std::string &ping_tries_,
+            const std::string &wol_method_);
+};
+
+struct Args {
+  const std::vector<Host_args> host_args;
+  const bool syslog;
 };
 
 // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
-std::vector<Args> read_commandline(int argc, char *const argv[]);
+Args read_commandline(int argc, char *const argv[]);
+
+/**
+ * write args into out
+ */
+std::ostream &operator<<(std::ostream &out, const Host_args &args);
 
 /**
  * write args into out
