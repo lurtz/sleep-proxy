@@ -42,6 +42,19 @@ struct Host_args {
   std::string hostname{};
   unsigned int ping_tries{};
   Wol_method wol_method{};
+
+  Host_args() = default;
+
+  Host_args(std::string interface_, std::vector<IP_address> address_,
+            std::vector<uint16_t> ports_, ether_addr mac_,
+            std::string hostname_, unsigned int ping_tries_,
+            Wol_method wol_method_)
+      : interface {
+    std::move(interface_)
+  }, address{std::move(address_)}, ports{std::move(ports_)}, mac{mac_},
+      hostname{std::move(hostname_)}, ping_tries{ping_tries_},
+      wol_method{wol_method_} {
+  }
 };
 
 struct Args {
