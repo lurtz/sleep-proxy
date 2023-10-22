@@ -171,9 +171,9 @@ public:
     input_args.interface = "lo";
     input_args.compare();
     input_args.interface = "lo,eth0";
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::runtime_error);
     input_args.interface = "eth0;";
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::runtime_error);
   }
 
   void test_addresses() {
@@ -186,28 +186,28 @@ public:
     input_args.addresses = std::vector<std::string>{"::1/128"};
     ::compare(input_args.to_expected(), args1);
     input_args.addresses = std::vector<std::string>{"::1/128;"};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::runtime_error);
     input_args.addresses = std::vector<std::string>{""};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::invalid_argument);
     input_args.addresses = std::vector<std::string>{};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::runtime_error);
   }
 
   void test_ports() {
     input_args.ports = std::vector<std::string>{"123"};
     input_args.compare();
     input_args.ports = std::vector<std::string>{"123456789"};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::out_of_range);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::out_of_range);
     input_args.ports = std::vector<std::string>{"66000"};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::out_of_range);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::out_of_range);
     input_args.ports = std::vector<std::string>{"12345;"};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::invalid_argument);
     input_args.ports = std::vector<std::string>{"garbage"};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::invalid_argument);
     input_args.ports = std::vector<std::string>{""};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::invalid_argument);
     input_args.ports = std::vector<std::string>{};
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::runtime_error);
   }
 
   void test_mac() {
@@ -221,26 +221,26 @@ public:
     input_args.mac = "1:2:3:4:5:6";
     ::compare(input_args.to_expected(), args1);
     input_args.mac = "";
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::runtime_error);
   }
 
   void test_hostname() {
     input_args.hostname = "asdf,.-";
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::runtime_error);
   }
 
   void test_ping_tries() {
     input_args.ping_tries = "1111111111111111111111";
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::out_of_range);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::out_of_range);
     input_args.ping_tries = "";
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::invalid_argument);
   }
 
   void test_wol_method() {
     input_args.wol_method = "unknown";
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::invalid_argument);
     input_args.wol_method = "";
-    CPPUNIT_ASSERT_THROW(input_args.to_args(), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)input_args.to_args(), std::invalid_argument);
   }
 
   static void test_syslog() {
