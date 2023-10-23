@@ -23,13 +23,15 @@
 #include <string>
 
 static auto const base_10 = int{10};
-int64_t stoll_with_checks(const std::string &s, int base = base_10);
-uint64_t stoull_with_checks(const std::string &s, int base = base_10);
+[[nodiscard]] int64_t stoll_with_checks(const std::string &s,
+                                        int base = base_10);
+[[nodiscard]] uint64_t stoull_with_checks(const std::string &s,
+                                          int base = base_10);
 
 /** range check for signed target types */
 template <typename R, typename T,
           typename std::enable_if<std::is_signed<T>::value>::type * = nullptr>
-bool within_bounds(const T &val) noexcept {
+[[nodiscard]] bool within_bounds(const T &val) noexcept {
   return std::numeric_limits<R>::lowest() <= val &&
          val <= std::numeric_limits<R>::max();
 }
@@ -37,26 +39,27 @@ bool within_bounds(const T &val) noexcept {
 /** range check for unsigned target types */
 template <typename R, typename T,
           typename std::enable_if<std::is_unsigned<T>::value>::type * = nullptr>
-bool within_bounds(const T &val) noexcept {
+[[nodiscard]] bool within_bounds(const T &val) noexcept {
   return val <= std::numeric_limits<R>::max();
 }
 
 /** convert to signed types */
 template <typename T,
           typename std::enable_if<std::is_signed<T>::value>::type * = nullptr>
-int64_t str_to_integral_helper(const std::string &string) {
+[[nodiscard]] int64_t str_to_integral_helper(const std::string &string) {
   return stoll_with_checks(string);
 }
 
 /** convert to unsigned types */
 template <typename T,
           typename std::enable_if<std::is_unsigned<T>::value>::type * = nullptr>
-uint64_t str_to_integral_helper(const std::string &string) {
+[[nodiscard]] uint64_t str_to_integral_helper(const std::string &string) {
   return stoull_with_checks(string);
 }
 
 /** converts string to any integral type */
-template <typename T> T str_to_integral(const std::string &string) {
+template <typename T>
+[[nodiscard]] T str_to_integral(const std::string &string) {
   auto value = str_to_integral_helper<T>(string);
   if (!within_bounds<T>(value)) {
     std::string mess = "value " + to_string(value) + " not in range " +
@@ -67,4 +70,4 @@ template <typename T> T str_to_integral(const std::string &string) {
   return static_cast<T>(value);
 }
 
-std::string uint32_t_to_eight_hex_chars(uint32_t i) noexcept;
+[[nodiscard]] std::string uint32_t_to_eight_hex_chars(uint32_t i) noexcept;

@@ -30,7 +30,7 @@ class Socket {
   int sock;
 
 protected:
-  int fd() const;
+  [[nodiscard]] int fd() const;
 
 public:
   /** open a socket */
@@ -70,8 +70,8 @@ public:
    * send buf to dest_addr
    */
   template <typename Sockaddr>
-  ssize_t send_to(const std::vector<uint8_t> &buf, int flags,
-                  Sockaddr &&sockaddr) {
+  void send_to(const std::vector<uint8_t> &buf, int flags,
+               Sockaddr &&sockaddr) {
     ssize_t sent_bytes = sendto(
         sock, buf.data(), buf.size(), flags,
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
@@ -80,12 +80,11 @@ public:
       throw std::runtime_error(std::string("sendto() failed: ") +
                                strerror(errno));
     }
-    return sent_bytes;
   }
 
   void ioctl(unsigned long req_number, ifreq &ifr) const;
 
-  int get_ifindex(const std::string &iface) const;
+  [[nodiscard]] int get_ifindex(const std::string &iface) const;
 
-  ether_addr get_hwaddr(const std::string &iface) const;
+  [[nodiscard]] ether_addr get_hwaddr(const std::string &iface) const;
 };

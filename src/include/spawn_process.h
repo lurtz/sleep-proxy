@@ -23,10 +23,11 @@
 #include <string>
 #include <type_traits>
 
-uint8_t wait_until_pid_exits(const pid_t &pid);
+[[nodiscard]] uint8_t wait_until_pid_exits(const pid_t &pid);
 
-uint8_t spawn_wrapper(std::vector<char *> params, File_descriptor const &in,
-                      File_descriptor const &out);
+[[nodiscard]] uint8_t spawn_wrapper(std::vector<char *> params,
+                                    File_descriptor const &in,
+                                    File_descriptor const &out);
 
 template <typename Container>
 uint8_t spawn(Container &&cmd, File_descriptor const &in = File_descriptor(),

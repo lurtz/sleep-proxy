@@ -42,30 +42,30 @@ struct Link_layer {
   Link_layer(size_t header_length, ether_addr source, uint16_t payload_protocol,
              std::string info);
 
-  size_t header_length() const;
+  [[nodiscard]] size_t header_length() const;
 
-  uint16_t payload_protocol() const;
+  [[nodiscard]] uint16_t payload_protocol() const;
 
-  std::string get_info() const;
+  [[nodiscard]] std::string get_info() const;
 
-  ether_addr source() const;
+  [[nodiscard]] ether_addr source() const;
 };
 
 std::ostream &operator<<(std::ostream &out, const Link_layer &ll);
 
-std::vector<uint8_t> create_ethernet_header(const ether_addr &dmac,
-                                            const ether_addr &smac,
-                                            uint16_t type);
+[[nodiscard]] std::vector<uint8_t>
+create_ethernet_header(const ether_addr &dmac, const ether_addr &smac,
+                       uint16_t type);
 
-std::vector<uint8_t> to_vector(const ether_addr &mac);
+[[nodiscard]] std::vector<uint8_t> to_vector(const ether_addr &mac);
 
-ether_addr mac_to_binary(const std::string &mac);
+[[nodiscard]] ether_addr mac_to_binary(const std::string &mac);
 
-std::string binary_to_mac(const ether_addr &mac);
+[[nodiscard]] std::string binary_to_mac(const ether_addr &mac);
 
 template <typename iterator>
-std::unique_ptr<Link_layer> parse_linux_cooked_capture(iterator data,
-                                                       iterator end) {
+[[nodiscard]] std::unique_ptr<Link_layer>
+parse_linux_cooked_capture(iterator data, iterator end) {
   // see https://www.tcpdump.org/linktypes/LINKTYPE_LINUX_SLL.html
   check_type_and_range(data, end, Link_layer::lcc_header_size);
   std::advance(data, 2);
@@ -99,7 +99,8 @@ std::unique_ptr<Link_layer> parse_linux_cooked_capture(iterator data,
 }
 
 template <typename iterator>
-std::unique_ptr<Link_layer> parse_ethernet(iterator data, iterator end) {
+[[nodiscard]] std::unique_ptr<Link_layer> parse_ethernet(iterator data,
+                                                         iterator end) {
   size_t const header_size = 14;
   check_type_and_range(data, end, header_size);
   ether_addr ether_dhost{};
@@ -120,7 +121,8 @@ std::unique_ptr<Link_layer> parse_ethernet(iterator data, iterator end) {
 }
 
 template <typename iterator>
-std::unique_ptr<Link_layer> parse_VLAN_Header(iterator data, iterator end) {
+[[nodiscard]] std::unique_ptr<Link_layer> parse_VLAN_Header(iterator data,
+                                                            iterator end) {
   size_t const header_size = 4;
   check_type_and_range(data, end, header_size);
   std::advance(data, 2);
@@ -133,8 +135,8 @@ std::unique_ptr<Link_layer> parse_VLAN_Header(iterator data, iterator end) {
 }
 
 template <typename iterator>
-std::unique_ptr<Link_layer> parse_link_layer(const int type, iterator data,
-                                             iterator end) {
+[[nodiscard]] std::unique_ptr<Link_layer>
+parse_link_layer(const int type, iterator data, iterator end) {
   switch (type) {
   case DLT_LINUX_SLL:
     return parse_linux_cooked_capture(data, end);

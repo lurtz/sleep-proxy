@@ -24,13 +24,14 @@
 #include <string>
 #include <thread>
 
-std::string get_mac(std::string const &iface);
+[[nodiscard]] std::string get_mac(std::string const &iface);
 
 using Is_ip_occupied =
     std::function<bool(std::string const &, IP_address const &)>;
 
-bool contains_mac_different_from_given(std::string mac,
-                                       std::vector<std::string> const &lines);
+[[nodiscard]] bool
+contains_mac_different_from_given(std::string mac,
+                                  std::vector<std::string> const &lines);
 
 void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
                           Is_ip_occupied const &is_ip_occupied,
@@ -45,11 +46,14 @@ struct Ip_neigh_checker {
 
   explicit Ip_neigh_checker(std::string mac);
 
-  static bool is_ipv4_present(std::string const &iface, IP_address const &ip);
+  [[nodiscard]] static bool is_ipv4_present(std::string const &iface,
+                                            IP_address const &ip);
 
-  bool is_ipv6_present(std::string const &iface, IP_address const &ip) const;
+  [[nodiscard]] bool is_ipv6_present(std::string const &iface,
+                                     IP_address const &ip) const;
 
-  bool operator()(std::string const &iface, IP_address const &ip) const;
+  [[nodiscard]] bool operator()(std::string const &iface,
+                                IP_address const &ip) const;
 };
 
 struct Duplicate_address_watcher {
@@ -75,7 +79,7 @@ struct Duplicate_address_watcher {
   operator=(Duplicate_address_watcher const &) = delete;
   Duplicate_address_watcher &operator=(Duplicate_address_watcher &&) = delete;
 
-  std::string operator()(Action action);
+  [[nodiscard]] std::string operator()(Action action);
 
   void stop_watcher();
 };

@@ -145,7 +145,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(ints, guard.cont);
     CPPUNIT_ASSERT_EQUAL(x, guard.ref);
 
-    CPPUNIT_ASSERT_THROW(guard(Action::del), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)guard(Action::del), std::runtime_error);
   }
 
   static void test_temp_ip() {

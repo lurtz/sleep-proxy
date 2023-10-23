@@ -179,7 +179,7 @@ public:
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::unset ==
                    pcap.get_end_reason());
     CPPUNIT_ASSERT(!daw.loop);
-    { daw(Action::add); }
+    CPPUNIT_ASSERT_EQUAL(std::string{}, daw(Action::add));
     std::this_thread::sleep_for(sleep_100);
     CPPUNIT_ASSERT(Pcap_wrapper::Loop_end_reason::signal ==
                    pcap.get_end_reason());

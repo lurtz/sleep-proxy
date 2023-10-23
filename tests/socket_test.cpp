@@ -54,7 +54,8 @@ struct Socket_listen : public Socket {
     return data;
   }
 
-  template <typename Optval> Optval get_sock_opt(int level, int optname) const {
+  template <typename Optval>
+  [[nodiscard]] Optval get_sock_opt(int level, int optname) const {
     Optval optval;
     socklen_t optlen = sizeof(Optval);
     const int ret_val = getsockopt(fd(), level, optname, &optval, &optlen);
@@ -147,7 +148,7 @@ public:
     CPPUNIT_ASSERT_EQUAL(std::string("0:0:0:0:0:0"), binary_to_mac(ea));
 
     CPPUNIT_ASSERT(1 < s0.get_ifindex("enp0s25"));
-    CPPUNIT_ASSERT_THROW(s0.get_ifindex("eth0"), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)s0.get_ifindex("eth0"), std::runtime_error);
   }
 
   static void test_set_sock_opt() {

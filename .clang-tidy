@@ -19,7 +19,11 @@ Checks:          'clang-diagnostic-*,
                   # min and max values at some functions have the same type and trigger check,
                   -readability-suspicious-call-argument,
                   # many variables have a short name, too hard to fix,
-                  -readability-identifier-length'
+                  -readability-identifier-length,
+                  # triggered when using structs defined by C / POSIX,
+                  -cppcoreguidelines-pro-type-union-access,
+                  # too many code atm,
+                  -cppcoreguidelines-avoid-const-or-ref-data-members'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 AnalyzeTemporaryDtors: false

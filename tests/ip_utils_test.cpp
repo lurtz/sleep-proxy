@@ -56,7 +56,7 @@ public:
         parse_items(std::vector<std::string>(), str_to_integral<int>).empty());
 
     CPPUNIT_ASSERT_THROW(
-        parse_items(std::vector<std::string>{""}, str_to_integral<int>),
+        (void)parse_items(std::vector<std::string>{""}, str_to_integral<int>),
         std::invalid_argument);
   }
 };

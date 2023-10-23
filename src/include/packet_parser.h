@@ -37,7 +37,8 @@ std::ostream &operator<<(std::ostream &out, const basic_headers &headers);
 /**
  * Extracts the Ethernet, IP and TCP/UDP headers from packet
  * */
-basic_headers get_headers(int type, const std::vector<u_char> &packet);
+[[nodiscard]] basic_headers get_headers(int type,
+                                        const std::vector<u_char> &packet);
 
 /**
  * Saves the lower 3 layers and all the data which has been intercepted
