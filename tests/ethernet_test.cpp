@@ -85,9 +85,9 @@ class Ethernet_test : public CppUnit::TestFixture {
 
 public:
   void test_parse_lcc_not_supported() {
-    CPPUNIT_ASSERT_THROW(parse_link_layer(DLT_LINUX_SLL,
-                                          std::begin(lcc_not_supported),
-                                          std::end(lcc_not_supported)),
+    CPPUNIT_ASSERT_THROW((void)parse_link_layer(DLT_LINUX_SLL,
+                                                std::begin(lcc_not_supported),
+                                                std::end(lcc_not_supported)),
                          std::runtime_error);
   }
 
@@ -113,20 +113,23 @@ public:
   }
 
   void test_parse_lcc_ipv4_2() {
-    CPPUNIT_ASSERT_THROW(parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_2),
-                                          std::end(lcc_ipv4_2)),
+    CPPUNIT_ASSERT_THROW((void)parse_link_layer(DLT_LINUX_SLL,
+                                                std::begin(lcc_ipv4_2),
+                                                std::end(lcc_ipv4_2)),
                          std::length_error);
   }
 
   void test_parse_lcc_ipv4_3() {
-    CPPUNIT_ASSERT_THROW(parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_3),
-                                          std::end(lcc_ipv4_3)),
+    CPPUNIT_ASSERT_THROW((void)parse_link_layer(DLT_LINUX_SLL,
+                                                std::begin(lcc_ipv4_3),
+                                                std::end(lcc_ipv4_3)),
                          std::length_error);
   }
 
   void test_parse_lcc_ipv4_too_short() {
-    CPPUNIT_ASSERT_THROW(parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_0),
-                                          std::end(lcc_ipv4_0) - 1),
+    CPPUNIT_ASSERT_THROW((void)parse_link_layer(DLT_LINUX_SLL,
+                                                std::begin(lcc_ipv4_0),
+                                                std::end(lcc_ipv4_0) - 1),
                          std::length_error);
   }
 
@@ -159,16 +162,16 @@ public:
   }
 
   void test_parse_ethernet_ipv4_too_short() {
-    CPPUNIT_ASSERT_THROW(parse_link_layer(DLT_EN10MB,
-                                          std::begin(ethernet_ipv4_0),
-                                          std::end(ethernet_ipv4_0) - 1),
+    CPPUNIT_ASSERT_THROW((void)parse_link_layer(DLT_EN10MB,
+                                                std::begin(ethernet_ipv4_0),
+                                                std::end(ethernet_ipv4_0) - 1),
                          std::length_error);
   }
 
   void test_parse_ethernet_ipv6_too_short() {
-    CPPUNIT_ASSERT_THROW(parse_link_layer(DLT_EN10MB,
-                                          std::begin(ethernet_ipv6_0),
-                                          std::end(ethernet_ipv6_0) - 1),
+    CPPUNIT_ASSERT_THROW((void)parse_link_layer(DLT_EN10MB,
+                                                std::begin(ethernet_ipv6_0),
+                                                std::end(ethernet_ipv6_0) - 1),
                          std::length_error);
   }
 
@@ -185,14 +188,16 @@ public:
   }
 
   void test_parse_vlan_ipv4_too_short() {
-    CPPUNIT_ASSERT_THROW(parse_link_layer(ETHERTYPE_VLAN, std::begin(vlan_ipv4),
-                                          std::end(vlan_ipv4) - 1),
+    CPPUNIT_ASSERT_THROW((void)parse_link_layer(ETHERTYPE_VLAN,
+                                                std::begin(vlan_ipv4),
+                                                std::end(vlan_ipv4) - 1),
                          std::length_error);
   }
 
   void test_parse_vlan_ipv6_too_short() {
-    CPPUNIT_ASSERT_THROW(parse_link_layer(ETHERTYPE_VLAN, std::begin(vlan_ipv6),
-                                          std::end(vlan_ipv6) - 1),
+    CPPUNIT_ASSERT_THROW((void)parse_link_layer(ETHERTYPE_VLAN,
+                                                std::begin(vlan_ipv6),
+                                                std::end(vlan_ipv6) - 1),
                          std::length_error);
   }
 
@@ -280,11 +285,15 @@ public:
     CPPUNIT_ASSERT(std::equal(std::begin(expected_mac), std::end(expected_mac),
                               std::begin(binary1.ether_addr_octet)));
 
-    CPPUNIT_ASSERT_THROW(mac_to_binary("0011aacd6543"), std::runtime_error);
-    CPPUNIT_ASSERT_THROW(mac_to_binary("011AaCd6543"), std::runtime_error);
-    CPPUNIT_ASSERT_THROW(mac_to_binary("0:11::Cd:05:43"), std::runtime_error);
-    CPPUNIT_ASSERT_THROW(mac_to_binary("0:11::Cd:5:43"), std::runtime_error);
-    CPPUNIT_ASSERT_THROW(mac_to_binary("fdsafdsa"), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)mac_to_binary("0011aacd6543"),
+                         std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)mac_to_binary("011AaCd6543"),
+                         std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)mac_to_binary("0:11::Cd:05:43"),
+                         std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)mac_to_binary("0:11::Cd:5:43"),
+                         std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)mac_to_binary("fdsafdsa"), std::runtime_error);
   }
 
   static void test_binary_to_mac() {

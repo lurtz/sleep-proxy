@@ -125,7 +125,7 @@ template <typename Cont, typename T> struct Ptr_guard {
   std::mutex &cont_mutex;
   T &ref;
 
-  std::string operator()(const Action action) {
+  [[nodiscard]] std::string operator()(const Action action) {
     const std::lock_guard<std::mutex> lock(cont_mutex);
     switch (action) {
     case Action::add:
@@ -148,18 +148,21 @@ template <typename Cont, typename T> struct Ptr_guard {
 };
 
 template <typename Cont, typename T>
-Ptr_guard<Cont, T> ptr_guard(Cont &cont, std::mutex &cont_mutex, T &ref) {
+[[nodiscard]] Ptr_guard<Cont, T> ptr_guard(Cont &cont, std::mutex &cont_mutex,
+                                           T &ref) {
   return Ptr_guard<Cont, T>{cont, cont_mutex, ref};
 }
 
 template <typename FUNCTOR> struct Moveable_functor_wrapper {
   std::shared_ptr<FUNCTOR> functor;
 
-  std::string operator()(const Action action) { return (*functor)(action); }
+  [[nodiscard]] std::string operator()(const Action action) {
+    return (*functor)(action);
+  }
 };
 
 template <typename MOVEABLE, typename... ARGS>
-Moveable_functor_wrapper<MOVEABLE> make_copyable(ARGS... args) {
+[[nodiscard]] Moveable_functor_wrapper<MOVEABLE> make_copyable(ARGS... args) {
   return Moveable_functor_wrapper<MOVEABLE>{
       std::make_shared<MOVEABLE>(args...)};
 }

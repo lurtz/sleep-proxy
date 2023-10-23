@@ -41,14 +41,14 @@ struct File_descriptor {
 
   void close();
 
-  std::vector<std::string> read() const;
+  [[nodiscard]] std::vector<std::string> read() const;
 };
 
-bool file_exists(const std::string &filename);
+[[nodiscard]] bool file_exists(const std::string &filename);
 
-std::tuple<File_descriptor, File_descriptor>
+[[nodiscard]] std::tuple<File_descriptor, File_descriptor>
 get_self_pipes(bool close_on_exec = true);
 
-int get_fd_from_stream(FILE *stream);
+[[nodiscard]] int get_fd_from_stream(FILE *stream);
 
 void flush_file(FILE *stream);

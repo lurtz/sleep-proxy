@@ -56,12 +56,13 @@ public:
     compare_ip("fe80::12/34%lo", AF_INET6, "fe80::12", subnet_size_34);
     compare_ip("::1", AF_INET6, "::1", subnet_size_128);
     compare_ip("::1/66", AF_INET6, "::1", subnet_size_66);
-    CPPUNIT_ASSERT_THROW(parse_ip("bla/bla/"), std::invalid_argument);
-    CPPUNIT_ASSERT_THROW(parse_ip("fe80::123::123"), std::runtime_error);
-    CPPUNIT_ASSERT_THROW(parse_ip("10"), std::runtime_error);
-    CPPUNIT_ASSERT_THROW(parse_ip("fe80::123/200"), std::invalid_argument);
-    CPPUNIT_ASSERT_THROW(parse_ip("10.0.0.1/200"), std::invalid_argument);
-    CPPUNIT_ASSERT_THROW(parse_ip(""), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)parse_ip("bla/bla/"), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)parse_ip("fe80::123::123"), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)parse_ip("10"), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)parse_ip("fe80::123/200"),
+                         std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)parse_ip("10.0.0.1/200"), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)parse_ip(""), std::invalid_argument);
   }
 
   static void test_stream_operator() {

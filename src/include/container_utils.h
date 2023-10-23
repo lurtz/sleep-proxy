@@ -24,10 +24,10 @@
 #include <string>
 #include <vector>
 
-template <typename T> T identity(const T &t) { return t; }
+template <typename T> [[nodiscard]] T identity(const T &t) { return t; }
 
 template <typename Container, typename Func>
-std::string join(Container c, Func fun, const std::string &sep) {
+[[nodiscard]] std::string join(Container c, Func fun, const std::string &sep) {
   using input_type = typename std::result_of<decltype(fun)(
       typename Container::value_type)>::type;
   std::stringstream ss;
@@ -41,8 +41,8 @@ std::string join(Container c, Func fun, const std::string &sep) {
 }
 
 template <typename T, typename Alloc>
-std::vector<T, Alloc> operator+(std::vector<T, Alloc> &&lhs,
-                                const std::vector<T, Alloc> &rhs) {
+[[nodiscard]] std::vector<T, Alloc>
+operator+(std::vector<T, Alloc> &&lhs, const std::vector<T, Alloc> &rhs) {
   lhs.insert(std::end(lhs), std::begin(rhs), std::end(rhs));
   return std::move(lhs);
 }
@@ -57,8 +57,8 @@ void check_type_and_range(iterator data, iterator end, size_t const min_size) {
 }
 
 template <typename Container>
-std::vector<Container> split(Container const &c,
-                             typename Container::value_type const &delimiter) {
+[[nodiscard]] std::vector<Container>
+split(Container const &c, typename Container::value_type const &delimiter) {
   typename Container::const_iterator iter{std::begin(c)};
   std::vector<Container> results;
   while (iter != std::end(c)) {

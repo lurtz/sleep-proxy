@@ -29,15 +29,15 @@ struct IP_address {
   } address;
   uint8_t subnet;
 
-  std::string pure() const;
+  [[nodiscard]] std::string pure() const;
 
-  std::string with_subnet() const;
+  [[nodiscard]] std::string with_subnet() const;
 
-  bool operator==(const IP_address &rhs) const;
+  [[nodiscard]] bool operator==(const IP_address &rhs) const;
 };
 
-IP_address parse_ip(const std::string &ip);
+[[nodiscard]] IP_address parse_ip(const std::string &ip);
 
-std::string get_pure_ip(const IP_address &ip);
+[[nodiscard]] std::string get_pure_ip(const IP_address &ip);
 
 std::ostream &operator<<(std::ostream &out, const IP_address &ipa);

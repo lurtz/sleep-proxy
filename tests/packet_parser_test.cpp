@@ -104,14 +104,14 @@ public:
   void test_parse_ethernet_ipv4_tcp_too_short() {
     std::vector<uint8_t> ethernet_ipv4_tcp_short(
         std::begin(ethernet_ipv4_tcp), std::end(ethernet_ipv4_tcp) - 1);
-    CPPUNIT_ASSERT_THROW(get_headers(DLT_EN10MB, ethernet_ipv4_tcp_short),
+    CPPUNIT_ASSERT_THROW((void)get_headers(DLT_EN10MB, ethernet_ipv4_tcp_short),
                          std::length_error);
   }
 
   void test_parse_ethernet_ipv6_tcp_too_short() {
     std::vector<uint8_t> ethernet_ipv6_tcp_short(
         std::begin(ethernet_ipv6_tcp), std::end(ethernet_ipv6_tcp) - 1);
-    CPPUNIT_ASSERT_THROW(get_headers(DLT_EN10MB, ethernet_ipv6_tcp_short),
+    CPPUNIT_ASSERT_THROW((void)get_headers(DLT_EN10MB, ethernet_ipv6_tcp_short),
                          std::length_error);
   }
 
@@ -136,14 +136,14 @@ public:
   void test_parse_lcc_ipv4_udp_too_short() {
     std::vector<uint8_t> lcc_ipv4_udp_short(std::begin(lcc_ipv4_udp),
                                             std::end(lcc_ipv4_udp) - 1);
-    CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_ipv4_udp_short),
+    CPPUNIT_ASSERT_THROW((void)get_headers(DLT_LINUX_SLL, lcc_ipv4_udp_short),
                          std::length_error);
   }
 
   void test_parse_lcc_ipv6_tcp_too_short() {
     std::vector<uint8_t> lcc_ipv6_tcp_short(std::begin(lcc_ipv6_tcp),
                                             std::end(lcc_ipv6_tcp) - 1);
-    CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp_short),
+    CPPUNIT_ASSERT_THROW((void)get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp_short),
                          std::length_error);
   }
 
@@ -160,8 +160,9 @@ public:
   void test_parse_lcc_vlan_ipv4_udp_too_short() {
     std::vector<uint8_t> lcc_vlan_ipv4_udp_short(
         std::begin(lcc_vlan_ipv4_udp), std::end(lcc_vlan_ipv4_udp) - 1);
-    CPPUNIT_ASSERT_THROW(get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp_short),
-                         std::length_error);
+    CPPUNIT_ASSERT_THROW(
+        (void)get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp_short),
+        std::length_error);
   }
 
   static void test_parse_unknown_link_layer() {

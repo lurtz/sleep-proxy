@@ -45,27 +45,27 @@ struct ip {
      IP_address destination, uint8_t payload_protocol);
 
   /** which IP version */
-  Version version() const;
+  [[nodiscard]] Version version() const;
 
   /** length of IP header in bytes */
-  size_t header_length() const;
+  [[nodiscard]] size_t header_length() const;
 
   /** source address */
-  IP_address source() const;
+  [[nodiscard]] IP_address source() const;
 
   /** destination address */
-  IP_address destination() const;
+  [[nodiscard]] IP_address destination() const;
 
   /** which protocol header to expect next */
-  uint8_t payload_protocol() const;
+  [[nodiscard]] uint8_t payload_protocol() const;
 };
 
 /** writes ip into out which every information available to the base class */
 std::ostream &operator<<(std::ostream &out, const ip &ip);
 
 template <typename iterator>
-bool ethernet_payload_and_ip_version_dont_match(uint16_t const type,
-                                                iterator data) {
+[[nodiscard]] bool
+ethernet_payload_and_ip_version_dont_match(uint16_t const type, iterator data) {
   static_assert(std::is_same<typename iterator::value_type, uint8_t>::value,
                 "container has to carry u_char or uint8_t");
 
@@ -78,10 +78,10 @@ bool ethernet_payload_and_ip_version_dont_match(uint16_t const type,
   return result;
 }
 
-IP_address get_ipv6_address(const in6_addr &addr);
+[[nodiscard]] IP_address get_ipv6_address(const in6_addr &addr);
 
 template <typename iterator>
-std::unique_ptr<ip> parse_ipv4(iterator data, iterator end) {
+[[nodiscard]] std::unique_ptr<ip> parse_ipv4(iterator data, iterator end) {
   check_type_and_range(data, end, ip::ipv4_header_size);
   uint8_t const ip_vhl = *data;
   size_t const header_length = static_cast<uint8_t>((ip_vhl & 0x0f) * 4);
@@ -101,7 +101,7 @@ std::unique_ptr<ip> parse_ipv4(iterator data, iterator end) {
 }
 
 template <typename iterator>
-std::unique_ptr<ip> parse_ipv6(iterator data, iterator end) {
+[[nodiscard]] std::unique_ptr<ip> parse_ipv6(iterator data, iterator end) {
   check_type_and_range(data, end, ip::ipv6_header_size);
   // NOLINTNEXTLINE
   std::advance(data, 6);
@@ -120,7 +120,8 @@ std::unique_ptr<ip> parse_ipv6(iterator data, iterator end) {
 }
 
 template <typename iterator>
-std::unique_ptr<ip> parse_ip(uint16_t const type, iterator data, iterator end) {
+[[nodiscard]] std::unique_ptr<ip> parse_ip(uint16_t const type, iterator data,
+                                           iterator end) {
   // check wether type and the version the ip headers matches
   if (ethernet_payload_and_ip_version_dont_match(type, data)) {
     return nullptr;

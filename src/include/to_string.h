@@ -36,23 +36,24 @@ std::ostream &operator<<(std::ostream &out, std::vector<T, Alloc> v) {
   return out;
 }
 
-std::string to_string(char const *t);
+[[nodiscard]] std::string to_string(char const *t);
 
-template <typename T> std::string to_string(T &&t) {
+template <typename T> [[nodiscard]] std::string to_string(T &&t) {
   std::stringstream ss;
   ss << t;
   return ss.str();
 }
 
-bool contains_only_valid_characters(const std::string &input,
-                                    const std::string &valid_chars);
+[[nodiscard]] bool
+contains_only_valid_characters(const std::string &input,
+                               const std::string &valid_chars);
 
 std::string test_characters(const std::string &input,
                             const std::string &valid_chars,
                             const std::string &error_message);
 
 template <typename Container>
-std::vector<std::vector<std::string::value_type>>
+[[nodiscard]] std::vector<std::vector<std::string::value_type>>
 to_vector_strings(Container &&cont) {
   auto const conv = [](std::string const &s) {
     auto result =
@@ -69,7 +70,7 @@ to_vector_strings(Container &&cont) {
 }
 
 template <typename Container>
-std::vector<char *> get_c_string_array(Container &cont) {
+[[nodiscard]] std::vector<char *> get_c_string_array(Container &cont) {
   static_assert(std::is_same<typename std::decay<Container>::type::value_type,
                              std::vector<std::string::value_type>>::value,
                 "container has to carry std::vector<std::string::value_type>");

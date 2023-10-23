@@ -24,17 +24,19 @@
 
 void setup_signals();
 
-bool is_signaled();
+[[nodiscard]] bool is_signaled();
 
 void reset_signaled();
 
-std::string get_bindable_ip(const std::string &iface, const std::string &ip);
+[[nodiscard]] std::string get_bindable_ip(const std::string &iface,
+                                          const std::string &ip);
 
-std::string rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
-                                            const std::vector<uint16_t> &ports);
+[[nodiscard]] std::string
+rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
+                                const std::vector<uint16_t> &ports);
 
-bool ping_and_wait(const std::string &iface, const IP_address &ip,
-                   unsigned int tries);
+[[nodiscard]] bool ping_and_wait(const std::string &iface, const IP_address &ip,
+                                 unsigned int tries);
 
 enum class Emulate_host_status {
   success,

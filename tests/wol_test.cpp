@@ -71,8 +71,9 @@ public:
   }
 
   static void test_parse_invalid_wol_method() {
-    CPPUNIT_ASSERT_THROW(parse_wol_method("unknown"), std::invalid_argument);
-    CPPUNIT_ASSERT_THROW(parse_wol_method(""), std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)parse_wol_method("unknown"),
+                         std::invalid_argument);
+    CPPUNIT_ASSERT_THROW((void)parse_wol_method(""), std::invalid_argument);
   }
 
   static void test_ostream_operator() {

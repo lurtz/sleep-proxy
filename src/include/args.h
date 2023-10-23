@@ -62,14 +62,14 @@ struct Args {
   const bool syslog;
 };
 
-Host_args parse_host_args(const std::string &interface_,
-                          const std::vector<std::string> &addresss_,
-                          const std::vector<std::string> &ports_,
-                          const std::string &mac_, const std::string &hostname_,
-                          const std::string &ping_tries_,
-                          const std::string &wol_method_);
+[[nodiscard]] Host_args
+parse_host_args(const std::string &interface_,
+                const std::vector<std::string> &addresss_,
+                const std::vector<std::string> &ports_, const std::string &mac_,
+                const std::string &hostname_, const std::string &ping_tries_,
+                const std::string &wol_method_);
 
-Args read_commandline(std::span<char *> const &args);
+[[nodiscard]] Args read_commandline(std::span<char *> const &args);
 
 /**
  * write args into out

@@ -71,9 +71,9 @@ public:
   }
 
   void test_ipv4_tcp_0_too_short() {
-    CPPUNIT_ASSERT_THROW(
-        parse_ip(ip::ipv4, std::begin(ipv4_tcp_0), std::end(ipv4_tcp_0) - 1),
-        std::length_error);
+    CPPUNIT_ASSERT_THROW((void)parse_ip(ip::ipv4, std::begin(ipv4_tcp_0),
+                                        std::end(ipv4_tcp_0) - 1),
+                         std::length_error);
   }
 
   void test_ipv4_tcp_1() {
@@ -83,9 +83,9 @@ public:
   }
 
   void test_ipv4_tcp_1_too_short() {
-    CPPUNIT_ASSERT_THROW(
-        parse_ip(ip::ipv4, std::begin(ipv4_tcp_1), std::end(ipv4_tcp_1) - 1),
-        std::length_error);
+    CPPUNIT_ASSERT_THROW((void)parse_ip(ip::ipv4, std::begin(ipv4_tcp_1),
+                                        std::end(ipv4_tcp_1) - 1),
+                         std::length_error);
   }
 
   void test_ipv4_udp() {
@@ -109,7 +109,7 @@ public:
 
   void test_ipv6_udp_too_short() {
     CPPUNIT_ASSERT_THROW(
-        parse_ip(ip::ipv6, std::begin(ipv6_udp), std::end(ipv6_udp) - 1),
+        (void)parse_ip(ip::ipv6, std::begin(ipv6_udp), std::end(ipv6_udp) - 1),
         std::length_error);
   }
 

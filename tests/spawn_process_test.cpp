@@ -38,7 +38,7 @@ public:
 
   static void test_wait_until_pid_exits() {
     pid_t pid = -1;
-    CPPUNIT_ASSERT_THROW(wait_until_pid_exits(pid), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)wait_until_pid_exits(pid), std::runtime_error);
   }
 
   static void test_without_exceptions() {

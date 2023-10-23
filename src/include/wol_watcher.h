@@ -21,7 +21,8 @@
 #include <string>
 #include <thread>
 
-bool is_magic_packet(std::vector<uint8_t> const &data, ether_addr const &mac);
+[[nodiscard]] bool is_magic_packet(std::vector<uint8_t> const &data,
+                                   ether_addr const &mac);
 
 void break_on_magic_packet(const struct pcap_pkthdr *header,
                            const u_char *packet, ether_addr const &mac,
@@ -50,7 +51,7 @@ struct Wol_watcher {
   Wol_watcher &operator=(Wol_watcher const &) = delete;
   Wol_watcher &operator=(Wol_watcher &&) = delete;
 
-  std::string operator()(Action action);
+  [[nodiscard]] std::string operator()(Action action);
 
   void stop();
 };

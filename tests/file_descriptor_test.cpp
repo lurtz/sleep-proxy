@@ -62,7 +62,7 @@ public:
     CPPUNIT_ASSERT(!file_exists(filename));
   }
 
-  int open_file() const {
+  [[nodiscard]] int open_file() const {
     return open(filename.c_str(), O_CREAT | O_RDWR,
                 S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   }
@@ -188,7 +188,7 @@ public:
   static void test_fd_read() {
     File_descriptor fd;
     fd.fd = std::numeric_limits<int>::max();
-    CPPUNIT_ASSERT_THROW(fd.read(), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)fd.read(), std::runtime_error);
     fd.fd = -1;
   }
 
@@ -225,9 +225,9 @@ public:
              0,       {0},     nullptr, 0,       nullptr, nullptr,
              nullptr, nullptr, 0,       0,       {0}};
     bla._fileno = -1;
-    CPPUNIT_ASSERT_THROW(get_fd_from_stream(&bla), std::runtime_error);
+    CPPUNIT_ASSERT_THROW((void)get_fd_from_stream(&bla), std::runtime_error);
 
-    CPPUNIT_ASSERT_THROW(get_fd_from_stream(nullptr), std::domain_error);
+    CPPUNIT_ASSERT_THROW((void)get_fd_from_stream(nullptr), std::domain_error);
   }
 
   static void test_duplicate_file_descriptors() {

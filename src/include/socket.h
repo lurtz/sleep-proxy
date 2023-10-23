@@ -30,7 +30,7 @@ class Socket {
   int sock;
 
 protected:
-  int fd() const;
+  [[nodiscard]] int fd() const;
 
 public:
   /** open a socket */
@@ -85,7 +85,7 @@ public:
 
   void ioctl(unsigned long req_number, ifreq &ifr) const;
 
-  int get_ifindex(const std::string &iface) const;
+  [[nodiscard]] int get_ifindex(const std::string &iface) const;
 
-  ether_addr get_hwaddr(const std::string &iface) const;
+  [[nodiscard]] ether_addr get_hwaddr(const std::string &iface) const;
 };

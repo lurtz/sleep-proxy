@@ -48,7 +48,7 @@ protected:
   /** this is only present to run tests as non-root, do not use */
   Pcap_wrapper();
 
-  Loop_end_reason get_end_reason() const;
+  [[nodiscard]] Loop_end_reason get_end_reason() const;
 
 public:
   static auto const default_snaplen = int{65000};
@@ -67,9 +67,9 @@ public:
   Pcap_wrapper &operator=(Pcap_wrapper &&) = default;
 
   /** tell if the first header is ethernet, unix socket, ... */
-  int get_datalink() const;
+  [[nodiscard]] int get_datalink() const;
 
-  std::string get_verbose_datalink() const;
+  [[nodiscard]] std::string get_verbose_datalink() const;
 
   /** sets a BPF (berkeley packet filter) filter the pcap instance */
   void set_filter(const std::string &filter);
