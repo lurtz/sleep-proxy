@@ -51,6 +51,7 @@ struct Socket_listen : public Socket {
                                strerror(errno));
     }
     data.resize(static_cast<size_t>(read_data));
+    int x;
     return data;
   }
 
