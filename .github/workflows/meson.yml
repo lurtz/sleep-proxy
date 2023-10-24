@@ -37,9 +37,10 @@ jobs:
     - name: Configure Meson
       run: meson setup --buildtype debug -Db_coverage=true ${{github.workspace}}/build ${{github.workspace}}
 
-    - uses: root-project/gcc-problem-matcher-improved@master
-      with:
-        build-directory: ${{github.workspace}}/build
+    - uses: ammaraskar/gcc-problem-matcher@master
+    # - uses: root-project/gcc-problem-matcher-improved@v0.0.1-alpha.1
+    #   with:
+    #     build-directory: ${{github.workspace}}/build
 
     - name: Build
       run: meson compile -C ${{github.workspace}}/build
