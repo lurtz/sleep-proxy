@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install dependencies for minimal build
       run: sudo apt install meson libpcap-dev
@@ -29,7 +29,7 @@ jobs:
       pull-requests: write
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install dependencies for complete build
       run: sudo apt install meson libpcap-dev valgrind libcppunit-dev arping lcov
@@ -60,7 +60,7 @@ jobs:
         sanitizer: ['address,undefined', 'thread']
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install dependencies for build
       run: sudo apt install meson libpcap-dev libcppunit-dev
