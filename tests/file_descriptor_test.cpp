@@ -18,7 +18,6 @@
 
 #include "packet_test_utils.h"
 #include "spawn_process.h"
-#include "to_string.h"
 #include <container_utils.h>
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -219,11 +218,7 @@ public:
   }
 
   static void test_get_fd_from_stream() {
-    FILE bla{0,       nullptr, nullptr, nullptr, nullptr, nullptr,
-             nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-             nullptr, nullptr, 0,       0,       0,       0,
-             0,       {0},     nullptr, 0,       nullptr, nullptr,
-             nullptr, nullptr, 0,       0,       {0}};
+    FILE bla{};
     bla._fileno = -1;
     CPPUNIT_ASSERT_THROW((void)get_fd_from_stream(&bla), std::runtime_error);
 
