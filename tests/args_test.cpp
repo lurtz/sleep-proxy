@@ -16,6 +16,7 @@
 
 #include "args.h"
 
+#include "error_suppression.h"
 #include "ethernet.h"
 #include "ip_address.h"
 #include "ip_utils.h"
@@ -63,7 +64,9 @@ parse_ports(std::vector<std::string> const &ports) {
   optind = 0;
   auto vs = to_vector_strings(params);
   auto cvs = get_c_string_array(vs);
+  IGNORE_CLANG_WARNING
   return read_commandline({cvs.data(), params.size()});
+  REENABLE_CLANG_WARNING
 }
 
 [[nodiscard]] Args get_args_vec(bool const use_syslog) {
