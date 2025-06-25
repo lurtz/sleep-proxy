@@ -21,16 +21,16 @@
 #include "log.h"
 #include <arpa/inet.h>
 #include <cstdint>
+#include <iterator>
 #include <memory>
 #include <net/ethernet.h>
-#include <stdexcept>
-#include <string>
-#include <vector>
+#include <netinet/in.h>
 
 struct ip {
-  static auto const ipv4_header_size = uint8_t{20};
-  static auto const ipv6_header_size = uint8_t{40};
-  static auto const ipv6_address_size_byte = uint8_t{16};
+  constexpr static auto ipv4_header_size = uint8_t{20};
+  constexpr static auto ipv6_header_size = uint8_t{40};
+  constexpr static auto ipv4_address_size_byte = uint8_t{4};
+  constexpr static auto ipv6_address_size_byte = uint8_t{16};
 
   enum Version { ipv4 = ETHERTYPE_IP, ipv6 = ETHERTYPE_IPV6 };
   enum Payload { TCP = IPPROTO_TCP, UDP = IPPROTO_UDP };
@@ -89,11 +89,13 @@ template <typename iterator>
   std::advance(data, 9);
   uint8_t const ip_p = *data;
   std::advance(data, 3);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  struct in_addr const ip_src = *reinterpret_cast<in_addr const *>(&(*data));
-  std::advance(data, 4);
-  // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
-  struct in_addr const ip_dst = *reinterpret_cast<in_addr const *>(&(*data));
+  struct in_addr ip_src{};
+  std::copy(data, data + ip::ipv4_address_size_byte,
+            reinterpret_cast<uint8_t *>(&ip_src));
+  std::advance(data, ip::ipv4_address_size_byte);
+  struct in_addr ip_dst{};
+  std::copy(data, data + ip::ipv4_address_size_byte,
+            reinterpret_cast<uint8_t *>(&ip_dst));
   static auto const no_subnet = uint8_t{32};
   return std::make_unique<ip>(ip::ipv4, header_length,
                               IP_address{AF_INET, {ip_src}, no_subnet},

@@ -15,12 +15,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "ip.h"
-#include "to_string.h"
 #include <arpa/inet.h>
-
-uint8_t const ip::ipv4_header_size;
-uint8_t const ip::ipv6_header_size;
-uint8_t const ip::ipv6_address_size_byte;
 
 inline std::ostream &operator<<(std::ostream &out, const ip::Version &v) {
   switch (v) {
