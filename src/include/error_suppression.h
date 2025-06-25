@@ -16,6 +16,8 @@
 
 #pragma once
 
+// NOLINTBEGIN(clang-diagnostic-unused-macros)
+// macros are used in cpp files
 #ifdef __clang__
 // the unsage buffer usage warning only pops up when dealing with the arguments
 // of main() where it cannot be avoided
@@ -29,3 +31,4 @@
 
 #define REENABLE_CLANG_WARNING
 #endif
+// NOLINTEND(clang-diagnostic-unused-macros)
