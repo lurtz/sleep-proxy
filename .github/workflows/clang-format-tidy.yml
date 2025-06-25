@@ -26,7 +26,7 @@ jobs:
           style: file
           database: ${{github.workspace}}/build
           tidy-checks: ''
-          version: 14
+          version: 19
           thread-comments: true
 
       - name: Fail fast?!
