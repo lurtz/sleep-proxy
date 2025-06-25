@@ -68,7 +68,7 @@ void test_ip(const std::unique_ptr<ip> &ip, const ip::Version v,
 }
 
 void test_ll(const std::unique_ptr<Link_layer> &ll, const size_t length,
-             const std::string &src, const ip::Version payload_protocol,
+             const std::string &src, const Payload_protocol payload_protocol,
              const std::string &info) {
   CPPUNIT_ASSERT(ll != nullptr);
   CPPUNIT_ASSERT_EQUAL(length, ll->header_length());
