@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
     for (auto const &hargs : argss.host_args) {
       threads.emplace_back(thread_main, hargs);
     }
-    std::for_each(std::begin(threads), std::end(threads), [](std::thread &t) {
+    std::ranges::for_each(threads, [](std::thread &t) {
       if (t.joinable()) {
         t.join();
       }

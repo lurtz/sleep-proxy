@@ -60,7 +60,7 @@ std::string ipv6_to_u32_rule(IP_address const &ip) {
   uint32_t const step = 4;
   uint32_t pos = 0;
   auto const address_int_to_rule = [&](uint32_t ipv6_int) {
-    return to_string(base + step * (pos++)) + "=0x" +
+    return to_string(base + (step * (pos++))) + "=0x" +
            uint32_t_to_eight_hex_chars(ipv6_int);
   };
   std::vector<uint32_t> const ipv6_address{

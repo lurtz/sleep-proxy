@@ -54,8 +54,8 @@ parse_ips(std::vector<std::string> const &addresses) {
 [[nodiscard]] std::vector<uint16_t>
 parse_ports(std::vector<std::string> const &ports) {
   std::vector<uint16_t> ret_val(ports.size());
-  std::transform(std::begin(ports), std::end(ports), std::begin(ret_val),
-                 [](const std::string &s) { return std::stoi(s); });
+  std::ranges::transform(ports, std::begin(ret_val),
+                         [](const std::string &s) { return std::stoi(s); });
   return ret_val;
 }
 
@@ -72,7 +72,7 @@ parse_ports(std::vector<std::string> const &ports) {
 [[nodiscard]] Args get_args_vec(bool const use_syslog) {
   std::vector<std::string> params{"args_test"};
   if (use_syslog) {
-    std::cout << "syslog" << std::endl;
+    std::cout << "syslog" << '\n';
     params.emplace_back("--syslog");
   }
   return get_args(params);
@@ -137,9 +137,13 @@ class Args_test : public CppUnit::TestFixture {
   CPPUNIT_TEST(test_read_command_line_weird_option);
   CPPUNIT_TEST_SUITE_END();
 
-  Input_args input_args{
-      "lo", {"fe80::123/64"}, {"12345"}, "1:12:34:45:67:89", {},
-      "5",  "ethernet"};
+  Input_args input_args{.interface = "lo",
+                        .addresses = {"fe80::123/64"},
+                        .ports = {"12345"},
+                        .mac = "1:12:34:45:67:89",
+                        .hostname = {},
+                        .ping_tries = "5",
+                        .wol_method = "ethernet"};
 
 public:
   void setUp() override { input_args.compare(); }
@@ -240,33 +244,33 @@ public:
     CPPUNIT_ASSERT_EQUAL(static_cast<unsigned long>(3), args.host_args.size());
 
     Input_args const arg0{
-        "lo",
-        std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"},
-        std::vector<std::string>{"12345", "23456"},
-        "1:12:34:45:67:89",
-        "test.lan",
-        "5",
-        "ethernet"};
+        .interface = "lo",
+        .addresses = std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"},
+        .ports = std::vector<std::string>{"12345", "23456"},
+        .mac = "1:12:34:45:67:89",
+        .hostname = "test.lan",
+        .ping_tries = "5",
+        .wol_method = "ethernet"};
     ::compare(arg0.to_expected(), args.host_args.at(0));
 
     Input_args const arg1{
-        "lo",
-        std::vector<std::string>{"10.1.2.3/16", "fe80::de:ad/64"},
-        std::vector<std::string>{"22"},
-        "FF:EE:DD:CC:BB:AA",
-        "test2",
-        "1",
-        "udp"};
+        .interface = "lo",
+        .addresses = std::vector<std::string>{"10.1.2.3/16", "fe80::de:ad/64"},
+        .ports = std::vector<std::string>{"22"},
+        .mac = "FF:EE:DD:CC:BB:AA",
+        .hostname = "test2",
+        .ping_tries = "1",
+        .wol_method = "udp"};
     ::compare(arg1.to_expected(), args.host_args.at(1));
 
     Input_args const arg2{
-        "lo",
-        std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"},
-        std::vector<std::string>{"12345", "23456"},
-        "1:12:34:45:67:89",
-        "",
-        "5",
-        "ethernet"};
+        .interface = "lo",
+        .addresses = std::vector<std::string>{"10.0.0.1/16", "fe80::123/64"},
+        .ports = std::vector<std::string>{"12345", "23456"},
+        .mac = "1:12:34:45:67:89",
+        .hostname = "",
+        .ping_tries = "5",
+        .wol_method = "ethernet"};
     ::compare(arg2.to_expected(), args.host_args.at(2));
 
     auto args2 = get_args("watchhosts-empty");
@@ -319,21 +323,21 @@ public:
 
   static void test_ostream_operator_with_empty_args_without_syslog() {
     std::stringstream ss;
-    ss << Args{{}, false};
+    ss << Args{.host_args = {}, .syslog = false};
     CPPUNIT_ASSERT_EQUAL(std::string("Args(host_args = [], syslog = false)"),
                          ss.str());
   }
 
   static void test_ostream_operator_with_empty_args_with_syslog() {
     std::stringstream ss;
-    ss << Args{{}, true};
+    ss << Args{.host_args = {}, .syslog = true};
     CPPUNIT_ASSERT_EQUAL(std::string("Args(host_args = [], syslog = true)"),
                          ss.str());
   }
 
   void test_ostream_operator_with_initialized_args() {
     std::stringstream ss;
-    ss << Args{{input_args.to_args()}, false};
+    ss << Args{.host_args = {input_args.to_args()}, .syslog = false};
     CPPUNIT_ASSERT_EQUAL(
         std::string(
             "Args(host_args = [Host_args(interface = lo, address = "

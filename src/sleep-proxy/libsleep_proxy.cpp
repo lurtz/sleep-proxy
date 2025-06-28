@@ -79,12 +79,12 @@ std::vector<Scope_guard> setup_firewall_and_ips(const Host_args &args) {
     // setup firewall first, some services might respond
     // reject any incoming connection, except the ones to the
     // ports specified
-    guards.emplace_back(Reject_tp{ip, Reject_tp::TP::TCP});
-    guards.emplace_back(Reject_tp{ip, Reject_tp::TP::UDP});
+    guards.emplace_back(Reject_tp{.ip = ip, .tcp_udp = Reject_tp::TP::TCP});
+    guards.emplace_back(Reject_tp{.ip = ip, .tcp_udp = Reject_tp::TP::UDP});
     for (auto const &port : args.ports) {
-      guards.emplace_back(Drop_port{ip, port});
+      guards.emplace_back(Drop_port{.ip = ip, .port = port});
     }
-    guards.emplace_back(Temp_ip{args.interface, ip});
+    guards.emplace_back(Temp_ip{.iface = args.interface, .ip = ip});
   }
   return guards;
 }
@@ -205,7 +205,7 @@ rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
 }
 
 std::string get_bindable_ip(const std::string &iface, const std::string &ip) {
-  if (ip.find("fe80") == 0) {
+  if (ip.starts_with("fe80")) {
     return ip + '%' + iface;
   }
   return ip;

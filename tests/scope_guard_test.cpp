@@ -151,14 +151,14 @@ public:
   static void test_temp_ip() {
     IP_address ip = parse_ip("10.0.0.1/16");
     std::string iface{"eth0"};
-    Temp_ip ti{iface, ip};
+    Temp_ip ti{.iface = iface, .ip = ip};
     CPPUNIT_ASSERT_EQUAL("ip addr add " + ip.with_subnet() + " dev " + iface,
                          ti(Action::add));
     CPPUNIT_ASSERT_EQUAL("ip addr del " + ip.with_subnet() + " dev " + iface,
                          ti(Action::del));
 
     iface = "even more randomness";
-    Temp_ip ti2{iface, ip};
+    Temp_ip ti2{.iface = iface, .ip = ip};
     CPPUNIT_ASSERT_EQUAL("ip addr add " + ip.with_subnet() + " dev " + iface,
                          ti2(Action::add));
     CPPUNIT_ASSERT_EQUAL("ip addr del " + ip.with_subnet() + " dev " + iface,
@@ -168,7 +168,7 @@ public:
   static void test_drop_port() {
     IP_address ip = parse_ip("10.0.0.1/16");
     static const uint16_t port0{1234};
-    Drop_port op{ip, port0};
+    Drop_port op{.ip = ip, .port = port0};
     CPPUNIT_ASSERT_EQUAL(
         "iptables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
             std::to_string(static_cast<uint32_t>(port0)) + " -j DROP",
@@ -180,7 +180,7 @@ public:
 
     ip = parse_ip("fe80::affe");
     static const uint16_t port1 = 666;
-    Drop_port op2{ip, port1};
+    Drop_port op2{.ip = ip, .port = port1};
     CPPUNIT_ASSERT_EQUAL(
         "ip6tables -w -I INPUT -d " + ip.pure() + " -p tcp --syn --dport " +
             std::to_string(static_cast<uint32_t>(port1)) + " -j DROP",
@@ -194,7 +194,7 @@ public:
   static void test_reject_tp() {
     IP_address ip = parse_ip("10.0.0.1/16");
 
-    Reject_tp rt{ip, Reject_tp::TP::UDP};
+    Reject_tp rt{.ip = ip, .tcp_udp = Reject_tp::TP::UDP};
     CPPUNIT_ASSERT_EQUAL("iptables -w -I INPUT -d " + ip.pure() +
                              " -p udp -j REJECT",
                          rt(Action::add));
@@ -203,7 +203,7 @@ public:
                          rt(Action::del));
 
     ip = parse_ip("10.0.0.1/16");
-    Reject_tp rt2{ip, Reject_tp::TP::TCP};
+    Reject_tp rt2{.ip = ip, .tcp_udp = Reject_tp::TP::TCP};
     CPPUNIT_ASSERT_EQUAL("iptables -w -I INPUT -d " + ip.pure() +
                              " -p tcp -j REJECT",
                          rt2(Action::add));
@@ -212,7 +212,7 @@ public:
                          rt2(Action::del));
 
     ip = parse_ip("2001::dead:affe/16");
-    Reject_tp rt3{ip, Reject_tp::TP::TCP};
+    Reject_tp rt3{.ip = ip, .tcp_udp = Reject_tp::TP::TCP};
     CPPUNIT_ASSERT_EQUAL("ip6tables -w -I INPUT -d " + ip.pure() +
                              " -p tcp -j REJECT",
                          rt3(Action::add));

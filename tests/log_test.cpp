@@ -35,7 +35,7 @@ public:
   }
   static void test_log_fmt() {
     static auto const i = uint8_t{42};
-    static auto const f = double{3.14};
+    static auto const f = 3.14;
     syslog(LOG_DEBUG, "bla %d, %f", i, f);
     log(LOG_DEBUG, "bla %d, %f", i, f);
     log(LOG_NOTICE, "bla %d, %f", i, f);

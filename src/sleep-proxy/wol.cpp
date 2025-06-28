@@ -24,6 +24,8 @@
 #include <linux/if_ether.h>
 #include <linux/if_packet.h>
 
+#include <algorithm>
+
 std::vector<uint8_t> create_wol_payload(const ether_addr &mac) {
   const std::vector<uint8_t> binary_mac = to_vector(mac);
   static auto const mb = uint8_t{0xff};
@@ -68,7 +70,10 @@ void wol_udp(const ether_addr &mac) {
   // Broadcast it to the LAN.
   Socket sock(AF_INET, SOCK_DGRAM);
   sock.set_sock_opt(SOL_SOCKET, SO_BROADCAST, 1);
-  const sockaddr_in broadcast_port9{AF_INET, htons(9), {INADDR_BROADCAST}, {0}};
+  const sockaddr_in broadcast_port9{.sin_family = AF_INET,
+                                    .sin_port = htons(9),
+                                    .sin_addr = {INADDR_BROADCAST},
+                                    .sin_zero = {0}};
   sock.send_to(binary_data, 0, broadcast_port9);
 }
 
@@ -79,14 +84,20 @@ void wol_ethernet(const std::string &iface, const ether_addr &mac) {
   Socket sock(PF_PACKET, SOCK_RAW, 0);
   sock.set_sock_opt(SOL_SOCKET, SO_BROADCAST, 1);
 
-  sockaddr_ll broadcast_ll{0, 0, 0, 0, 0, 0, {}};
+  sockaddr_ll broadcast_ll{.sll_family = 0,
+                           .sll_protocol = 0,
+                           .sll_ifindex = 0,
+                           .sll_hatype = 0,
+                           .sll_pkttype = 0,
+                           .sll_halen = 0,
+                           .sll_addr = {}};
   broadcast_ll.sll_family = AF_PACKET;
   broadcast_ll.sll_ifindex = sock.get_ifindex(iface);
   broadcast_ll.sll_halen = ETH_ALEN;
   const ether_addr hw_addr = sock.get_hwaddr(iface);
-  std::copy(std::begin(hw_addr.ether_addr_octet),
-            std::end(hw_addr.ether_addr_octet),
-            std::begin(broadcast_ll.sll_addr));
+  std::ranges::copy(hw_addr.ether_addr_octet,
+
+                    std::begin(broadcast_ll.sll_addr));
 
   const std::vector<uint8_t> binary_data =
       create_ethernet_header(mac, hw_addr, 0x0842) + create_wol_payload(mac);

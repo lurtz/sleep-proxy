@@ -16,6 +16,7 @@
 
 #include <packet_test_utils.h>
 
+#include <algorithm>
 #include <container_utils.h>
 #include <cppunit/CompilerOutputter.h>
 #include <cppunit/extensions/HelperMacros.h>
@@ -117,12 +118,12 @@ Iface_Ips get_iface_ips(std::vector<std::string> const &ip_neigh_content) {
   };
 
   std::vector<std::string> not_stale_lines;
-  std::copy_if(std::begin(ip_neigh_content), std::end(ip_neigh_content),
-               std::back_inserter(not_stale_lines), is_ip_not_stale);
+  std::ranges::copy_if(ip_neigh_content, std::back_inserter(not_stale_lines),
+                       is_ip_not_stale);
 
   Iface_Ips iface_ip(not_stale_lines.size());
-  std::transform(std::begin(not_stale_lines), std::end(not_stale_lines),
-                 std::begin(iface_ip), create_iface_ip);
+  std::ranges::transform(not_stale_lines, std::begin(iface_ip),
+                         create_iface_ip);
 
   return iface_ip;
 }
@@ -158,7 +159,7 @@ Fd_restore::~Fd_restore() {
     duplicate_file_descriptors(m_backup_fd, m_fd);
   } catch (std::exception const &e) {
     std::cout << "Fd_restore::~Fd_restore() caught exception: " << e.what()
-              << std::endl;
+              << '\n';
   }
 }
 

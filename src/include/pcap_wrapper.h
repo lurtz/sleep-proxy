@@ -51,8 +51,8 @@ protected:
   [[nodiscard]] Loop_end_reason get_end_reason() const;
 
 public:
-  static auto const default_snaplen = int{65000};
-  static auto const default_timeout = int{1000};
+  static int const default_snaplen = 65000;
+  static int const default_timeout = 1000;
 
   /** open a pcap instance on iface */
   explicit Pcap_wrapper(std::string const &iface, int snaplen = default_snaplen,

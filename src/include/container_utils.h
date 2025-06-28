@@ -28,8 +28,8 @@ template <typename T> [[nodiscard]] T identity(const T &t) { return t; }
 
 template <typename Container, typename Func>
 [[nodiscard]] std::string join(Container c, Func fun, const std::string &sep) {
-  using input_type = typename std::result_of<decltype(fun)(
-      typename Container::value_type)>::type;
+  using input_type =
+      std::result_of_t<decltype(fun)(typename Container::value_type)>;
   std::stringstream ss;
   std::ostream_iterator<input_type> iter(ss, sep.c_str());
   if (std::begin(c) != std::end(c)) {
@@ -49,7 +49,7 @@ operator+(std::vector<T, Alloc> &&lhs, const std::vector<T, Alloc> &rhs) {
 
 template <typename iterator>
 void check_type_and_range(iterator data, iterator end, size_t const min_size) {
-  static_assert(std::is_same<typename iterator::value_type, uint8_t>::value,
+  static_assert(std::is_same_v<typename iterator::value_type, uint8_t>,
                 "container has to carry u_char or uint8_t");
   if (data >= end || static_cast<size_t>(std::distance(data, end)) < min_size) {
     throw std::length_error("not enough data");

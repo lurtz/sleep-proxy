@@ -66,7 +66,7 @@ std::ostream &operator<<(std::ostream &out, const ip &ip);
 template <typename iterator>
 [[nodiscard]] bool
 ethernet_payload_and_ip_version_dont_match(uint16_t const type, iterator data) {
-  static_assert(std::is_same<typename iterator::value_type, uint8_t>::value,
+  static_assert(std::is_same_v<typename iterator::value_type, uint8_t>,
                 "container has to carry u_char or uint8_t");
 
   auto const version = static_cast<uint8_t>(*data >> 4);
@@ -97,9 +97,11 @@ template <typename iterator>
   std::copy(data, data + ip::ipv4_address_size_byte,
             reinterpret_cast<uint8_t *>(&ip_dst));
   static auto const no_subnet = uint8_t{32};
-  return std::make_unique<ip>(ip::ipv4, header_length,
-                              IP_address{AF_INET, {ip_src}, no_subnet},
-                              IP_address{AF_INET, {ip_dst}, no_subnet}, ip_p);
+  return std::make_unique<ip>(
+      ip::ipv4, header_length,
+      IP_address{.family = AF_INET, .address = {ip_src}, .subnet = no_subnet},
+      IP_address{.family = AF_INET, .address = {ip_dst}, .subnet = no_subnet},
+      ip_p);
 }
 
 template <typename iterator>
