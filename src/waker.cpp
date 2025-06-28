@@ -14,6 +14,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "error_suppression.h"
 #include "ethernet.h"
 #include "ip_utils.h"
 #include "log.h"
@@ -38,7 +39,9 @@ int main(int argc, char *argv[]) {
   int count = 2;
   unsigned int mac_pos = 1;
   check_arguments(argc, count);
+  IGNORE_CLANG_WARNING
   std::span<char *> const args{argv, static_cast<size_t>(argc)};
+  REENABLE_CLANG_WARNING
   if (std::string("-i") == args[1]) {
     count += 2;
     mac_pos += 2;

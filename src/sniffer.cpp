@@ -14,6 +14,7 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "error_suppression.h"
 #include "ethernet.h"
 #include "log.h"
 #include "packet_parser.h"
@@ -70,7 +71,9 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
+  IGNORE_CLANG_WARNING
   std::span<char *> const args{argv, static_cast<size_t>(argc)};
+  REENABLE_CLANG_WARNING
 
   Pcap_wrapper pcap(args[1]);
   pcap.set_filter(args[2]);

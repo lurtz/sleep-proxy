@@ -31,8 +31,14 @@
 
 std::vector<uint8_t> to_binary(const std::string &hex);
 
+enum class Payload_protocol {
+  ipv4 = ETHERTYPE_IP,
+  ipv6 = ETHERTYPE_IPV6,
+  vlan = ETHERTYPE_VLAN
+};
+
 void test_ll(const std::unique_ptr<Link_layer> &ll, size_t length,
-             const std::string &src, ip::Version payload_protocol,
+             const std::string &src, Payload_protocol payload_protocol,
              const std::string &info);
 
 void test_ip(const std::unique_ptr<ip> &ip, ip::Version v,

@@ -94,21 +94,22 @@ public:
   void test_parse_lcc_loopback() {
     auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_loopback),
                                std::end(lcc_loopback));
-    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0", ip::ipv4,
-            "Linux cooked capture: src: 0:0:0:0:0:0");
+    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0",
+            Payload_protocol::ipv4, "Linux cooked capture: src: 0:0:0:0:0:0");
   }
 
   void test_parse_lcc_ipv4() {
     auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_0),
                                std::end(lcc_ipv4_0));
-    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0", ip::ipv4,
-            "Linux cooked capture: src: 0:0:0:0:0:0");
+    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0",
+            Payload_protocol::ipv4, "Linux cooked capture: src: 0:0:0:0:0:0");
   }
 
   void test_parse_lcc_ipv4_1() {
     auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv4_1),
                                std::end(lcc_ipv4_1));
-    test_ll(ll, Link_layer::lcc_header_size, "60:60:60:60:60:60", ip::ipv4,
+    test_ll(ll, Link_layer::lcc_header_size, "60:60:60:60:60:60",
+            Payload_protocol::ipv4,
             "Linux cooked capture: src: 60:60:60:60:60:60");
   }
 
@@ -136,28 +137,32 @@ public:
   void test_parse_lcc_ipv6() {
     auto ll = parse_link_layer(DLT_LINUX_SLL, std::begin(lcc_ipv6_0),
                                std::end(lcc_ipv6_0));
-    test_ll(ll, Link_layer::lcc_header_size, "61:62:63:64:65:66", ip::ipv6,
+    test_ll(ll, Link_layer::lcc_header_size, "61:62:63:64:65:66",
+            Payload_protocol::ipv6,
             "Linux cooked capture: src: 61:62:63:64:65:66");
   }
 
   void test_parse_ethernet_ipv4() {
     auto ll = parse_link_layer(DLT_EN10MB, std::begin(ethernet_ipv4_0),
                                std::end(ethernet_ipv4_0));
-    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0", ip::ipv4,
+    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0",
+            Payload_protocol::ipv4,
             "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
   }
 
   void test_parse_ethernet_ipv4_1() {
     auto ll = parse_link_layer(DLT_EN10MB, std::begin(ethernet_ipv4_1),
                                std::end(ethernet_ipv4_1));
-    test_ll(ll, Link_layer::ethernet_header_size, "a:b:c:d:e:f", ip::ipv4,
+    test_ll(ll, Link_layer::ethernet_header_size, "a:b:c:d:e:f",
+            Payload_protocol::ipv4,
             "Ethernet: dst = 11:2:33:4:55:6, src = a:b:c:d:e:f");
   }
 
   void test_parse_ethernet_ipv6() {
     auto ll = parse_link_layer(DLT_EN10MB, std::begin(ethernet_ipv6_0),
                                std::end(ethernet_ipv6_0));
-    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0", ip::ipv6,
+    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0",
+            Payload_protocol::ipv6,
             "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
   }
 
@@ -178,13 +183,13 @@ public:
   void test_parse_vlan_ipv4() {
     auto ll = parse_link_layer(ETHERTYPE_VLAN, std::begin(vlan_ipv4),
                                std::end(vlan_ipv4));
-    test_ll(ll, 4, "0:0:0:0:0:0", ip::ipv4, "VLAN Header");
+    test_ll(ll, 4, "0:0:0:0:0:0", Payload_protocol::ipv4, "VLAN Header");
   }
 
   void test_parse_vlan_ipv6() {
     auto ll = parse_link_layer(ETHERTYPE_VLAN, std::begin(vlan_ipv6),
                                std::end(vlan_ipv6));
-    test_ll(ll, 4, "0:0:0:0:0:0", ip::ipv6, "VLAN Header");
+    test_ll(ll, 4, "0:0:0:0:0:0", Payload_protocol::ipv6, "VLAN Header");
   }
 
   void test_parse_vlan_ipv4_too_short() {

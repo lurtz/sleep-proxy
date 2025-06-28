@@ -183,7 +183,7 @@ void replay_data(const std::string &iface, const int type,
 } // namespace
 
 void setup_signals() {
-  struct sigaction sa {};
+  struct sigaction sa{};
   memset(&sa, 0, sizeof(struct sigaction));
   // NOLINTNEXTLINE
   sa.sa_handler = signal_handler;
@@ -220,7 +220,7 @@ bool ping_and_wait(const std::string &iface, const IP_address &ip,
     ret_val = spawn(split(cmd, ' '));
   }
   if (ret_val != 0) {
-    log(LOG_ERR, "failed to ping ip %s after %d ping attempts",
+    log(LOG_ERR, "failed to ping ip %s after %u ping attempts",
         ip.pure().c_str(), tries);
   }
   return ret_val == 0;
