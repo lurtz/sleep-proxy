@@ -26,7 +26,6 @@ Checks:          'clang-diagnostic-*,
                   -cppcoreguidelines-avoid-const-or-ref-data-members'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
-AnalyzeTemporaryDtors: false
 FormatStyle:     none
 User:            lutz
 CheckOptions:
