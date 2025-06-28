@@ -60,6 +60,8 @@ jobs:
         lcov-file: ${{github.workspace}}/build/meson-logs/coverage.info
 
   fsanitize:
+    permissions:
+      contents: read
     strategy:
       matrix:
         sanitizer: ['address,undefined', 'thread']
