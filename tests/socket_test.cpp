@@ -91,13 +91,7 @@ public:
   static void test_ioctl_throws() {
     Socket s0(AF_INET, SOCK_DGRAM);
 
-    struct ifreq ifreq {
-      {{0}}, {
-        {
-          0, { 0 }
-        }
-      }
-    };
+    struct ifreq ifreq{{{0}}, {{0, {0}}}};
 
     CPPUNIT_ASSERT_THROW(s0.ioctl(0, ifreq), std::runtime_error);
   }
