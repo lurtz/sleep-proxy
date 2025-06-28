@@ -11,6 +11,9 @@ jobs:
   min-build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
     - uses: actions/checkout@v4
 
@@ -27,6 +30,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
+      contents: read
       pull-requests: write
 
     steps:
@@ -63,7 +67,12 @@ jobs:
     strategy:
       matrix:
         sanitizer: ['address,undefined', 'thread']
+
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     steps:
     - uses: actions/checkout@v4
 
