@@ -24,3 +24,21 @@
    ...
 }
 
+{
+   spawn_process_test calling ping causes false positive
+   Memcheck:Leak
+   ...
+   fun:calloc
+   fun:__trans_list_add
+   ...
+}
+
+{
+   spawn_process_test calling ping causes false positive
+   Memcheck:Leak
+   ...
+   fun:malloc
+   fun:strdup
+   fun:__trans_list_add
+   ...
+}

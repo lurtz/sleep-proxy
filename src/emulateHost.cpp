@@ -14,13 +14,16 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "error_suppression.h"
 #include "libsleep_proxy.h"
 #include "log.h"
 #include <cstdlib>
 #include <span>
 
 int main(int argc, char *argv[]) {
+  IGNORE_CLANG_WARNING
   std::span<char *> const args{argv, static_cast<size_t>(argc)};
+  REENABLE_CLANG_WARNING
   Args argss(read_commandline(args));
   if (argss.host_args.empty()) {
     log_string(LOG_ERR, "no configuration given");

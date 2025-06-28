@@ -16,9 +16,7 @@
 
 #include "packet_parser.h"
 
-#include "container_utils.h"
 #include "ethernet.h"
-#include "int_utils.h"
 #include "packet_test_utils.h"
 
 #include <cppunit/extensions/HelperMacros.h>
@@ -83,7 +81,8 @@ public:
     auto headers = get_headers(DLT_EN10MB, ethernet_ipv4_tcp);
 
     auto &ll = std::get<0>(headers);
-    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0", ip::ipv4,
+    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0",
+            Payload_protocol::ipv4,
             "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
 
     test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32",
@@ -94,7 +93,8 @@ public:
     auto headers = get_headers(DLT_EN10MB, ethernet_ipv6_tcp);
 
     auto &ll = std::get<0>(headers);
-    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0", ip::ipv6,
+    test_ll(ll, Link_layer::ethernet_header_size, "0:0:0:0:0:0",
+            Payload_protocol::ipv6,
             "Ethernet: dst = 0:0:0:0:0:0, src = 0:0:0:0:0:0");
 
     test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128",
@@ -118,8 +118,8 @@ public:
   void test_parse_lcc_ipv4_udp() {
     auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv4_udp);
     auto &ll = std::get<0>(headers);
-    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0", ip::ipv4,
-            "Linux cooked capture: src: 0:0:0:0:0:0");
+    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0",
+            Payload_protocol::ipv4, "Linux cooked capture: src: 0:0:0:0:0:0");
     test_ip(std::get<1>(headers), ip::ipv4, "127.0.0.1/32", "127.0.0.1/32",
             ip::ipv4_header_size, ip::UDP);
   }
@@ -127,8 +127,8 @@ public:
   void test_parse_lcc_ipv6_tcp() {
     auto headers = get_headers(DLT_LINUX_SLL, lcc_ipv6_tcp);
     auto &ll = std::get<0>(headers);
-    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0", ip::ipv6,
-            "Linux cooked capture: src: 0:0:0:0:0:0");
+    test_ll(ll, Link_layer::lcc_header_size, "0:0:0:0:0:0",
+            Payload_protocol::ipv6, "Linux cooked capture: src: 0:0:0:0:0:0");
     test_ip(std::get<1>(headers), ip::ipv6, "::1/128", "::1/128",
             ip::ipv6_header_size, ip::TCP);
   }
@@ -151,7 +151,7 @@ public:
     auto headers = get_headers(DLT_LINUX_SLL, lcc_vlan_ipv4_udp);
     auto &ll = std::get<0>(headers);
     test_ll(ll, Link_layer::lcc_header_size, "e8:de:27:55:a1:71",
-            static_cast<ip::Version>(ETHERTYPE_VLAN),
+            Payload_protocol::vlan,
             "Linux cooked capture: src: e8:de:27:55:a1:71");
     test_ip(std::get<1>(headers), ip::ipv4, "192.168.1.155/32",
             "79.143.179.211/32", ip::ipv4_header_size, ip::UDP);

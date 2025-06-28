@@ -15,6 +15,7 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "args.h"
+#include "error_suppression.h"
 #include "libsleep_proxy.h"
 #include "log.h"
 #include <algorithm>
@@ -23,7 +24,6 @@
 #include <future>
 #include <span>
 #include <thread>
-#include <type_traits>
 
 namespace {
 template <typename Container>
@@ -68,7 +68,9 @@ void thread_main(const Host_args &args) {
 int main(int argc, char *argv[]) {
   try {
     setup_signals();
+    IGNORE_CLANG_WARNING
     std::span<char *> const args{argv, static_cast<size_t>(argc)};
+    REENABLE_CLANG_WARNING
     auto argss = read_commandline(args);
     if (argss.host_args.empty()) {
       log_string(LOG_ERR, "no configuration given");
