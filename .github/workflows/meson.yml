@@ -57,7 +57,8 @@ jobs:
       if: ${{ github.event_name == 'pull_request' }}
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        lcov-file: ${{github.workspace}}/build/meson-logs/coverage.info
+        working-directory: ${{github.workspace}}
+        lcov-file: build/meson-logs/coverage.info
 
   fsanitize:
     strategy:
