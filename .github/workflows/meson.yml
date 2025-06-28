@@ -38,11 +38,11 @@ jobs:
       run: meson setup --buildtype debug -Db_coverage=true ${{github.workspace}}/build ${{github.workspace}}
 
     - uses: ammaraskar/gcc-problem-matcher@master
-    # - uses: root-project/gcc-problem-matcher-improved@v0.0.1-alpha.1
-    #   with:
-    #     build-directory: ${{github.workspace}}/build
 
     - name: Build
+      # meson uses relatives paths from the build directory
+      # This confuses the problem matcher, thus with sed the path is made appear to start
+      # from the source directory
       run: meson compile -C ${{github.workspace}}/build | sed -s 's/..\///'
 
     - name: Test
