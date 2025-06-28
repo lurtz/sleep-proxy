@@ -11,6 +11,9 @@ jobs:
   min-build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
     - uses: actions/checkout@v4
 
@@ -60,12 +63,15 @@ jobs:
         lcov-file: ${{github.workspace}}/build/meson-logs/coverage.info
 
   fsanitize:
-    permissions:
-      contents: read
     strategy:
       matrix:
         sanitizer: ['address,undefined', 'thread']
+
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
     steps:
     - uses: actions/checkout@v4
 
