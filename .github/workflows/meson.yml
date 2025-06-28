@@ -35,7 +35,7 @@ jobs:
       run: sudo apt install meson libpcap-dev valgrind libcppunit-dev arping lcov
 
     - name: Configure Meson
-      run: meson setup --buildtype debug -Db_coverage=true ${{github.workspace}}/build ${{github.workspace}}
+      run: CC=clang CXX=clang++ meson setup --buildtype debug -Db_coverage=true ${{github.workspace}}/build ${{github.workspace}}
 
     - name: Build
       run: meson compile -C ${{github.workspace}}/build
