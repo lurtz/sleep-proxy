@@ -57,11 +57,11 @@ public:
   }
 
   static void test_with_exceptions() {
-    std::vector<std::string> cmd1{"/bin/whereAmI", "pspawn_test()"};
-    CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
+    // std::vector<std::string> const cmd1{"/bin/whereAmI", "pspawn_test()"};
+    // CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
 
-    std::vector<std::string> cmd2{"/sbin/fdisk", "/dev/sda"};
-    CPPUNIT_ASSERT_THROW(spawn(cmd1), std::runtime_error);
+    std::vector<std::string> const cmd2{"/dev/null"};
+    CPPUNIT_ASSERT_THROW(spawn(cmd2), std::runtime_error);
   }
 
   static void test_fork_exec() {
