@@ -16,12 +16,9 @@
 
 #include "spawn_process.h"
 
-#include "packet_test_utils.h"
-
 #include <cppunit/extensions/HelperMacros.h>
 #include <cstring>
 #include <string>
-#include <thread>
 #include <unistd.h>
 
 class Spawn_process_test : public CppUnit::TestFixture {
