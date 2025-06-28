@@ -41,7 +41,7 @@ jobs:
       run: meson compile -C ${{github.workspace}}/build
 
     - name: Test
-      run: meson test -C ${{github.workspace}}/build --max-lines=10000
+      run: meson test -C ${{github.workspace}}/build
 
     - name: Create coverage
       working-directory: ${{github.workspace}}/build
@@ -71,4 +71,4 @@ jobs:
       run: meson compile -C ${{github.workspace}}/build
 
     - name: Test
-      run: meson test -C ${{github.workspace}}/build --max-lines=10000
+      run: meson test -C ${{github.workspace}}/build
