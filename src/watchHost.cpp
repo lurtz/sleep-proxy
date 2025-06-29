@@ -79,16 +79,11 @@ int main(int argc, char *argv[]) {
     if (argss.syslog) {
       setup_log(args[0], 0, LOG_DAEMON);
     }
-    std::vector<std::thread> threads;
+    std::vector<std::jthread> threads;
     threads.reserve(argss.host_args.size());
     for (auto const &hargs : argss.host_args) {
       threads.emplace_back(thread_main, hargs);
     }
-    std::ranges::for_each(threads, [](std::thread &t) {
-      if (t.joinable()) {
-        t.join();
-      }
-    });
   } catch (std::exception const &e) {
     log(LOG_ERR, "something wrong: %s\n", e.what());
   }
