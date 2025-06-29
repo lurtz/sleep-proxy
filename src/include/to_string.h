@@ -64,8 +64,7 @@ to_vector_strings(Container const &cont) {
 
   auto result = std::vector<std::vector<std::string::value_type>>{};
   result.reserve(cont.size());
-  std::transform(std::begin(cont), std::end(cont), std::back_inserter(result),
-                 conv);
+  std::ranges::transform(cont, std::back_inserter(result), conv);
   return result;
 }
 
@@ -75,9 +74,9 @@ template <typename Container>
                           std::vector<std::string::value_type>>
 {
   std::vector<std::string::value_type *> ch_ptr;
-  ch_ptr.reserve(cont.size());
-  std::transform(
-      std::begin(cont), std::end(cont), std::back_inserter(ch_ptr),
+  ch_ptr.reserve(cont.size() + 1);
+  std::ranges::transform(
+      cont, std::back_inserter(ch_ptr),
       [](std::vector<std::string::value_type> &s) { return s.data(); });
   // null termination
   ch_ptr.push_back(nullptr);
