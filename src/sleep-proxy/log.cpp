@@ -46,7 +46,8 @@ void setup_log(const std::string &ident, int option, int facility) {
 
 void log_string(int priority, char const *const t) { log(priority, "%s", t); }
 
-template <> void log_string<std::string>(const int priority, std::string &&t) {
+template <>
+void log_string<std::string>(const int priority, std::string const &t) {
   log(priority, "%s", t.c_str());
 }
 

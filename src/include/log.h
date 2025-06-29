@@ -27,10 +27,10 @@ void log(int priority, const char *format, ...)
 
 void log_string(int priority, char const *t);
 
-template <typename T> void log_string(int priority, T &&t);
+template <typename T> void log_string(int priority, T const &t);
 
-template <> void log_string<std::string>(int priority, std::string &&t);
+template <> void log_string<std::string>(int priority, std::string const &t);
 
-template <typename T> void log_string(const int priority, T &&t) {
-  log_string(priority, to_string(std::forward<T>(t)));
+template <typename T> void log_string(const int priority, T const &t) {
+  log_string(priority, to_string(t));
 }
