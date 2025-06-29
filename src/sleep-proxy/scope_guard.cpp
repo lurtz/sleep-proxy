@@ -17,7 +17,6 @@
 #include "scope_guard.h"
 #include "container_utils.h"
 #include "int_utils.h"
-#include "ip_utils.h"
 #include "log.h"
 #include "spawn_process.h"
 #include "to_string.h"

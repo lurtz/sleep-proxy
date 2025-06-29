@@ -16,7 +16,6 @@
 
 #pragma once
 
-#include "file_descriptor.h"
 #include "ip_address.h"
 #include "pcap_wrapper.h"
 #include "scope_guard.h"

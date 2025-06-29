@@ -17,7 +17,6 @@
 #include "wol.h"
 #include "container_utils.h"
 #include "ethernet.h"
-#include "int_utils.h"
 #include "log.h"
 #include "socket.h"
 #include <arpa/inet.h>

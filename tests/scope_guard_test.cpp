@@ -14,9 +14,9 @@
 // with this program; if not, write to the Free Software Foundation, Inc.,
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
+#include "file_descriptor.h"
 #include "scope_guard.h"
 
-#include "spawn_process.h"
 #include "to_string.h"
 
 #include <cppunit/extensions/HelperMacros.h>

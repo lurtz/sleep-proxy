@@ -19,7 +19,6 @@
 #include "error_suppression.h"
 #include "ethernet.h"
 #include "ip_address.h"
-#include "ip_utils.h"
 #include "packet_test_utils.h"
 #include "to_string.h"
 

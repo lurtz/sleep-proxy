@@ -17,7 +17,6 @@
 #pragma once
 
 #include "ip_address.h"
-#include "pcap_wrapper.h"
 #include <algorithm>
 #include <functional>
 #include <memory>

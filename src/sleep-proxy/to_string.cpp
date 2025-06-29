@@ -19,7 +19,6 @@
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>
-#include <vector>
 
 std::string to_string(char const *const t) { return t; }
 

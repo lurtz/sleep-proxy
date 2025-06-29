@@ -15,7 +15,6 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "wol_watcher.h"
-#include "ethernet.h"
 #include "log.h"
 #include "wol.h"
 #include <iterator>

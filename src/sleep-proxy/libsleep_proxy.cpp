@@ -18,7 +18,6 @@
 #include "args.h"
 #include "container_utils.h"
 #include "duplicate_address_watcher.h"
-#include "ip_utils.h"
 #include "log.h"
 #include "packet_parser.h"
 #include "pcap_wrapper.h"
