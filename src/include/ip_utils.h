@@ -26,8 +26,9 @@ static const std::string iface_chars{"qwertzuiopasdfghjklyxcvbnm.-0123456789"};
 std::string validate_iface(std::string const &iface);
 
 template <typename Container, typename Func>
-[[nodiscard]] auto parse_items(Container &&items, Func &&parser) -> std::vector<
-    typename std::invoke_result_t<decltype(parser), const std::string &>> {
+[[nodiscard]] auto parse_items(Container const &items, Func &&parser)
+    -> std::vector<
+        typename std::invoke_result_t<decltype(parser), const std::string &>> {
   static_assert(std::is_same_v<typename std::decay<Container>::type::value_type,
                                std::string>,
                 "container has to carry std::string");

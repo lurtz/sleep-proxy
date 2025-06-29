@@ -84,6 +84,8 @@ public:
 
   static void test_ostream_operator_with_invalid_wol_method() {
     std::stringstream stream;
+    // using out of bounds value is the point of the test
+    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
     auto invalid_method = static_cast<Wol_method>(-1);
     CPPUNIT_ASSERT_THROW(stream << invalid_method, std::runtime_error);
   }

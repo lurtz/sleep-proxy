@@ -139,6 +139,8 @@ public:
     CPPUNIT_ASSERT_EQUAL(ints, guard.cont);
     CPPUNIT_ASSERT_EQUAL(x, guard.ref);
 
+    // using out of range value is the point of the test
+    // NOLINTNEXTLINE(clang-analyzer-optin.core.EnumCastOutOfRange)
     CPPUNIT_ASSERT_EQUAL(std::string(), guard(static_cast<Action>(3)));
 
     CPPUNIT_ASSERT_EQUAL(&ints_mutex, &guard.cont_mutex);

@@ -32,7 +32,7 @@ struct Socket_listen : public Socket {
   Socket_listen(int domain, int type, int protocol = 0)
       : Socket(domain, type, protocol) {}
 
-  template <typename Sockaddr> void bind(Sockaddr &&sockaddr) {
+  template <typename Sockaddr> void bind(Sockaddr const &sockaddr) {
     const int ret_val =
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         ::bind(fd(), reinterpret_cast<const struct sockaddr *>(&sockaddr),

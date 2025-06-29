@@ -17,8 +17,10 @@
 #include "packet_parser.h"
 #include "log.h"
 #include <iterator>
+#include <memory>
 
-template <typename T> void print_if_not_nullptr(std::ostream &out, T &&ptr) {
+template <typename T>
+void print_if_not_nullptr(std::ostream &out, std::unique_ptr<T> const &ptr) {
   if (ptr != nullptr) {
     out << *ptr;
   }
