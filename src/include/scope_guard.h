@@ -18,12 +18,13 @@
 
 #include "ip_address.h"
 #include <algorithm>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
 
 /** perform or reverse the modification */
-enum struct Action { add, del };
+enum struct Action : std::uint8_t { add, del };
 
 /**
  * Upon creation consume a resource or perform a modification. Upon deletion
@@ -98,7 +99,7 @@ struct Drop_port {
 
 /** Adds a firewall rule to reject either TCP or UDP packets */
 struct Reject_tp {
-  enum struct TP { TCP, UDP };
+  enum struct TP : std::uint8_t { TCP, UDP };
   const IP_address ip;
   const TP tcp_udp;
 

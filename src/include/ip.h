@@ -32,8 +32,8 @@ struct ip {
   constexpr static auto ipv4_address_size_byte = uint8_t{4};
   constexpr static auto ipv6_address_size_byte = uint8_t{16};
 
-  enum Version { ipv4 = ETHERTYPE_IP, ipv6 = ETHERTYPE_IPV6 };
-  enum Payload { TCP = IPPROTO_TCP, UDP = IPPROTO_UDP };
+  enum Version : std::uint16_t { ipv4 = ETHERTYPE_IP, ipv6 = ETHERTYPE_IPV6 };
+  enum Payload : std::uint8_t { TCP = IPPROTO_TCP, UDP = IPPROTO_UDP };
 
   ip::Version m_version;
   size_t m_header_length;

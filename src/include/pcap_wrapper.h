@@ -17,6 +17,7 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -27,7 +28,7 @@
 
 /** Provide a nice interface to pcap and close the handle upon an exception */
 struct Pcap_wrapper {
-  enum class Loop_end_reason {
+  enum class Loop_end_reason : std::uint8_t {
     unset,
     packets_captured,
     signal,

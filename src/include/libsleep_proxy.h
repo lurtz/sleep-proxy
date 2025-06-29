@@ -37,7 +37,7 @@ rule_to_listen_on_ips_and_ports(const std::vector<IP_address> &ips,
 [[nodiscard]] bool ping_and_wait(const std::string &iface, const IP_address &ip,
                                  unsigned int tries);
 
-enum class Emulate_host_status {
+enum class Emulate_host_status : std::uint8_t {
   success,
   wake_failure,
   signal_received,

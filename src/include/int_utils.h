@@ -31,7 +31,7 @@ static int const base_10 = 10;
 /** range check for signed target types */
 template <typename R, typename T>
 [[nodiscard]] bool within_bounds(const T &val) noexcept
-  requires std::is_signed<T>::value
+  requires std::is_signed_v<T>
 {
   return std::numeric_limits<R>::lowest() <= val &&
          val <= std::numeric_limits<R>::max();
@@ -40,7 +40,7 @@ template <typename R, typename T>
 /** range check for unsigned target types */
 template <typename R, typename T>
 [[nodiscard]] bool within_bounds(const T &val) noexcept
-  requires std::is_unsigned<T>::value
+  requires std::is_unsigned_v<T>
 {
   return val <= std::numeric_limits<R>::max();
 }
@@ -48,7 +48,7 @@ template <typename R, typename T>
 /** convert to signed types */
 template <typename T>
 [[nodiscard]] int64_t str_to_integral_helper(const std::string &string)
-  requires std::is_signed<T>::value
+  requires std::is_signed_v<T>
 {
   return stoll_with_checks(string);
 }
@@ -56,7 +56,7 @@ template <typename T>
 /** convert to unsigned types */
 template <typename T>
 [[nodiscard]] uint64_t str_to_integral_helper(const std::string &string)
-  requires std::is_unsigned<T>::value
+  requires std::is_unsigned_v<T>
 {
   return stoull_with_checks(string);
 }
