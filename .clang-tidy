@@ -23,9 +23,9 @@ Checks:          'clang-diagnostic-*,
                   # triggered when using structs defined by C / POSIX,
                   -cppcoreguidelines-pro-type-union-access,
                   # too many code atm,
-                  -cppcoreguidelines-avoid-const-or-ref-data-members',
+                  -cppcoreguidelines-avoid-const-or-ref-data-members,
                   # Its automatic fix broke at least one test. I am afraid it might break more,
-                  -performance-avoid-endl
+                  -performance-avoid-endl'
 WarningsAsErrors: ''
 HeaderFilterRegex: ''
 FormatStyle:     none
