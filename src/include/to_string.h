@@ -70,10 +70,10 @@ to_vector_strings(Container const &cont) {
 }
 
 template <typename Container>
-[[nodiscard]] std::vector<char *> get_c_string_array(Container &cont) {
-  static_assert(std::is_same_v<typename std::decay<Container>::type::value_type,
-                               std::vector<std::string::value_type>>,
-                "container has to carry std::vector<std::string::value_type>");
+[[nodiscard]] std::vector<char *> get_c_string_array(Container &cont)
+  requires std::is_same_v<typename std::decay<Container>::type::value_type,
+                          std::vector<std::string::value_type>>
+{
   std::vector<std::string::value_type *> ch_ptr;
   ch_ptr.reserve(cont.size());
   std::transform(
