@@ -65,10 +65,9 @@ std::ostream &operator<<(std::ostream &out, const ip &ip);
 
 template <typename iterator>
 [[nodiscard]] bool
-ethernet_payload_and_ip_version_dont_match(uint16_t const type, iterator data) {
-  static_assert(std::is_same_v<typename iterator::value_type, uint8_t>,
-                "container has to carry u_char or uint8_t");
-
+ethernet_payload_and_ip_version_dont_match(uint16_t const type, iterator data)
+  requires std::is_same_v<typename iterator::value_type, uint8_t>
+{
   auto const version = static_cast<uint8_t>(*data >> 4);
   bool const result = (type == ip::Version::ipv4 && version != 4) ||
                       (type == ip::Version::ipv6 && version != 6);

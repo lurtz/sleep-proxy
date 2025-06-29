@@ -31,11 +31,10 @@
 template <typename Container>
 uint8_t spawn(Container const &cmd,
               File_descriptor const &in = File_descriptor(),
-              File_descriptor const &out = File_descriptor()) {
-  static_assert(std::is_same_v<typename std::decay<Container>::type::value_type,
-                               std::string>,
-                "container has to carry std::string");
-
+              File_descriptor const &out = File_descriptor())
+  requires std::is_same_v<typename std::decay<Container>::type::value_type,
+                          std::string>
+{
   // get char * of each string
   auto cmd_vectors = to_vector_strings(cmd);
   auto ch_ptr2 = get_c_string_array(cmd_vectors);

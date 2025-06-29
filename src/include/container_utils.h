@@ -48,9 +48,9 @@ operator+(std::vector<T, Alloc> &&lhs, const std::vector<T, Alloc> &rhs) {
 }
 
 template <typename iterator>
-void check_type_and_range(iterator data, iterator end, size_t const min_size) {
-  static_assert(std::is_same_v<typename iterator::value_type, uint8_t>,
-                "container has to carry u_char or uint8_t");
+void check_type_and_range(iterator data, iterator end, size_t const min_size)
+  requires std::is_same_v<typename iterator::value_type, uint8_t>
+{
   if (data >= end || static_cast<size_t>(std::distance(data, end)) < min_size) {
     throw std::length_error("not enough data");
   }
