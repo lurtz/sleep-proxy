@@ -91,10 +91,12 @@ template <typename iterator>
   std::advance(data, 3);
   struct in_addr ip_src{};
   std::copy(data, data + ip::ipv4_address_size_byte,
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             reinterpret_cast<uint8_t *>(&ip_src));
   std::advance(data, ip::ipv4_address_size_byte);
   struct in_addr ip_dst{};
   std::copy(data, data + ip::ipv4_address_size_byte,
+            // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
             reinterpret_cast<uint8_t *>(&ip_dst));
   static auto const no_subnet = uint8_t{32};
   return std::make_unique<ip>(

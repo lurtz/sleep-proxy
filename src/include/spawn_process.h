@@ -29,7 +29,8 @@
                                     File_descriptor const &out);
 
 template <typename Container>
-uint8_t spawn(Container &&cmd, File_descriptor const &in = File_descriptor(),
+uint8_t spawn(Container const &cmd,
+              File_descriptor const &in = File_descriptor(),
               File_descriptor const &out = File_descriptor()) {
   static_assert(std::is_same_v<typename std::decay<Container>::type::value_type,
                                std::string>,
