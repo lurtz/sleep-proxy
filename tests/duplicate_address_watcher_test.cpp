@@ -217,12 +217,11 @@ public:
     }
     Iface_Ips not_present_ips = cartesian_product(ifaces, ips);
 
-    auto const new_end = std::ranges::remove_if(
+    auto const [erase_begin, erase_end] = std::ranges::remove_if(
         not_present_ips, [&](Iface_Ips::value_type const &iface_ip) {
           return std::end(iface_ips) != std::ranges::find(iface_ips, iface_ip);
         });
-    not_present_ips.resize(static_cast<std::size_t>(
-        std::distance(std::begin(not_present_ips), std::end(new_end))));
+    not_present_ips.erase(erase_begin, erase_end);
 
     std::cout << "not_present_ips.size() == " << not_present_ips.size()
               << std::endl;
