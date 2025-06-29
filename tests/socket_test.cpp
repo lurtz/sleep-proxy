@@ -32,7 +32,7 @@ struct Socket_listen : public Socket {
   Socket_listen(int domain, int type, int protocol = 0)
       : Socket(domain, type, protocol) {}
 
-  template <typename Sockaddr> void bind(Sockaddr &&sockaddr) {
+  template <typename Sockaddr> void bind(Sockaddr const &sockaddr) {
     const int ret_val =
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)
         ::bind(fd(), reinterpret_cast<const struct sockaddr *>(&sockaddr),
@@ -91,14 +91,16 @@ public:
   static void test_ioctl_throws() {
     Socket s0(AF_INET, SOCK_DGRAM);
 
-    struct ifreq ifreq{{{0}}, {{0, {0}}}};
+    struct ifreq ifreq{.ifr_ifrn = {{0}},
+                       .ifr_ifru = {{.sa_family = 0, .sa_data = {0}}}};
 
     CPPUNIT_ASSERT_THROW(s0.ioctl(0, ifreq), std::runtime_error);
   }
 
   static void test_send_to() {
     static auto const leet_port = uint16_t{31337};
-    sockaddr_in addr{0, 0, {0}, {0}};
+    sockaddr_in addr{
+        .sin_family = 0, .sin_port = 0, .sin_addr = {0}, .sin_zero = {0}};
     addr.sin_family = AF_INET;
     addr.sin_port = leet_port;
 
@@ -129,7 +131,10 @@ public:
     s1.send_to(data, 0, addr);
     CPPUNIT_ASSERT(data == s0.recv());
 
-    sockaddr_in const broken_addr{0xff, 0xff, {0xff}, {0xff}};
+    sockaddr_in const broken_addr{.sin_family = 0xff,
+                                  .sin_port = 0xff,
+                                  .sin_addr = {0xff},
+                                  .sin_zero = {0xff}};
     CPPUNIT_ASSERT_THROW(s1.send_to(data, 0, broken_addr), std::runtime_error);
   }
 

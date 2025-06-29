@@ -141,10 +141,13 @@ Host_args parse_host_args(const std::string &interface_,
 Args read_commandline(std::span<char *> const &args) {
   // NOLINTNEXTLINE(cppcoreguidelines-avoid-c-arrays, modernize-avoid-c-arrays)
   static const option long_options[] = {
-      {"help", no_argument, nullptr, 'h'},
-      {"config", required_argument, nullptr, 'c'},
-      {"syslog", no_argument, nullptr, 's'},
-      {nullptr, 0, nullptr, 0}};
+      {.name = "help", .has_arg = no_argument, .flag = nullptr, .val = 'h'},
+      {.name = "config",
+       .has_arg = required_argument,
+       .flag = nullptr,
+       .val = 'c'},
+      {.name = "syslog", .has_arg = no_argument, .flag = nullptr, .val = 's'},
+      {.name = nullptr, .has_arg = 0, .flag = nullptr, .val = 0}};
   int option_index = 0;
   int c = -1;
   std::vector<Host_args> ret_val;
@@ -176,7 +179,7 @@ Args read_commandline(std::span<char *> const &args) {
       break;
     }
   }
-  return {std::move(ret_val), to_syslog};
+  return {.host_args = std::move(ret_val), .syslog = to_syslog};
 }
 
 std::ostream &operator<<(std::ostream &out, const Host_args &args) {

@@ -16,11 +16,7 @@
 
 #include "duplicate_address_watcher.h"
 
-#include "container_utils.h"
-#include "file_descriptor.h"
 #include "packet_test_utils.h"
-#include "spawn_process.h"
-#include "to_string.h"
 
 #include <algorithm>
 #include <atomic>
@@ -38,7 +34,7 @@ struct Is_ip_occupied_dummy {
     auto const matches = [&](std::tuple<std::string, IP_address> const &item) {
       return std::make_tuple(iface, ip) == item;
     };
-    return std::any_of(std::begin(occupied), std::end(occupied), matches);
+    return std::ranges::any_of(occupied, matches);
   }
 };
 
@@ -221,15 +217,11 @@ public:
     }
     Iface_Ips not_present_ips = cartesian_product(ifaces, ips);
 
-    auto const new_end =
-        std::remove_if(std::begin(not_present_ips), std::end(not_present_ips),
-                       [&](Iface_Ips::value_type const &iface_ip) {
-                         return std::end(iface_ips) !=
-                                std::find(std::begin(iface_ips),
-                                          std::end(iface_ips), iface_ip);
-                       });
-    not_present_ips.resize(static_cast<std::size_t>(
-        std::distance(std::begin(not_present_ips), new_end)));
+    auto const [erase_begin, erase_end] = std::ranges::remove_if(
+        not_present_ips, [&](Iface_Ips::value_type const &iface_ip) {
+          return std::end(iface_ips) != std::ranges::find(iface_ips, iface_ip);
+        });
+    not_present_ips.erase(erase_begin, erase_end);
 
     std::cout << "not_present_ips.size() == " << not_present_ips.size()
               << std::endl;

@@ -37,9 +37,9 @@ std::vector<uint8_t> gen_random_data(size_t const size) {
 }
 
 pcap_pkthdr create_header(size_t packet_length) {
-  const struct pcap_pkthdr header {
-    {0, 0}, 0, static_cast<uint32_t>(packet_length)
-  };
+  const struct pcap_pkthdr header{.ts = {.tv_sec = 0, .tv_usec = 0},
+                                  .caplen = 0,
+                                  .len = static_cast<uint32_t>(packet_length)};
   return header;
 }
 } // namespace

@@ -59,7 +59,7 @@ public:
    * set socket option
    */
   template <typename Optval>
-  void set_sock_opt(int level, int optname, Optval &&optval) {
+  void set_sock_opt(int level, int optname, Optval const &optval) {
     if (setsockopt(sock, level, optname, &optval, sizeof(Optval)) == -1) {
       throw std::runtime_error(std::string("setsockopt() failed: ") +
                                strerror(errno));
@@ -71,7 +71,7 @@ public:
    */
   template <typename Sockaddr>
   ssize_t send_to(const std::vector<uint8_t> &buf, int flags,
-                  Sockaddr &&sockaddr) {
+                  Sockaddr const &sockaddr) {
     ssize_t sent_bytes = sendto(
         sock, buf.data(), buf.size(), flags,
         // NOLINTNEXTLINE(cppcoreguidelines-pro-type-reinterpret-cast)

@@ -27,8 +27,8 @@
 #include <string>
 #include <unistd.h>
 
-static auto const invalid_fd = int{-1};
-static auto const really_invalid_fd = int{-10};
+static int const invalid_fd = -1;
+static int const really_invalid_fd = -10;
 
 class File_descriptor_test : public CppUnit::TestFixture {
   std::string const filename = "fdclosetestfile";
@@ -151,7 +151,10 @@ public:
     {
       Tmp_fd_remap const fd_remap{std::get<1>(self_pipes),
                                   get_fd_from_stream(stdout)};
-      printf("blabla");
+      // purpose of test is to check that both printf and std::cout use the
+      // remapped file descriptor
+      // NOLINTNEXTLINE(modernize-use-std-print)
+      std::printf("blabla");
       std::cout << "rumsbums" << std::endl;
     }
     auto lines = std::get<0>(self_pipes).read();

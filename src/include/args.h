@@ -32,7 +32,7 @@ void print_help();
  */
 struct Host_args {
   /** the interface to use */
-  std::string interface {};
+  std::string interface{};
   /** addresses to listen on */
   std::vector<IP_address> address{};
   /** ports to listen on */
@@ -49,12 +49,9 @@ struct Host_args {
             std::vector<uint16_t> ports_, ether_addr mac_,
             std::string hostname_, unsigned int ping_tries_,
             Wol_method wol_method_)
-      : interface {
-    std::move(interface_)
-  }, address{std::move(address_)}, ports{std::move(ports_)}, mac{mac_},
-      hostname{std::move(hostname_)}, ping_tries{ping_tries_},
-      wol_method{wol_method_} {
-  }
+      : interface{std::move(interface_)}, address{std::move(address_)},
+        ports{std::move(ports_)}, mac{mac_}, hostname{std::move(hostname_)},
+        ping_tries{ping_tries_}, wol_method{wol_method_} {}
 };
 
 struct Args {

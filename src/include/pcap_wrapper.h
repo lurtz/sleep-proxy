@@ -17,6 +17,7 @@
 #pragma once
 
 #include <array>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -27,7 +28,7 @@
 
 /** Provide a nice interface to pcap and close the handle upon an exception */
 struct Pcap_wrapper {
-  enum class Loop_end_reason {
+  enum class Loop_end_reason : std::uint8_t {
     unset,
     packets_captured,
     signal,
@@ -51,8 +52,8 @@ protected:
   [[nodiscard]] Loop_end_reason get_end_reason() const;
 
 public:
-  static auto const default_snaplen = int{65000};
-  static auto const default_timeout = int{1000};
+  static int const default_snaplen = 65000;
+  static int const default_timeout = 1000;
 
   /** open a pcap instance on iface */
   explicit Pcap_wrapper(std::string const &iface, int snaplen = default_snaplen,

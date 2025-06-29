@@ -22,38 +22,42 @@
 #include <stdexcept>
 #include <string>
 
-static auto const base_10 = int{10};
+static int const base_10 = 10;
 [[nodiscard]] int64_t stoll_with_checks(const std::string &s,
                                         int base = base_10);
 [[nodiscard]] uint64_t stoull_with_checks(const std::string &s,
                                           int base = base_10);
 
 /** range check for signed target types */
-template <typename R, typename T,
-          typename std::enable_if<std::is_signed<T>::value>::type * = nullptr>
-[[nodiscard]] bool within_bounds(const T &val) noexcept {
+template <typename R, typename T>
+[[nodiscard]] bool within_bounds(const T &val) noexcept
+  requires std::is_signed_v<T>
+{
   return std::numeric_limits<R>::lowest() <= val &&
          val <= std::numeric_limits<R>::max();
 }
 
 /** range check for unsigned target types */
-template <typename R, typename T,
-          typename std::enable_if<std::is_unsigned<T>::value>::type * = nullptr>
-[[nodiscard]] bool within_bounds(const T &val) noexcept {
+template <typename R, typename T>
+[[nodiscard]] bool within_bounds(const T &val) noexcept
+  requires std::is_unsigned_v<T>
+{
   return val <= std::numeric_limits<R>::max();
 }
 
 /** convert to signed types */
-template <typename T,
-          typename std::enable_if<std::is_signed<T>::value>::type * = nullptr>
-[[nodiscard]] int64_t str_to_integral_helper(const std::string &string) {
+template <typename T>
+[[nodiscard]] int64_t str_to_integral_helper(const std::string &string)
+  requires std::is_signed_v<T>
+{
   return stoll_with_checks(string);
 }
 
 /** convert to unsigned types */
-template <typename T,
-          typename std::enable_if<std::is_unsigned<T>::value>::type * = nullptr>
-[[nodiscard]] uint64_t str_to_integral_helper(const std::string &string) {
+template <typename T>
+[[nodiscard]] uint64_t str_to_integral_helper(const std::string &string)
+  requires std::is_unsigned_v<T>
+{
   return stoull_with_checks(string);
 }
 

@@ -15,7 +15,6 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "error_suppression.h"
-#include "ethernet.h"
 #include "log.h"
 #include "packet_parser.h"
 #include "pcap_wrapper.h"

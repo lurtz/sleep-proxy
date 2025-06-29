@@ -16,6 +16,7 @@
 
 #include "file_descriptor.h"
 #include "container_utils.h"
+#include <algorithm>
 #include <array>
 #include <cerrno>
 #include <cstring>
@@ -37,13 +38,13 @@ std::vector<std::string>
 byte_vector_to_strings(std::vector<uint8_t> const &data) {
   std::vector<std::vector<uint8_t>> const splitted_data = split(data, '\n');
   std::vector<std::string> lines(splitted_data.size());
-  std::transform(std::begin(splitted_data), std::end(splitted_data),
-                 std::begin(lines), byte_vector_to_string);
+  std::ranges::transform(splitted_data, std::begin(lines),
+                         byte_vector_to_string);
   return lines;
 }
 
 bool is_data_ready_to_read(int const fd) {
-  pollfd fds{fd, POLLIN, 0};
+  pollfd fds{.fd = fd, .events = POLLIN, .revents = 0};
 
   int retval = poll(&fds, 1, 0);
 
@@ -130,7 +131,7 @@ void flush_file(FILE *const stream) {
 }
 
 bool file_exists(const std::string &filename) {
-  struct stat stats {};
+  struct stat stats{};
   const auto errno_save = errno;
   bool ret_val = stat(filename.c_str(), &stats) == 0;
   errno = errno_save;

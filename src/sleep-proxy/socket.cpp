@@ -26,13 +26,8 @@
 
 namespace {
 ifreq get_ifreq(const std::string &iface) {
-  struct ifreq ifr {
-    {{0}}, {
-      {
-        0, { 0 }
-      }
-    }
-  };
+  struct ifreq ifr{.ifr_ifrn = {{0}},
+                   .ifr_ifru = {{.sa_family = 0, .sa_data = {0}}}};
   // NOLINTNEXTLINE
   std::copy(std::begin(iface), std::end(iface), std::begin(ifr.ifr_name));
   return ifr;

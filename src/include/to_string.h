@@ -38,7 +38,7 @@ std::ostream &operator<<(std::ostream &out, std::vector<T, Alloc> v) {
 
 [[nodiscard]] std::string to_string(char const *t);
 
-template <typename T> [[nodiscard]] std::string to_string(T &&t) {
+template <typename T> [[nodiscard]] std::string to_string(T const &t) {
   std::stringstream ss;
   ss << t;
   return ss.str();
@@ -54,7 +54,7 @@ std::string test_characters(const std::string &input,
 
 template <typename Container>
 [[nodiscard]] std::vector<std::vector<std::string::value_type>>
-to_vector_strings(Container &&cont) {
+to_vector_strings(Container const &cont) {
   auto const conv = [](std::string const &s) {
     auto result =
         std::vector<std::string::value_type>(std::begin(s), std::end(s));
@@ -71,8 +71,8 @@ to_vector_strings(Container &&cont) {
 
 template <typename Container>
 [[nodiscard]] std::vector<char *> get_c_string_array(Container &cont) {
-  static_assert(std::is_same<typename std::decay<Container>::type::value_type,
-                             std::vector<std::string::value_type>>::value,
+  static_assert(std::is_same_v<typename std::decay<Container>::type::value_type,
+                               std::vector<std::string::value_type>>,
                 "container has to carry std::vector<std::string::value_type>");
   std::vector<std::string::value_type *> ch_ptr;
   ch_ptr.reserve(cont.size());

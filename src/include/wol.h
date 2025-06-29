@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-enum class Wol_method { ethernet, udp };
+enum class Wol_method : std::uint8_t { ethernet, udp };
 
 /**
  * create the payload for a UDP wol packet to be broadcast in to the network

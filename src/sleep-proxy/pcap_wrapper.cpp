@@ -52,7 +52,7 @@ struct BPF {
   bpf_program bpf;
   BPF(std::unique_ptr<pcap_t, void (*)(pcap_t *)> &pc,
       const std::string &filter)
-      : bpf{0, nullptr} {
+      : bpf{.bf_len = 0, .bf_insns = nullptr} {
     // pcap_compile is not thread safe
     // see http://seclists.org/tcpdump/2012/q2/22
     static std::mutex pcap_compile_mutex;
@@ -137,7 +137,7 @@ void Pcap_wrapper::set_filter(const std::string &filter) {
 
 Pcap_wrapper::Loop_end_reason Pcap_wrapper::loop(const int count,
                                                  Callback_t cb) {
-  auto ret_val = int{1};
+  int ret_val = 1;
   auto loop_f = create_loop(ret_val);
 
   loop_thread = std::thread{loop_f, pc.get(), count, std::move(cb)};

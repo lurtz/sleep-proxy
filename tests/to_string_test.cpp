@@ -16,9 +16,6 @@
 
 #include "to_string.h"
 
-#include "packet_test_utils.h"
-#include "spawn_process.h"
-
 #include <cppunit/extensions/HelperMacros.h>
 #include <string>
 

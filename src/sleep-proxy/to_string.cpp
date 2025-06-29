@@ -15,16 +15,16 @@
 // 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 #include "to_string.h"
+#include <algorithm>
 #include <cerrno>
 #include <cstring>
 #include <stdexcept>
-#include <vector>
 
 std::string to_string(char const *const t) { return t; }
 
 bool contains_only_valid_characters(const std::string &input,
                                     const std::string &valid_chars) {
-  const bool b = std::all_of(std::begin(input), std::end(input), [&](char ch) {
+  const bool b = std::ranges::all_of(input, [&](char ch) {
     return valid_chars.find(ch) != std::string::npos;
   });
   return b;

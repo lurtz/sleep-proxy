@@ -18,6 +18,7 @@
 #include "container_utils.h"
 #include "log.h"
 #include "spawn_process.h"
+#include <algorithm>
 #include <cctype>
 
 namespace {
@@ -33,7 +34,7 @@ std::vector<std::string> get_cmd_ipv6() {
 bool contains_mac_different_from_given(std::string mac,
                                        std::vector<std::string> const &lines) {
   auto const transform_to_upper = [](std::string tmp) {
-    std::transform(std::begin(tmp), std::end(tmp), std::begin(tmp), ::toupper);
+    std::ranges::transform(tmp, std::begin(tmp), ::toupper);
     return tmp;
   };
 
@@ -43,7 +44,7 @@ bool contains_mac_different_from_given(std::string mac,
 
   mac = transform_to_upper(mac);
 
-  return std::any_of(std::begin(lines), std::end(lines), macs_are_not_equal);
+  return std::ranges::any_of(lines, macs_are_not_equal);
 }
 
 std::string get_mac(std::string const &iface) {
@@ -152,16 +153,15 @@ void daw_thread_main_ipv6(const std::string &iface, const IP_address &ip,
 Duplicate_address_watcher::Duplicate_address_watcher(std::string ifacee,
                                                      const IP_address ipp,
                                                      Pcap_wrapper &pc)
-    : iface(std::move(ifacee)), ip(ipp),
-      pcap(pc), is_ip_occupied{Ip_neigh_checker{get_mac(iface)}},
-      watcher(), loop{false} {}
+    : iface(std::move(ifacee)), ip(ipp), pcap(pc),
+      is_ip_occupied{Ip_neigh_checker{get_mac(iface)}}, watcher(), loop{false} {
+}
 
 Duplicate_address_watcher::Duplicate_address_watcher(
     std::string ifacee, const IP_address ipp, Pcap_wrapper &pc,
     Is_ip_occupied is_ip_occupiedd)
-    : iface(std::move(ifacee)), ip(ipp),
-      pcap(pc), is_ip_occupied{std::move(is_ip_occupiedd)},
-      watcher(), loop{false} {}
+    : iface(std::move(ifacee)), ip(ipp), pcap(pc),
+      is_ip_occupied{std::move(is_ip_occupiedd)}, watcher(), loop{false} {}
 
 Duplicate_address_watcher::~Duplicate_address_watcher() { stop_watcher(); }
 
