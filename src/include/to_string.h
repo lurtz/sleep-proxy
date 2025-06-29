@@ -38,7 +38,7 @@ std::ostream &operator<<(std::ostream &out, std::vector<T, Alloc> v) {
 
 [[nodiscard]] std::string to_string(char const *t);
 
-template <typename T> [[nodiscard]] std::string to_string(T &&t) {
+template <typename T> [[nodiscard]] std::string to_string(T const &t) {
   std::stringstream ss;
   ss << t;
   return ss.str();
@@ -54,7 +54,7 @@ std::string test_characters(const std::string &input,
 
 template <typename Container>
 [[nodiscard]] std::vector<std::vector<std::string::value_type>>
-to_vector_strings(Container &&cont) {
+to_vector_strings(Container const &cont) {
   auto const conv = [](std::string const &s) {
     auto result =
         std::vector<std::string::value_type>(std::begin(s), std::end(s));
