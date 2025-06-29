@@ -31,7 +31,7 @@
 
 std::vector<uint8_t> to_binary(const std::string &hex);
 
-enum class Payload_protocol {
+enum class Payload_protocol : std::uint16_t {
   ipv4 = ETHERTYPE_IP,
   ipv6 = ETHERTYPE_IPV6,
   vlan = ETHERTYPE_VLAN
@@ -73,16 +73,16 @@ cartesian_product(Container0 const &c0, Container1 const &c1) {
 }
 
 template <typename Iterator, typename End_iter>
-void check_range(Iterator &&iter, End_iter &&end, const unsigned char start,
+void check_range(Iterator &iter, End_iter const &end, const unsigned char start,
                  const unsigned char end_pos) {
   for (unsigned char c = start; c < end_pos && iter != end; c++, iter++) {
-    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>(16 * c + c), *iter);
+    CPPUNIT_ASSERT_EQUAL(static_cast<uint8_t>((16 * c) + c), *iter);
   }
 }
 
 template <typename Iterator, typename End_iter>
-void check_header(Iterator &&iter, End_iter &&end, const unsigned char start,
-                  const unsigned char end_pos) {
+void check_header(Iterator &iter, End_iter const &end,
+                  const unsigned char start, const unsigned char end_pos) {
   check_range(iter, end, start, end_pos);
   CPPUNIT_ASSERT(iter != end);
 }
