@@ -151,7 +151,10 @@ public:
     {
       Tmp_fd_remap const fd_remap{std::get<1>(self_pipes),
                                   get_fd_from_stream(stdout)};
-      printf("blabla");
+      // purpose of test is to check that both printf and std::cout use the
+      // remapped file descriptor
+      // NOLINTNEXTLINE(modernize-use-std-print)
+      std::printf("blabla");
       std::cout << "rumsbums" << std::endl;
     }
     auto lines = std::get<0>(self_pipes).read();

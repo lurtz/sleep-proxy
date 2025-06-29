@@ -60,6 +60,9 @@ void log(const int priority, const char *format, ...) {
   if (logger == nullptr) {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
     std::vprintf(format, args);
+    // intention is to use the same library to add \n which was also used to
+    // print the log message
+    // NOLINTNEXTLINE(modernize-use-std-print)
     std::printf("\n");
   } else {
     // NOLINTNEXTLINE(cppcoreguidelines-pro-bounds-array-to-pointer-decay)
