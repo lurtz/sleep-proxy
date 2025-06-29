@@ -200,7 +200,7 @@ public:
     std::vector<std::string> const ip_neigh_content = get_ip_neigh_output();
     Iface_Ips const iface_ips = get_iface_ips(ip_neigh_content);
 
-    std::cout << "iface_ips.size() = " << iface_ips.size() << '\n';
+    std::cout << "iface_ips.size() = " << iface_ips.size() << std::endl;
 
     // check for ips which are currently present
     for (auto const &iface_ip : iface_ips) {
@@ -231,7 +231,8 @@ public:
     not_present_ips.resize(static_cast<std::size_t>(
         std::distance(std::begin(not_present_ips), new_end)));
 
-    std::cout << "not_present_ips.size() == " << not_present_ips.size() << '\n';
+    std::cout << "not_present_ips.size() == " << not_present_ips.size()
+              << std::endl;
 
     for (auto const &iface_ip : not_present_ips) {
       std::string tmp_mac;

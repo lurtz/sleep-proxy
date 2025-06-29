@@ -152,7 +152,7 @@ public:
       Tmp_fd_remap const fd_remap{std::get<1>(self_pipes),
                                   get_fd_from_stream(stdout)};
       printf("blabla");
-      std::cout << "rumsbums" << '\n';
+      std::cout << "rumsbums" << std::endl;
     }
     auto lines = std::get<0>(self_pipes).read();
     CPPUNIT_ASSERT_EQUAL(static_cast<size_t>(1), lines.size());

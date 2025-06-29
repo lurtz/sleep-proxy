@@ -159,7 +159,7 @@ Fd_restore::~Fd_restore() {
     duplicate_file_descriptors(m_backup_fd, m_fd);
   } catch (std::exception const &e) {
     std::cout << "Fd_restore::~Fd_restore() caught exception: " << e.what()
-              << '\n';
+              << std::endl;
   }
 }
 

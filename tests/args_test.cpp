@@ -72,7 +72,7 @@ parse_ports(std::vector<std::string> const &ports) {
 [[nodiscard]] Args get_args_vec(bool const use_syslog) {
   std::vector<std::string> params{"args_test"};
   if (use_syslog) {
-    std::cout << "syslog" << '\n';
+    std::cout << "syslog" << std::endl;
     params.emplace_back("--syslog");
   }
   return get_args(params);

@@ -80,7 +80,7 @@ File_descriptor::~File_descriptor() {
     close();
   } catch (std::exception const &e) {
     std::cerr << "File_descriptor::~File_descriptor(): caught exception: "
-              << e.what() << '\n';
+              << e.what() << std::endl;
   }
 }
 
