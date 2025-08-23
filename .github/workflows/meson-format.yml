@@ -17,4 +17,4 @@ jobs:
       - name: Install dependencies for build
         run: sudo apt install meson
       - name: Check meson formatting
-        run: meson fmt --recursive --check-only
+        run: meson format --recursive --check-only
