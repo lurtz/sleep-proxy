@@ -1,6 +1,6 @@
 #!/bin/sh
 
-#find * -name "*.h" -or -name "*.cpp" | xargs clang-tidy -p build --fix --fix-notes
-find * -name "*.h" -or -name "*.cpp" | xargs clang-tidy -p build
+# ninja -C build clang-tidy-fix
+ninja -C build clang-tidy
 
 exit 0
