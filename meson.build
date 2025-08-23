@@ -14,10 +14,12 @@
 # with this program; if not, write to the Free Software Foundation, Inc.,
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
-project('sleep proxy', 'cpp',
-  version : '0.0.1',
-  license : 'GPL',
-  default_options : ['cpp_std=c++23', 'warning_level=3']
+project(
+    'sleep proxy',
+    'cpp',
+    version: '0.0.1',
+    license: 'GPL',
+    default_options: ['cpp_std=c++23', 'warning_level=3'],
 )
 
 # enable all warnings found
@@ -26,5 +28,5 @@ subdir('src')
 
 cppunit_dep = dependency('cppunit', required: false)
 if cppunit_dep.found()
-  subdir('tests')
+    subdir('tests')
 endif
