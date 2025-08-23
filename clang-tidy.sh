@@ -2,5 +2,3 @@
 
 # ninja -C build clang-tidy-fix
 ninja -C build clang-tidy
-
-exit 0
