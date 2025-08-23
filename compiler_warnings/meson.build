@@ -18,7 +18,6 @@
 warnings = [
   # useful warning to improve c++ code
   '-Weffc++',
-  '-Wformat',
   '-Wnull-dereference',
   '-Wswitch-default',
   '-Wswitch-enum',
@@ -52,12 +51,10 @@ warnings = [
   '-Wextra-semi',
   '-Wsign-conversion',
   '-Wlogical-op',
-  '-Wno-aggressive-loop-optimizations',
   # useful to rethink public/private interfaces of cpp files
   # prints in c++ no warnings for templates, inline functions and functions in
   # anonymous namespace
   '-Wmissing-declarations',
-  '-Wopenmp-simd',
   '-Wpacked',
   '-Wredundant-decls',
   '-Winline',
@@ -74,6 +71,7 @@ warnings = [
   '-Wno-global-constructors',
   '-Wno-c++98-compat',
   '-Wno-c++98-compat-bind-to-temporary-copy',
+  '-Wno-pre-c++20-compat-pedantic',
   '-Wno-exit-time-destructors',
   '-Wno-covered-switch-default',
   '-Wno-disabled-macro-expansion'
