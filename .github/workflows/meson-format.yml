@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  cpp-linter:
+  check-formatting:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
