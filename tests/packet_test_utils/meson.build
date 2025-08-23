@@ -16,13 +16,15 @@
 
 packet_test_utils_include = include_directories('include')
 packet_test_utils_lib = shared_library(
-        'packet_test_utils',
-        'packet_test_utils.cpp',
-        dependencies : [sleep_proxy_dep, cppunit_dep],
-        include_directories : packet_test_utils_include)
+    'packet_test_utils',
+    'packet_test_utils.cpp',
+    dependencies: [sleep_proxy_dep, cppunit_dep],
+    include_directories: packet_test_utils_include,
+)
 packet_test_utils_dep = declare_dependency(
-        link_with : packet_test_utils_lib,
-        include_directories : packet_test_utils_include,
-        dependencies : [sleep_proxy_dep, cppunit_dep, thread_dep])
+    link_with: packet_test_utils_lib,
+    include_directories: packet_test_utils_include,
+    dependencies: [sleep_proxy_dep, cppunit_dep, thread_dep],
+)
 
 

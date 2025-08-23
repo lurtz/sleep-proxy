@@ -16,65 +16,65 @@
 
 # enable all warnings found
 warnings = [
-  # useful warning to improve c++ code
-  '-Weffc++',
-  '-Wnull-dereference',
-  '-Wswitch-default',
-  '-Wswitch-enum',
-  '-Wsync-nand',
-  '-Wunused-const-variable',
-  '-Wstringop-truncation',
-  '-Wsuggest-attribute=pure',
-  '-Wsuggest-attribute=const',
-  '-Wsuggest-attribute=noreturn',
-  '-Wsuggest-attribute=format',
-  '-Wsuggest-attribute=cold',
-  '-Wsuggest-attribute=malloc',
-  '-Wsuggest-final-types',
-  '-Wsuggest-final-methods',
-  '-Wsuggest-override',
-  '-Walloc-zero',
-  '-Walloca',
-  '-Warith-conversion',
-  '-Wduplicated-branches',
-  '-Wduplicated-cond',
-  '-Wtrampolines',
-  '-Wfloat-equal',
-  '-Wshadow',
-  '-Wundef',
-  '-Wunused-macros',
-  '-Wcast-qual',
-  '-Wcast-align',
-  '-Wconditionally-supported',
-  '-Wzero-as-null-pointer-constant',
-  '-Wuseless-cast',
-  '-Wextra-semi',
-  '-Wsign-conversion',
-  '-Wlogical-op',
-  # useful to rethink public/private interfaces of cpp files
-  # prints in c++ no warnings for templates, inline functions and functions in
-  # anonymous namespace
-  '-Wmissing-declarations',
-  '-Wpacked',
-  '-Wredundant-decls',
-  '-Winline',
-  '-Wvla',
-  '-Wdisabled-optimization',
-  '-Whsa',
-  # warnings from clang
-  # enable everything and then switch not so useful warnings off
-  # clang discourages using -Weverything and recommends to only use selected
-  # warnings
-  '-Weverything',
-  '-Wno-padded',
-  '-Wno-weak-vtables',
-  '-Wno-global-constructors',
-  '-Wno-c++98-compat',
-  '-Wno-c++98-compat-bind-to-temporary-copy',
-  '-Wno-pre-c++20-compat-pedantic',
-  '-Wno-exit-time-destructors',
-  '-Wno-covered-switch-default',
-  '-Wno-disabled-macro-expansion'
+    # useful warning to improve c++ code
+    '-Weffc++',
+    '-Wnull-dereference',
+    '-Wswitch-default',
+    '-Wswitch-enum',
+    '-Wsync-nand',
+    '-Wunused-const-variable',
+    '-Wstringop-truncation',
+    '-Wsuggest-attribute=pure',
+    '-Wsuggest-attribute=const',
+    '-Wsuggest-attribute=noreturn',
+    '-Wsuggest-attribute=format',
+    '-Wsuggest-attribute=cold',
+    '-Wsuggest-attribute=malloc',
+    '-Wsuggest-final-types',
+    '-Wsuggest-final-methods',
+    '-Wsuggest-override',
+    '-Walloc-zero',
+    '-Walloca',
+    '-Warith-conversion',
+    '-Wduplicated-branches',
+    '-Wduplicated-cond',
+    '-Wtrampolines',
+    '-Wfloat-equal',
+    '-Wshadow',
+    '-Wundef',
+    '-Wunused-macros',
+    '-Wcast-qual',
+    '-Wcast-align',
+    '-Wconditionally-supported',
+    '-Wzero-as-null-pointer-constant',
+    '-Wuseless-cast',
+    '-Wextra-semi',
+    '-Wsign-conversion',
+    '-Wlogical-op',
+    # useful to rethink public/private interfaces of cpp files
+    # prints in c++ no warnings for templates, inline functions and functions in
+    # anonymous namespace
+    '-Wmissing-declarations',
+    '-Wpacked',
+    '-Wredundant-decls',
+    '-Winline',
+    '-Wvla',
+    '-Wdisabled-optimization',
+    '-Whsa',
+    # warnings from clang
+    # enable everything and then switch not so useful warnings off
+    # clang discourages using -Weverything and recommends to only use selected
+    # warnings
+    '-Weverything',
+    '-Wno-padded',
+    '-Wno-weak-vtables',
+    '-Wno-global-constructors',
+    '-Wno-c++98-compat',
+    '-Wno-c++98-compat-bind-to-temporary-copy',
+    '-Wno-pre-c++20-compat-pedantic',
+    '-Wno-exit-time-destructors',
+    '-Wno-covered-switch-default',
+    '-Wno-disabled-macro-expansion',
 ]
 
 # gccs static code analyzer might give better results in the future
@@ -82,9 +82,9 @@ warnings = [
 #warnings += '-fanalyzer'
 
 compiler = meson.get_compiler('cpp')
-foreach w: warnings
-  if (compiler.has_argument(w))
-    add_global_arguments(w, language: 'cpp')
-  endif
+foreach w : warnings
+    if (compiler.has_argument(w))
+        add_global_arguments(w, language: 'cpp')
+    endif
 endforeach
 
